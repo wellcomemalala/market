@@ -2,387 +2,334 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>จดของตลาด · แวะถัวะ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>แวะถัวะ · จดของตลาด</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --ink:#1a1a2e;
-  --ink2:#4a4a6a;
-  --ink3:#9090aa;
-  --bg:#f5f4f0;
-  --surface:#ffffff;
-  --border:#e2e1dc;
-  --accent:#2d6a4f;
-  --accent-light:#e8f5ee;
-  --accent2:#e76f51;
-  --accent2-light:#fdf0ec;
-  --danger:#c1121f;
-  --danger-light:#fde8ea;
-  --radius:12px;
-  --radius-sm:8px;
-  --shadow:0 1px 4px rgba(0,0,0,.08),0 2px 8px rgba(0,0,0,.05);
-  --shadow-up:0 -2px 12px rgba(0,0,0,.08);
+  --brand:#1B6B3A;
+  --brand-light:#E8F5EE;
+  --brand-mid:#2D8653;
+  --orange:#E8672A;
+  --orange-light:#FDF0E8;
+  --red:#D93025;
+  --red-light:#FDECEC;
+  --ink:#111827;
+  --ink2:#374151;
+  --ink3:#6B7280;
+  --ink4:#9CA3AF;
+  --bg:#F6F7F9;
+  --surface:#FFFFFF;
+  --border:#E5E7EB;
+  --r:14px;
+  --rs:10px;
+  --sh:0 1px 3px rgba(0,0,0,.08),0 4px 16px rgba(0,0,0,.06);
+  --sh-up:0 -2px 16px rgba(0,0,0,.07);
 }
-html{font-size:16px;-webkit-text-size-adjust:100%}
+html{font-size:16px;-webkit-text-size-adjust:100%;scroll-behavior:smooth}
 body{
-  font-family:'Sarabun',sans-serif;
+  font-family:'Noto Sans Thai',sans-serif;
   background:var(--bg);
   color:var(--ink);
-  min-height:100vh;
-  padding-bottom:72px;
+  min-height:100dvh;
+  padding-bottom:80px;
 }
 
-/* ── Header ── */
-#hdr{
-  background:var(--accent);
-  color:#fff;
-  padding:14px 18px 12px;
-  position:sticky;top:0;z-index:50;
-}
-#hdr h1{font-size:1.05rem;font-weight:700;letter-spacing:.01em}
-#hdr small{font-size:.75rem;opacity:.8}
-
-/* ── Nav ── */
-#nav{
-  position:fixed;bottom:0;left:0;right:0;
+/* ─── NAV BAR (top) ─── */
+#topbar{
+  position:sticky;top:0;z-index:100;
   background:var(--surface);
-  border-top:1px solid var(--border);
-  display:flex;
-  z-index:50;
-  box-shadow:var(--shadow-up);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:stretch;
+  height:56px;
 }
-.nb{
-  flex:1;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-  padding:8px 4px 10px;border:none;background:transparent;
-  cursor:pointer;color:var(--ink3);font-size:.6rem;gap:3px;
-  -webkit-tap-highlight-color:transparent;transition:color .15s;
+.tb-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;border:none;background:transparent;cursor:pointer;
+  font-family:'Noto Sans Thai',sans-serif;font-size:.6rem;font-weight:600;
+  color:var(--ink4);-webkit-tap-highlight-color:transparent;
+  transition:color .15s;padding:0 4px;
+  position:relative;
 }
-.nb svg{width:22px;height:22px;stroke-width:1.8}
-.nb.on{color:var(--accent)}
+.tb-btn svg{width:20px;height:20px;stroke-width:2}
+.tb-btn.on{color:var(--brand)}
+.tb-btn.on::after{
+  content:'';position:absolute;bottom:0;left:20%;right:20%;
+  height:3px;background:var(--brand);border-radius:3px 3px 0 0;
+}
 
-/* ── Pages ── */
-.pg{display:none;padding:16px;max-width:680px;margin:0 auto}
+/* ─── PAGES ─── */
+.pg{display:none;padding:16px;max-width:600px;margin:0 auto}
 .pg.on{display:block}
 
-/* ── Cards ── */
+/* ─── SECTION TITLE ─── */
+.sec{
+  font-size:.7rem;font-weight:700;color:var(--ink3);
+  text-transform:uppercase;letter-spacing:.07em;
+  margin:20px 0 10px;
+}
+.sec:first-child{margin-top:0}
+
+/* ─── CARDS ─── */
 .card{
   background:var(--surface);
-  border-radius:var(--radius);
-  box-shadow:var(--shadow);
-  padding:18px;
-  margin-bottom:14px;
-}
-.card-title{
-  font-size:.8rem;font-weight:700;
-  color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;
-  margin-bottom:14px;
-}
-
-/* ── Forms ── */
-.fg{margin-bottom:12px}
-label{display:block;font-size:.82rem;color:var(--ink2);margin-bottom:5px;font-weight:600}
-input[type=text],input[type=number],input[type=date],select{
-  width:100%;padding:10px 13px;
-  border:1.5px solid var(--border);border-radius:var(--radius-sm);
-  font-size:.95rem;color:var(--ink);background:var(--surface);
-  font-family:'Sarabun',sans-serif;
-  transition:border-color .15s,box-shadow .15s;
-  appearance:auto;-webkit-appearance:auto;
-}
-input:focus,select:focus{
-  outline:none;border-color:var(--accent);
-  box-shadow:0 0 0 3px rgba(45,106,79,.15);
-}
-.frow{display:flex;gap:10px}
-.frow .fg{flex:1}
-textarea.bulk-ta{
-  width:100%;padding:10px 13px;
-  border:1.5px solid var(--border);border-radius:var(--radius-sm);
-  font-size:.88rem;color:var(--ink);background:var(--surface);
-  font-family:'Sarabun',sans-serif;line-height:1.5;
-  resize:vertical;min-height:160px;
-}
-textarea.bulk-ta:focus{
-  outline:none;border-color:var(--accent);
-  box-shadow:0 0 0 3px rgba(45,106,79,.15);
-}
-.bulk-hint{font-size:.75rem;color:var(--ink3);margin-top:5px;line-height:1.5}
-
-/* ── Buttons ── */
-.btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:7px;
-  padding:10px 18px;border-radius:var(--radius-sm);border:none;
-  cursor:pointer;font-size:.9rem;font-weight:700;font-family:'Sarabun',sans-serif;
-  transition:filter .15s,transform .1s;
-  -webkit-tap-highlight-color:transparent;
-}
-.btn:active{transform:scale(.97)}
-.btn-primary{background:var(--accent);color:#fff}
-.btn-primary:hover{filter:brightness(1.08)}
-.btn-orange{background:var(--accent2);color:#fff}
-.btn-orange:hover{filter:brightness(1.08)}
-.btn-danger{background:var(--danger);color:#fff}
-.btn-ghost{background:transparent;color:var(--ink2);border:1.5px solid var(--border)}
-.btn-ghost:hover{background:var(--bg)}
-.btn-sm{padding:6px 12px;font-size:.82rem}
-.btn-full{width:100%}
-.btn-icon{padding:7px;border-radius:var(--radius-sm)}
-
-/* ── List rows ── */
-.row{
-  display:flex;align-items:center;gap:10px;
-  padding:11px 0;border-bottom:1px solid var(--border);
-}
-.row:last-child{border-bottom:none}
-.row-name{flex:1;font-size:.95rem}
-.row-meta{font-size:.78rem;color:var(--ink3);margin-top:2px}
-.row-actions{display:flex;gap:6px;flex-shrink:0}
-.badge{
-  background:var(--accent-light);color:var(--accent);
-  font-size:.7rem;font-weight:700;padding:2px 8px;
-  border-radius:99px;white-space:nowrap;
-}
-
-/* ── Inline edit ── */
-.ie{display:flex;gap:6px;align-items:center;flex:1}
-.ie input{padding:6px 10px;font-size:.9rem;margin:0}
-
-/* ── Session: ask page ── */
-.ask-header{
-  background:var(--accent);color:#fff;
-  border-radius:var(--radius);padding:16px 18px;
-  margin-bottom:14px;
-}
-.ask-header h2{font-size:1.2rem;font-weight:700}
-.ask-header small{font-size:.8rem;opacity:.8}
-.ask-progress{
-  display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;
-}
-.ask-dot{
-  width:28px;height:6px;border-radius:99px;
-  background:rgba(255,255,255,.35);
-}
-.ask-dot.done{background:rgba(255,255,255,.9)}
-.ask-dot.current{background:#fff}
-
-.product-ask-row{
-  display:flex;flex-direction:column;
-  padding:12px 0;border-bottom:1px solid var(--border);gap:8px;
-}
-.product-ask-row:last-child{border-bottom:none}
-.product-ask-top{display:flex;align-items:center;gap:10px}
-.product-ask-name{flex:1;font-size:1rem;font-weight:600}
-.product-ask-shop{font-size:.75rem;color:var(--ink3);margin-top:2px}
-.note-input{
-  width:100%;padding:7px 10px;font-size:.85rem;
-  border:1.5px solid var(--border);border-radius:var(--radius-sm);
-  font-family:'Sarabun',sans-serif;color:var(--ink);
-  background:#fafaf8;transition:border-color .15s;
-}
-.note-input:focus{outline:none;border-color:var(--accent);background:#fff;}
-.note-input::placeholder{color:var(--ink3)}
-.qty-wrap{display:flex;align-items:center;gap:6px;flex-shrink:0}
-.qty-input{
-  width:72px;padding:9px 8px;text-align:center;
-  font-size:1.05rem;font-weight:700;
-  border:2px solid var(--border);border-radius:var(--radius-sm);
-  color:var(--ink);background:#fff;
-  font-family:'Sarabun',sans-serif;
-}
-.qty-input:focus{
-  border-color:var(--accent);
-  box-shadow:0 0 0 3px rgba(45,106,79,.15);
-  outline:none;
-}
-.qty-input.has-val{
-  border-color:var(--accent);background:var(--accent-light);color:var(--accent);
-}
-.qty-unit{font-size:.82rem;color:var(--ink3);white-space:nowrap}
-
-.emp-select-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(130px,1fr));
-  gap:10px;
-}
-.emp-sel-btn{
-  padding:18px 10px;border-radius:var(--radius);
-  border:2px solid var(--border);background:var(--surface);
-  cursor:pointer;font-size:.95rem;font-weight:700;
-  color:var(--ink);text-align:center;
-  font-family:'Sarabun',sans-serif;
-  transition:all .15s;-webkit-tap-highlight-color:transparent;
-}
-.emp-sel-btn:active{transform:scale(.97)}
-.emp-sel-btn .sub{
-  display:block;font-size:.72rem;font-weight:400;
-  color:var(--ink3);margin-top:5px;
-}
-.emp-sel-btn.done{
-  border-color:var(--accent);background:var(--accent-light);
-  color:var(--accent);
-}
-.emp-sel-btn.done .sub{color:var(--accent);opacity:.7}
-.emp-sel-btn.already-done{
-  border-color:var(--accent);background:var(--accent-light);
-  color:var(--accent);opacity:.6;
-}
-
-/* ── Quick add (เพิ่มสินค้าด่วน) ── */
-.qa-suggest-list{
-  display:none;position:absolute;left:0;right:0;top:100%;margin-top:4px;
-  background:var(--surface);border:1.5px solid var(--border);border-radius:var(--radius-sm);
-  box-shadow:0 8px 24px rgba(0,0,0,.14);max-height:280px;overflow-y:auto;z-index:60;
-}
-.qa-suggest-item{
-  display:flex;flex-direction:column;align-items:flex-start;gap:2px;
-  width:100%;text-align:left;padding:10px 13px;border:none;background:transparent;
-  cursor:pointer;font-family:'Sarabun',sans-serif;border-bottom:1px solid var(--border);
-  -webkit-tap-highlight-color:transparent;
-}
-.qa-suggest-item:last-child{border-bottom:none}
-.qa-suggest-item:hover,.qa-suggest-item:active{background:var(--accent-light)}
-.qa-suggest-name{font-size:.92rem;font-weight:600;color:var(--ink)}
-.qa-suggest-meta{font-size:.75rem;color:var(--ink3);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-.qa-suggest-tag{color:var(--accent);font-weight:700}
-.qa-suggest-empty{padding:14px;font-size:.85rem;color:var(--ink3);text-align:center}
-
-.qa-confirm-area{
-  margin-top:12px;padding:12px;border-radius:var(--radius-sm);
-  background:var(--accent2-light);border:1.5px solid var(--accent2);
-}
-.qa-confirm-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-.qa-confirm-name{font-size:.98rem;font-weight:700}
-.qa-confirm-shop{font-size:.78rem;color:var(--ink3);margin-top:2px}
-.qa-confirm-actions{display:flex;gap:8px;margin-top:8px}
-
-.qa-list-title{font-size:.78rem;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;margin-top:4px}
-.qa-item-row{
-  display:flex;align-items:center;gap:8px;
-  padding:9px 0;border-bottom:1px solid var(--border);
-}
-.qa-item-row:last-child{border-bottom:none}
-.qa-item-info{flex:1;min-width:0}
-.qa-item-name{font-size:.9rem;font-weight:600}
-.qa-item-shop{font-size:.74rem;color:var(--ink3);margin-top:1px}
-.qa-item-qty{
-  width:60px;padding:6px 6px;text-align:center;font-size:.9rem;font-weight:700;
-  border:1.5px solid var(--border);border-radius:var(--radius-sm);
-  font-family:'Sarabun',sans-serif;color:var(--accent);flex-shrink:0;
-}
-.qa-item-unit{font-size:.78rem;color:var(--ink3);flex-shrink:0;width:46px}
-.qa-shortcut-badge{
-  background:var(--accent2-light);color:var(--accent2);
-  font-size:.68rem;font-weight:700;padding:2px 8px;
-  border-radius:99px;white-space:nowrap;
-}
-
-/* ── Summary page ── */
-.shop-block{
-  background:var(--surface);border-radius:var(--radius);
-  box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden;
-}
-.shop-block-hdr{
-  background:var(--accent);color:#fff;
-  padding:12px 16px;font-weight:700;font-size:.95rem;
-}
-.summary-item{
-  display:flex;align-items:center;gap:10px;
-  padding:11px 16px;border-bottom:1px solid var(--border);
-}
-.summary-item:last-child{border-bottom:none}
-.si-name{flex:1;font-size:.95rem;font-weight:600}
-.si-qty{font-size:.95rem;color:var(--accent);font-weight:700;white-space:nowrap}
-.si-edit-wrap{display:flex;align-items:center;gap:6px}
-.si-qty-input{
-  width:60px;padding:6px 6px;text-align:center;
-  font-size:.95rem;font-weight:700;
-  border:2px solid var(--accent);border-radius:var(--radius-sm);
-  font-family:'Sarabun',sans-serif;
-}
-
-/* ── History page ── */
-.hist-item{
-  display:flex;align-items:center;gap:10px;
-  padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer;
-}
-.hist-item:last-child{border-bottom:none}
-.hist-date{font-weight:700;font-size:.95rem}
-.hist-meta{font-size:.78rem;color:var(--ink3);margin-top:2px}
-.hist-chevron{color:var(--ink3)}
-
-.hist-detail-hdr{
-  display:flex;align-items:center;gap:10px;
-  padding:14px 18px;background:var(--surface);
-  border-radius:var(--radius);box-shadow:var(--shadow);
-  margin-bottom:14px;
-}
-.hist-detail-title{flex:1;font-weight:700}
-
-/* ── Modal ── */
-.overlay{
-  display:none;position:fixed;inset:0;
-  background:rgba(0,0,0,.45);z-index:200;
-  align-items:center;justify-content:center;padding:20px;
-}
-.overlay.on{display:flex}
-.modal{
-  background:var(--surface);border-radius:var(--radius);
-  padding:24px;max-width:400px;width:100%;
-  box-shadow:0 20px 60px rgba(0,0,0,.2);
-}
-.modal h3{font-size:1.05rem;margin-bottom:8px}
-.modal p{font-size:.88rem;color:var(--ink2);margin-bottom:20px;line-height:1.55}
-.modal-actions{display:flex;gap:10px;justify-content:flex-end}
-
-/* ── Toast ── */
-#toast{
-  position:fixed;bottom:84px;left:50%;
-  transform:translateX(-50%) translateY(10px);
-  background:var(--ink);color:#fff;
-  padding:10px 20px;border-radius:99px;
-  font-size:.85rem;opacity:0;
-  transition:all .22s;z-index:300;
-  white-space:nowrap;pointer-events:none;
-}
-#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
-
-/* ── Product group card (by employee) ── */
-.prod-emp-card{
-  background:var(--surface);
-  border-radius:var(--radius);
-  box-shadow:var(--shadow);
+  border-radius:var(--r);
+  box-shadow:var(--sh);
   margin-bottom:12px;
   overflow:hidden;
 }
-.prod-emp-hdr{
-  background:var(--accent);color:#fff;
-  padding:10px 16px;font-weight:700;font-size:.88rem;
-  display:flex;align-items:center;gap:8px;
+.card-body{padding:16px}
+.card-hdr{
+  padding:14px 16px;
+  border-bottom:1px solid var(--border);
+  font-weight:700;font-size:.92rem;
+  display:flex;align-items:center;gap:10px;
 }
-.prod-emp-body{padding:4px 0}
 
-/* ── Empty / util ── */
-.empty{text-align:center;padding:36px 16px;color:var(--ink3);font-size:.9rem}
-.mt2{margin-top:8px}.mt3{margin-top:12px}.mt4{margin-top:16px}
-.text-sm{font-size:.82rem;color:var(--ink3)}
+/* ─── INPUTS ─── */
+.inp{
+  width:100%;padding:13px 15px;
+  border:1.5px solid var(--border);border-radius:var(--rs);
+  font-size:.97rem;color:var(--ink);background:var(--surface);
+  font-family:'Noto Sans Thai',sans-serif;
+  transition:border-color .15s,box-shadow .15s;
+  -webkit-appearance:none;appearance:none;
+}
+.inp:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(27,107,58,.12)}
+.inp-sm{padding:9px 12px;font-size:.88rem}
+.inp::placeholder{color:var(--ink4)}
+select.inp{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:36px;appearance:none;-webkit-appearance:none}
+.row2{display:flex;gap:10px}
+.row2>*{flex:1}
+label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin-bottom:6px}
+.fg{margin-bottom:12px}
+.fg:last-child{margin-bottom:0}
 
-/* ── Print ── */
+/* ─── BUTTONS ─── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:13px 20px;border-radius:var(--rs);border:none;
+  cursor:pointer;font-size:.93rem;font-weight:700;
+  font-family:'Noto Sans Thai',sans-serif;
+  transition:filter .15s,transform .1s,box-shadow .15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.btn:active{transform:scale(.97)}
+.btn-full{width:100%;justify-content:center}
+.btn-sm{padding:9px 14px;font-size:.82rem}
+.btn-xs{padding:6px 10px;font-size:.78rem;border-radius:8px}
+.btn-icon{padding:9px;border-radius:var(--rs)}
+.btn-green{background:var(--brand);color:#fff}
+.btn-green:active{filter:brightness(.92)}
+.btn-orange{background:var(--orange);color:#fff}
+.btn-orange:active{filter:brightness(.92)}
+.btn-red{background:var(--red);color:#fff}
+.btn-red:active{filter:brightness(.92)}
+.btn-ghost{background:transparent;color:var(--ink2);border:1.5px solid var(--border)}
+.btn-ghost:active{background:var(--bg)}
+.btn-flat{background:var(--bg);color:var(--ink2);border:none}
+
+/* ─── LIST ROWS ─── */
+.lrow{
+  display:flex;align-items:center;gap:10px;
+  padding:13px 0;border-bottom:1px solid var(--border);
+}
+.lrow:last-child{border-bottom:none}
+.lrow-name{flex:1;font-size:.95rem;font-weight:500;line-height:1.35}
+.lrow-sub{font-size:.75rem;color:var(--ink3);margin-top:2px}
+.lrow-acts{display:flex;gap:6px;flex-shrink:0}
+
+/* ─── CHIPS / BADGES ─── */
+.chip{
+  display:inline-flex;align-items:center;
+  padding:3px 10px;border-radius:99px;
+  font-size:.7rem;font-weight:700;white-space:nowrap;
+}
+.chip-green{background:var(--brand-light);color:var(--brand)}
+.chip-orange{background:var(--orange-light);color:var(--orange)}
+.chip-gray{background:var(--bg);color:var(--ink3)}
+
+/* ─── PAGE: จด (SESSION) ─── */
+/* emp board */
+.emp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.emp-tile{
+  padding:16px 12px;border-radius:var(--r);
+  border:2px solid var(--border);background:var(--surface);
+  cursor:pointer;font-family:'Noto Sans Thai',sans-serif;
+  text-align:center;-webkit-tap-highlight-color:transparent;
+  transition:border-color .15s,background .15s;
+}
+.emp-tile:active{transform:scale(.97)}
+.emp-tile-name{font-size:1rem;font-weight:700;color:var(--ink)}
+.emp-tile-sub{font-size:.72rem;color:var(--ink3);margin-top:4px}
+.emp-tile.done{border-color:var(--brand);background:var(--brand-light)}
+.emp-tile.done .emp-tile-name{color:var(--brand)}
+.emp-tile.done .emp-tile-sub{color:var(--brand-mid);opacity:.8}
+
+/* ask view: product rows */
+.prod-row{
+  padding:14px 0;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;
+}
+.prod-row:last-child{border-bottom:none}
+.prod-row-info{flex:1;min-width:0}
+.prod-row-name{
+  font-size:1rem;font-weight:600;
+  transition:color .2s,opacity .2s;
+}
+.prod-row-name.bought{
+  text-decoration:line-through;
+  color:var(--ink4);opacity:.6;
+}
+.prod-row-shop{font-size:.75rem;color:var(--ink3);margin-top:2px}
+.qty-wrap{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.qty-btn{
+  width:36px;height:36px;border-radius:50%;border:1.5px solid var(--border);
+  background:var(--bg);font-size:1.1rem;font-weight:700;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;color:var(--ink2);
+  transition:border-color .15s,background .15s;
+  flex-shrink:0;
+}
+.qty-btn:active{background:var(--brand-light);border-color:var(--brand)}
+.qty-num{
+  width:54px;text-align:center;
+  font-size:1rem;font-weight:700;
+  border:1.5px solid var(--border);border-radius:var(--rs);
+  padding:7px 4px;
+  font-family:'Noto Sans Thai',sans-serif;color:var(--ink);
+  background:#fff;
+}
+.qty-num.has-val{border-color:var(--brand);background:var(--brand-light);color:var(--brand)}
+.qty-unit{font-size:.75rem;color:var(--ink3);width:36px}
+
+/* ─── SUMMARY PAGE ─── */
+.shop-block{
+  background:var(--surface);border-radius:var(--r);
+  box-shadow:var(--sh);margin-bottom:12px;overflow:hidden;
+}
+.shop-hdr{
+  display:flex;align-items:center;gap:10px;
+  padding:13px 16px;background:var(--brand);color:#fff;
+}
+.shop-hdr-name{flex:1;font-weight:700;font-size:.95rem}
+.shop-hdr-count{font-size:.78rem;opacity:.8}
+.sum-item{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 16px;border-bottom:1px solid var(--border);
+}
+.sum-item:last-child{border-bottom:none}
+.sum-item-name{flex:1;font-size:.95rem;font-weight:500}
+.sum-item-note{font-size:.74rem;color:var(--ink3);margin-top:2px}
+.sum-qty{
+  font-size:.95rem;font-weight:700;color:var(--brand);
+  white-space:nowrap;flex-shrink:0;
+}
+
+/* ─── HISTORY ─── */
+.hist-row{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 0;border-bottom:1px solid var(--border);cursor:pointer;
+}
+.hist-row:last-child{border-bottom:none}
+.hist-date{font-weight:700;font-size:.95rem}
+.hist-meta{font-size:.77rem;color:var(--ink3);margin-top:2px}
+
+/* ─── QUICK ADD ─── */
+.suggest-box{
+  position:absolute;left:0;right:0;top:calc(100% + 4px);
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:var(--rs);box-shadow:0 8px 32px rgba(0,0,0,.14);
+  max-height:260px;overflow-y:auto;z-index:80;
+  display:none;
+}
+.sug-item{
+  width:100%;text-align:left;padding:11px 14px;border:none;background:transparent;
+  cursor:pointer;font-family:'Noto Sans Thai',sans-serif;
+  border-bottom:1px solid var(--border);display:block;
+  -webkit-tap-highlight-color:transparent;
+}
+.sug-item:last-child{border-bottom:none}
+.sug-item:active,.sug-item:hover{background:var(--brand-light)}
+.sug-name{font-size:.92rem;font-weight:600;color:var(--ink)}
+.sug-meta{font-size:.74rem;color:var(--ink3);margin-top:2px}
+.sug-empty{padding:14px;font-size:.85rem;color:var(--ink3);text-align:center}
+
+.confirm-strip{
+  margin-top:12px;padding:14px;
+  border-radius:var(--rs);
+  background:var(--orange-light);
+  border:1.5px solid #F5B28A;
+  display:none;
+}
+.confirm-strip-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.confirm-strip-name{font-size:.97rem;font-weight:700;flex:1}
+.confirm-strip-shop{font-size:.76rem;color:var(--ink3);margin-top:2px}
+.confirm-btns{display:flex;gap:8px;margin-top:10px}
+
+/* ─── MODAL ─── */
+.overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.5);z-index:500;
+  align-items:flex-end;justify-content:center;
+  padding:0;
+}
+.overlay.on{display:flex}
+.modal{
+  background:var(--surface);
+  border-radius:20px 20px 0 0;
+  padding:24px 20px 36px;
+  width:100%;max-width:600px;
+  box-shadow:0 -8px 40px rgba(0,0,0,.18);
+}
+.modal h3{font-size:1.1rem;font-weight:700;margin-bottom:8px}
+.modal p{font-size:.88rem;color:var(--ink2);margin-bottom:22px;line-height:1.6}
+.modal-btns{display:flex;gap:10px}
+
+/* ─── TOAST ─── */
+#toast{
+  position:fixed;bottom:90px;left:50%;
+  transform:translateX(-50%) translateY(8px);
+  background:var(--ink);color:#fff;
+  padding:11px 22px;border-radius:99px;
+  font-size:.85rem;opacity:0;
+  transition:all .22s;z-index:600;
+  white-space:nowrap;pointer-events:none;
+  max-width:calc(100vw - 40px);
+  text-align:center;
+}
+#toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ─── EMPTY STATE ─── */
+.empty{
+  text-align:center;padding:40px 20px;
+  color:var(--ink4);font-size:.9rem;line-height:1.6;
+}
+.empty-icon{font-size:2.5rem;margin-bottom:10px}
+
+/* ─── PROGRESS BAR ─── */
+.prog-bar{
+  height:5px;background:var(--border);border-radius:99px;
+  overflow:hidden;margin-top:10px;
+}
+.prog-fill{
+  height:100%;background:var(--brand);border-radius:99px;
+  transition:width .3s ease;
+}
+
+/* ─── PRINT ─── */
 @media print{
-  body{background:#fff;padding:0;font-family:'Sarabun',serif}
-  #hdr,#nav,#toast,.overlay{display:none!important}
+  body{background:#fff;padding:0}
+  #topbar,#toast,.overlay,#nav-bottom{display:none!important}
   .pg{display:none!important}
   #print-view{display:block!important}
   @page{size:A4;margin:15mm 18mm}
 }
-#print-view{
-  display:none;font-family:'Sarabun',serif;color:#000;font-size:14pt;
-}
+#print-view{display:none;font-family:'Noto Sans Thai',serif;color:#000;font-size:13pt}
 .p-title{text-align:center;font-size:18pt;font-weight:bold;margin-bottom:4pt}
 .p-date{text-align:center;font-size:11pt;margin-bottom:16pt;color:#555}
 .p-shop{font-size:14pt;font-weight:bold;border-bottom:2px solid #000;padding-bottom:3pt;margin:14pt 0 6pt}
@@ -390,67 +337,274 @@ textarea.bulk-ta:focus{
 .p-box{width:13pt;height:13pt;border:1.5px solid #000;display:inline-block;flex-shrink:0;margin-top:1pt}
 .p-note{margin:4pt 0 12pt;font-size:10pt;color:#555;border-bottom:1px dashed #aaa;padding-bottom:12pt}
 .p-sum{margin-top:18pt;padding-top:10pt;border-top:2px solid #000;font-size:12pt}
+
+/* ─── UTILS ─── */
+.mt2{margin-top:8px}.mt3{margin-top:12px}.mt4{margin-top:16px}.mt5{margin-top:20px}
+.flex{display:flex}.items-center{align-items:center}.gap2{gap:8px}.gap3{gap:12px}.flex-1{flex:1}
+.text-sm{font-size:.82rem;color:var(--ink3);line-height:1.5}
+.bold{font-weight:700}
+.divider{border:none;border-top:1px solid var(--border);margin:14px 0}
 </style>
 </head>
 <body>
 
-<header id="hdr">
-  <h1>🛒 จดของตลาด</h1>
-  <small>ร้านอาหารแวะถัวะ</small>
-</header>
+<!-- TOP NAV -->
+<nav id="topbar">
+  <button class="tb-btn on" onclick="goPage('jot',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+    จด
+  </button>
+  <button class="tb-btn" onclick="goPage('summary',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+    สรุป
+  </button>
+  <button class="tb-btn" onclick="goPage('history',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    ประวัติ
+  </button>
+  <button class="tb-btn" onclick="goPage('setup',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12.22 2h-.44a2 2 0 00-2 2v.18a2 2 0 01-1 1.73l-.43.25a2 2 0 01-2 0l-.15-.08a2 2 0 00-2.73.73l-.22.38a2 2 0 00.73 2.73l.15.1a2 2 0 011 1.72v.51a2 2 0 01-1 1.74l-.15.09a2 2 0 00-.73 2.73l.22.38a2 2 0 002.73.73l.15-.08a2 2 0 012 0l.43.25a2 2 0 011 1.73V20a2 2 0 002 2h.44a2 2 0 002-2v-.18a2 2 0 011-1.73l.43-.25a2 2 0 012 0l.15.08a2 2 0 002.73-.73l.22-.39a2 2 0 00-.73-2.73l-.15-.08a2 2 0 01-1-1.74v-.5a2 2 0 011-1.74l.15-.09a2 2 0 00.73-2.73l-.22-.38a2 2 0 00-2.73-.73l-.15.08a2 2 0 01-2 0l-.43-.25a2 2 0 01-1-1.73V4a2 2 0 00-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+    ตั้งค่า
+  </button>
+</nav>
 
-<main>
-  <!-- PAGE: ตั้งค่า -->
-  <section class="pg on" id="pg-setup">
-    <!-- พนักงาน -->
+<!-- ════════ PAGE: จด ════════ -->
+<section class="pg on" id="pg-jot">
+
+  <!-- start view -->
+  <div id="jot-start">
+    <div class="card mt4" style="margin-top:16px">
+      <div class="card-body">
+        <div class="fg">
+          <label class="lbl">วันที่</label>
+          <input type="date" id="session-date" class="inp" />
+        </div>
+        <button class="btn btn-orange btn-full" onclick="startSession()">
+          🛒 เริ่มจดของวันนี้
+        </button>
+      </div>
+    </div>
+    <div class="card" id="active-session-card" style="display:none">
+      <div class="card-body">
+        <div class="text-sm bold" style="margin-bottom:4px">มีรอบค้างอยู่</div>
+        <div class="text-sm" id="active-session-info" style="margin-bottom:14px"></div>
+        <button class="btn btn-green btn-full" onclick="resumeSession()">→ จดต่อจากเดิม</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- board view: เลือกพนักงาน -->
+  <div id="jot-board" style="display:none">
+    <!-- quick add -->
+    <div class="card" style="margin-top:0">
+      <div class="card-hdr">
+        <span>⚡</span>
+        <span style="flex:1;font-size:.95rem">เพิ่มด่วน</span>
+        <span class="chip chip-orange">ไม่ต้องเลือกคน</span>
+      </div>
+      <div class="card-body">
+        <div style="position:relative">
+          <input type="text" id="qa-search" class="inp" placeholder="พิมพ์ชื่อสินค้า..." oninput="qaSearch()" autocomplete="off" />
+          <div id="qa-suggest" class="suggest-box"></div>
+        </div>
+        <div id="qa-confirm" class="confirm-strip">
+          <div class="confirm-strip-top">
+            <div style="flex:1">
+              <div class="confirm-strip-name" id="qa-confirm-name">—</div>
+              <div class="confirm-strip-shop" id="qa-confirm-shop">—</div>
+            </div>
+            <div class="qty-wrap">
+              <input type="number" id="qa-qty" class="qty-num" min="0" step="0.5" placeholder="0"
+                onkeydown="if(event.key==='Enter'){event.preventDefault();qaConfirm();}" />
+              <div class="qty-unit" id="qa-unit"></div>
+            </div>
+          </div>
+          <input type="text" id="qa-note" class="inp inp-sm" placeholder="หมายเหตุ (ไม่บังคับ)" maxlength="100" />
+          <div class="confirm-btns">
+            <button class="btn btn-ghost btn-sm" onclick="qaCancel()">ยกเลิก</button>
+            <button class="btn btn-orange btn-sm" style="flex:1" onclick="qaConfirm()">✔ เพิ่ม</button>
+          </div>
+        </div>
+        <div id="qa-list" class="mt3"></div>
+      </div>
+    </div>
+
+    <!-- emp board -->
     <div class="card">
-      <div class="card-title">พนักงาน</div>
+      <div class="card-hdr">
+        <span style="flex:1">แตะชื่อพนักงานเพื่อกรอกของ</span>
+      </div>
+      <div class="card-body">
+        <div class="text-sm" id="board-progress" style="margin-bottom:12px;font-weight:700;color:var(--brand)"></div>
+        <div class="emp-grid" id="emp-grid"></div>
+        <hr class="divider">
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-ghost" onclick="cancelBoard()">ยกเลิกรอบ</button>
+          <button class="btn btn-green" style="flex:1" onclick="finishSession()">✔ เสร็จแล้ว → ดูสรุป</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- per-employee input view -->
+  <div id="jot-emp" style="display:none">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <button class="btn btn-ghost btn-sm" onclick="backToBoard()">← กลับ</button>
+      <div style="flex:1">
+        <div style="font-size:1.15rem;font-weight:800;color:var(--brand)" id="jot-emp-name">—</div>
+        <div class="text-sm" id="jot-emp-sub">—</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <div class="fg">
+          <input type="text" id="emp-filter" class="inp" placeholder="🔍 ค้นหาสินค้า..." oninput="filterEmpProducts()" />
+        </div>
+        <div id="emp-prod-list"></div>
+        <hr class="divider">
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-ghost" id="skip-btn" onclick="skipEmployee()">ไม่ซื้อวันนี้</button>
+          <button class="btn btn-green" style="flex:1" onclick="saveEmployee()">✔ บันทึก</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ════════ PAGE: สรุป ════════ -->
+<section class="pg" id="pg-summary">
+  <div class="card" style="margin-top:0">
+    <div class="card-body">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div style="flex:1">
+          <div class="bold" id="sum-title">สรุปรายการ</div>
+          <div class="text-sm mt2" id="sum-meta"></div>
+        </div>
+        <button class="btn btn-ghost btn-xs" onclick="printSummary()">🖨️ พิมพ์</button>
+        <button class="btn btn-green btn-xs" onclick="markDone()">✔ ซื้อเสร็จแล้ว</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- quick add ในสรุป -->
+  <div class="card" id="sum-qa-card" style="display:none">
+    <div class="card-hdr">
+      <span>⚡</span>
+      <span style="flex:1;font-size:.95rem">เพิ่มด่วน</span>
+      <span class="chip chip-gray">แก้ไขได้ทุกเมื่อ</span>
+    </div>
+    <div class="card-body">
+      <div style="position:relative">
+        <input type="text" id="sq-search" class="inp" placeholder="พิมพ์ชื่อสินค้า..." oninput="sqSearch()" autocomplete="off" />
+        <div id="sq-suggest" class="suggest-box"></div>
+      </div>
+      <div id="sq-confirm" class="confirm-strip">
+        <div class="confirm-strip-top">
+          <div style="flex:1">
+            <div class="confirm-strip-name" id="sq-confirm-name">—</div>
+            <div class="confirm-strip-shop" id="sq-confirm-shop">—</div>
+          </div>
+          <div class="qty-wrap">
+            <input type="number" id="sq-qty" class="qty-num" min="0" step="0.5" placeholder="0"
+              onkeydown="if(event.key==='Enter'){event.preventDefault();sqConfirm();}" />
+            <div class="qty-unit" id="sq-unit"></div>
+          </div>
+        </div>
+        <input type="text" id="sq-note" class="inp inp-sm" placeholder="หมายเหตุ (ไม่บังคับ)" maxlength="100" />
+        <div class="confirm-btns">
+          <button class="btn btn-ghost btn-sm" onclick="sqCancel()">ยกเลิก</button>
+          <button class="btn btn-orange btn-sm" style="flex:1" onclick="sqConfirm()">✔ เพิ่ม</button>
+        </div>
+      </div>
+      <div id="sq-list" class="mt3"></div>
+    </div>
+  </div>
+
+  <div id="sum-content"><div class="empty"><div class="empty-icon">📋</div>ยังไม่มีรายการ<br>ไปที่หน้า "จด" เพื่อเริ่มได้เลย</div></div>
+</section>
+
+<!-- ════════ PAGE: ประวัติ ════════ -->
+<section class="pg" id="pg-history">
+  <div id="hist-list-wrap">
+    <div class="card">
+      <div class="card-hdr">ประวัติการซื้อของ</div>
+      <div class="card-body">
+        <div id="hist-list"><div class="empty"><div class="empty-icon">📅</div>ยังไม่มีประวัติ</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="hist-detail-wrap" style="display:none">
+    <div class="card">
+      <div class="card-body">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" onclick="closeHistDetail()">← กลับ</button>
+          <div class="bold flex-1" id="hist-detail-title">—</div>
+          <button class="btn btn-ghost btn-xs" onclick="reopenSession(viewingSessionId)">🔓 แก้ไข</button>
+          <button class="btn btn-ghost btn-xs" onclick="dupSession(viewingSessionId)">📋 ทำซ้ำ</button>
+          <button class="btn btn-red btn-xs" onclick="deleteSession(viewingSessionId)">ลบ</button>
+        </div>
+      </div>
+    </div>
+    <div id="hist-detail-content"></div>
+  </div>
+</section>
+
+<!-- ════════ PAGE: ตั้งค่า ════════ -->
+<section class="pg" id="pg-setup">
+
+  <!-- พนักงาน -->
+  <div class="sec">พนักงาน</div>
+  <div class="card">
+    <div class="card-body">
       <div class="fg">
-        <label>ชื่อพนักงาน</label>
-        <input type="text" id="emp-input" placeholder="ชื่อพนักงาน..." />
+        <input type="text" id="emp-input" class="inp" placeholder="ชื่อพนักงาน..." />
       </div>
-      <button class="btn btn-primary btn-full" onclick="addEmployee()">+ เพิ่มพนักงาน</button>
-      <div class="fg" style="margin-top:14px;margin-bottom:0">
-        <input type="text" id="emp-search" placeholder="🔍 ค้นหาพนักงาน..." oninput="renderEmployees()" />
-      </div>
+      <button class="btn btn-green btn-full" onclick="addEmployee()">+ เพิ่มพนักงาน</button>
+      <hr class="divider">
+      <input type="text" id="emp-search" class="inp inp-sm" placeholder="🔍 ค้นหา..." oninput="renderEmployees()" />
       <div id="emp-list" class="mt3"></div>
     </div>
+  </div>
 
-    <!-- ร้านค้า -->
-    <div class="card">
-      <div class="card-title">ร้านค้า</div>
+  <!-- ร้านค้า -->
+  <div class="sec">ร้านค้า</div>
+  <div class="card">
+    <div class="card-body">
       <div class="fg">
-        <label>ชื่อร้านค้า</label>
-        <input type="text" id="shop-input" placeholder="เช่น ร้านผัก, ร้านหมู..." />
+        <input type="text" id="shop-input" class="inp" placeholder="เช่น ร้านผัก, ร้านหมู..." />
       </div>
-      <button class="btn btn-primary btn-full" onclick="addShop()">+ เพิ่มร้านค้า</button>
-      <div class="fg" style="margin-top:14px;margin-bottom:0">
-        <input type="text" id="shop-search" placeholder="🔍 ค้นหาร้านค้า..." oninput="renderShops()" />
-      </div>
+      <button class="btn btn-green btn-full" onclick="addShop()">+ เพิ่มร้านค้า</button>
+      <hr class="divider">
+      <input type="text" id="shop-search" class="inp inp-sm" placeholder="🔍 ค้นหา..." oninput="renderShops()" />
       <div id="shop-list" class="mt3"></div>
     </div>
+  </div>
 
-    <!-- สินค้า -->
-    <div class="card">
-      <div class="card-title">สินค้า (template)</div>
-      <div class="frow">
+  <!-- สินค้า -->
+  <div class="sec">สินค้า</div>
+  <div class="card">
+    <div class="card-body">
+      <div class="row2">
         <div class="fg">
-          <label>พนักงาน (ไม่เลือกก็ได้)</label>
-          <select id="prod-emp"><option value="">-- ไม่ระบุ / จัดการเอง --</option></select>
+          <label class="lbl">พนักงาน</label>
+          <select id="prod-emp" class="inp"><option value="">-- ไม่ระบุ --</option></select>
         </div>
         <div class="fg">
-          <label>ร้านค้า</label>
-          <select id="prod-shop"><option value="">-- เลือก --</option></select>
+          <label class="lbl">ร้านค้า</label>
+          <select id="prod-shop" class="inp"><option value="">-- เลือก --</option></select>
         </div>
       </div>
-      <div class="frow">
+      <div class="row2">
         <div class="fg">
-          <label>ชื่อสินค้า</label>
-          <input type="text" id="prod-name" placeholder="เช่น ผักชี" />
+          <label class="lbl">ชื่อสินค้า</label>
+          <input type="text" id="prod-name" class="inp" placeholder="เช่น ผักชี" />
         </div>
         <div class="fg">
-          <label>หน่วย</label>
-          <input type="text" id="prod-unit" list="unit-list" placeholder="กำ, กิโล..." />
+          <label class="lbl">หน่วย</label>
+          <input type="text" id="prod-unit" class="inp" list="unit-list" placeholder="กำ, กิโล..." />
           <datalist id="unit-list">
             <option value="กิโลกรัม"><option value="กรัม"><option value="กำ">
             <option value="มัด"><option value="ถุง"><option value="ชิ้น">
@@ -459,339 +613,53 @@ textarea.bulk-ta:focus{
           </datalist>
         </div>
       </div>
-      <button class="btn btn-primary btn-full" onclick="addProduct()">+ เพิ่มสินค้า</button>
-
-      <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
-        <label>เพิ่มสินค้าหลายรายการพร้อมกัน (1 ชื่อ ต่อ 1 บรรทัด — บรรทัดที่ขึ้นต้นด้วย # คือหัวข้อหมวด จะไม่ถูกนำเข้า)</label>
-        <textarea id="prod-bulk" class="bulk-ta" rows="14"># เนื้อสัตว์ / ของสด
-ปลาช่อน
-ปลาดุกใหญ่
-เนื้อ
-กบ
-ปลาไหล
-ปลาแล่เนื้ออ่อน
-ปลานิล
-ไก่
-เป็ด
-หมูแดด
-หมูสับ
-เครื่องในไก่
-โครงไก่
-เลือดไก่
-ซี่โครง
-หมูป่า
-หอยขม
-ปลากด
-
-# ปรุงรส / ของใช้ครัว
-กะทิ
-หางกะทิ
-เกลือ
-น้ำตาล
-ชูรส
-ผักกาดดอง
-หน่อไม้ดอง
-ซอสหอย
-กะปิ
-เม็ดผักชี
-เครื่องพะโล้
-ผงพะโล้
-คนอร์หมูก้อน
-รสดีหมูผง
-ฟ้าไทย
-
-# ของใช้ / บรรจุภัณฑ์
-ถุง 3x5
-ถุง 4x6
-ถุง 6x9
-ถุง 6x14
-ถุง 7x11
-ถุง 8x16
-ถุง 9x18
-ถุง 12x20
-กล่องไข่บาวเบอร์500
-กล่องปลานึ่งเบอร์502
-ถุงขยะเล็ก
-ถุงขยะใหญ่
-ยางวงมัดของ
-หนังสือพิมพ์
-
-# ข้าว / เครื่องปรุงแห้ง
-ข้าวสาร
-คนอร์หลอดสั้น
-ข้าวโจ๊ก
-พริกแห้ง
-พริกแกงเผ็ด
-กระเทียมใหญ่
-กระเทียมเล็ก
-กระเทียมบด
-หอมแขก
-หอมแดง
-ข่า
-ใบมะกรูด
-ปลาป่น
-
-# ผัก ชุดที่ 1
-ผักหวาน
-ถั่วฝักยาว
-บอน
-สะเดา
-ใบชะพลู
-ผักกระเฉด
-ถั่ว
-บวบ
-ก้านจอง
-สายบัว
-มะเขือใหญ่
-มะเขือน้อย
-ผักใบ
-มะเขือเทศ
-ขมิ้น
-ตะไคร้
-ลูกมะกรูด
-มะรุม
-กระเจี๊ยบ
-
-# ผัก / พริก ชุดที่ 2
-ขิง
-ข้าวโพด
-พริกไทย
-พริกสดแดง
-พริกสดเขียว
-กระชาย
-พริกหยวก
-มะเขือพวง
-แครอท
-
-# ผักใบ / ผลไม้
-ต้นหอม
-ผักชีไทย
-ผักชีลาว
-ใบเรื่อย
-สาระแหน่
-กระเพรา
-ใบแมงลัก
-โหระพา
-ผักกาดขาว
-กะหล่ำ
-แตง
-ฟักทอง
-หัวไชเท้า
-กวางตุ้ง
-เห็ด
-กล้วย
-
-# อื่นๆ
-ไข่เป็ด
-ไข่ไก่
-เส้นหมี่ตะคุ
-ขาหมู
-ขาซอย</textarea>
-        <div class="bulk-hint">นำเข้าแล้วชื่อสินค้าจะยังไม่มีหน่วย/ร้าน/พนักงาน — กดไอคอน ✏️ ที่รายการด้านล่างเพื่อกรอกเพิ่มทีหลังได้</div>
-        <button class="btn btn-orange btn-full" style="margin-top:10px" onclick="bulkAddProducts()">+ นำเข้ารายการทั้งหมด</button>
-      </div>
+      <button class="btn btn-green btn-full" onclick="addProduct()">+ เพิ่มสินค้า</button>
     </div>
+  </div>
 
-    <!-- รายการสินค้าทั้งหมด (จัดเป็นการ์ด กดเข้าไปดูทีละกลุ่ม) -->
-    <div class="card">
-      <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
-        <span>รายการสินค้าทั้งหมด</span>
-        <div style="display:flex;gap:6px">
-          <button class="btn btn-sm btn-primary" id="prod-grp-emp-btn" onclick="setProdGroupBy('emp')">ตามพนักงาน</button>
-          <button class="btn btn-sm btn-ghost" id="prod-grp-shop-btn" onclick="setProdGroupBy('shop')">ตามร้านค้า</button>
+  <!-- bulk -->
+  <div class="card">
+    <div class="card-hdr">นำเข้าหลายรายการพร้อมกัน</div>
+    <div class="card-body">
+      <div class="fg">
+        <label class="lbl">พนักงาน / ร้านค้า (ใช้กับทุกบรรทัด)</label>
+        <div class="row2">
+          <select id="bulk-emp" class="inp"><option value="">-- ไม่ระบุ --</option></select>
+          <select id="bulk-shop" class="inp"><option value="">-- เลือก --</option></select>
         </div>
       </div>
-      <div class="fg" style="margin-top:10px;margin-bottom:0">
-        <input type="text" id="prod-search" placeholder="🔍 ค้นหาสินค้า (ทุกกลุ่ม)..." oninput="renderProducts()" />
+      <div class="fg">
+        <label class="lbl">รายการ (1 ชื่อ/บรรทัด — # = หัวข้อ ไม่นำเข้า)</label>
+        <textarea id="prod-bulk" class="inp" rows="10" style="resize:vertical;line-height:1.6;font-size:.88rem">ผักชี
+ต้นหอม
+กระเทียม</textarea>
       </div>
+      <button class="btn btn-orange btn-full" onclick="bulkAddProducts()">+ นำเข้าทั้งหมด</button>
+    </div>
+  </div>
+
+  <!-- รายการสินค้า -->
+  <div class="sec" style="display:flex;align-items:center;gap:10px">
+    <span style="flex:1">รายการสินค้าทั้งหมด</span>
+    <button class="btn btn-xs btn-green" id="grp-emp-btn" onclick="setGrp('emp')">ตามพนักงาน</button>
+    <button class="btn btn-xs btn-ghost" id="grp-shop-btn" onclick="setGrp('shop')">ตามร้านค้า</button>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <input type="text" id="prod-search" class="inp inp-sm" placeholder="🔍 ค้นหาสินค้า..." oninput="renderProducts()" />
       <div id="prod-list" class="mt3"></div>
     </div>
-  </section>
+  </div>
+</section>
 
-  <!-- PAGE: ถามของ -->
-  <section class="pg" id="pg-ask">
-    <div id="ask-start-view">
-      <div class="card">
-        <div class="card-title">เลือกวันที่</div>
-        <div class="fg">
-          <input type="date" id="session-date" />
-        </div>
-        <button class="btn btn-orange btn-full" onclick="startSession()">
-          🛒 เริ่มจดของวันนี้
-        </button>
-      </div>
-      <div class="card" id="active-session-card" style="display:none">
-        <div class="card-title">รอบที่กำลังจดอยู่</div>
-        <p class="text-sm" style="margin-bottom:12px" id="active-session-info"></p>
-        <button class="btn btn-orange btn-full" onclick="resumeSession()">
-          → ถามต่อจากเดิม
-        </button>
-      </div>
-    </div>
-
-    <!-- เลือกพนักงานที่จะถาม -->
-    <div id="ask-pick-view" style="display:none">
-
-      <!-- เพิ่มสินค้าด่วน (ทางลัด ไม่ต้องเข้าไปทีละคน) -->
-      <div class="card" id="quick-add-card">
-        <div class="card-title" style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:1rem;color:var(--ink)">
-          <span>⚡ เพิ่มสินค้าด่วน</span>
-          <span class="qa-shortcut-badge">ทางลัด</span>
-        </div>
-        <p class="text-sm" style="margin-bottom:10px">พิมพ์ชื่อสินค้าแล้วใส่จำนวนได้เลย ไม่ต้องเข้าไปทีละคน เหมาะกับตอนรีบๆ หรือจำได้เองว่าจะซื้ออะไร — รายการที่เพิ่มตรงนี้จะไปรวมกับของพนักงานคนนั้นให้อัตโนมัติ (ถ้าอยากกรอกแบบละเอียดยังกดเลือกชื่อพนักงานด้านล่างได้ตามปกติ)</p>
-        <div class="fg" style="position:relative;margin-bottom:0">
-          <input type="text" id="qa-search" placeholder="🔍 พิมพ์ชื่อสินค้า..." oninput="qaSearchInput()" autocomplete="off" />
-          <div id="qa-suggest" class="qa-suggest-list"></div>
-        </div>
-        <div id="qa-confirm-area" class="qa-confirm-area" style="display:none">
-          <div class="qa-confirm-top">
-            <div style="flex:1">
-              <div class="qa-confirm-name" id="qa-confirm-name">—</div>
-              <div class="qa-confirm-shop" id="qa-confirm-shop">—</div>
-            </div>
-            <div class="qty-wrap">
-              <input type="number" id="qa-qty" class="qty-input" min="0" step="0.5" placeholder="—"
-                onkeydown="if(event.key==='Enter'){event.preventDefault();qaConfirmAdd();}" />
-              <span class="qty-unit" id="qa-unit-label"></span>
-            </div>
-          </div>
-          <input type="text" id="qa-note" class="note-input" placeholder="💬 หมายเหตุ (ไม่บังคับ)" maxlength="100" />
-          <div class="qa-confirm-actions">
-            <button class="btn btn-ghost btn-sm" onclick="qaCancelConfirm()">ยกเลิก</button>
-            <button class="btn btn-orange btn-sm" style="flex:1" onclick="qaConfirmAdd()">✔ เพิ่มรายการนี้</button>
-          </div>
-        </div>
-        <div id="qa-added-list" class="mt3"></div>
-      </div>
-
-      <div class="card">
-        <div class="card-title">แตะชื่อพนักงานเพื่อกรอกของวันนี้</div>
-        <p class="text-sm" style="margin-bottom:6px">แตะชื่อใครก็กรอกของคนนั้นได้เลย ไม่ต้องเรียงลำดับ บันทึกแล้วจะกลับมาหน้านี้ให้เลือกคนถัดไปเอง (แตะคนที่บันทึกแล้วซ้ำเพื่อแก้ไขได้)</p>
-        <p class="text-sm" id="board-progress" style="margin-bottom:14px;font-weight:700;color:var(--accent)"></p>
-        <div id="pick-emp-grid" class="emp-select-grid"></div>
-        <div class="mt3" style="display:flex;gap:10px">
-          <button class="btn btn-ghost" onclick="cancelBoard()">ยกเลิกรอบนี้</button>
-          <button class="btn btn-primary" style="flex:1" onclick="finishSession()">✔ เสร็จสิ้น → ดูสรุป</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ถามพนักงานทีละคน -->
-    <div id="ask-session-view" style="display:none">
-      <button class="btn btn-ghost btn-sm" style="margin-bottom:10px" onclick="backToBoard()">← กลับไปเลือกคน</button>
-      <div class="ask-header">
-        <h2 id="ask-emp-name">—</h2>
-        <small id="ask-emp-sub">—</small>
-      </div>
-
-      <div class="card">
-        <div class="fg" style="margin-bottom:10px">
-          <input type="text" id="ask-filter" placeholder="🔍 ค้นหาสินค้า..." oninput="filterAskProducts()" />
-        </div>
-        <div id="ask-products-list"></div>
-        <div class="mt3" style="display:flex;gap:10px">
-          <button class="btn btn-ghost" id="ask-skip-btn" onclick="skipEmployee()">ไม่ซื้อวันนี้</button>
-          <button class="btn btn-primary" style="flex:1" onclick="saveEmployee()">✔ บันทึก</button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- PAGE: สรุป -->
-  <section class="pg" id="pg-summary">
-    <div class="card" style="padding:14px 18px">
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-        <div style="flex:1">
-          <div style="font-weight:700;font-size:.95rem" id="summary-title">สรุปรายการ</div>
-          <div class="text-sm mt2" id="summary-meta"></div>
-        </div>
-        <button class="btn btn-ghost btn-sm" onclick="printSummary()">🖨️ พิมพ์</button>
-        <button class="btn btn-primary btn-sm" onclick="markShoppingDone()">🛒 ซื้อเสร็จแล้ว</button>
-        <button class="btn btn-danger btn-sm" onclick="confirmClearSession()">ล้าง</button>
-      </div>
-    </div>
-    <!-- Quick Add ในหน้าสรุป -->
-    <div class="card" id="summary-quick-add-card" style="display:none">
-      <div class="card-title" style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:1rem;color:var(--ink)">
-        <span>⚡ เพิ่มสินค้าด่วน</span>
-        <span class="qa-shortcut-badge">แก้ไขได้ทุกเมื่อ</span>
-      </div>
-      <div class="fg" style="position:relative;margin-bottom:0">
-        <input type="text" id="sq-search" placeholder="🔍 พิมพ์ชื่อสินค้า..." oninput="sqSearchInput()" autocomplete="off" />
-        <div id="sq-suggest" class="qa-suggest-list"></div>
-      </div>
-      <div id="sq-confirm-area" class="qa-confirm-area" style="display:none">
-        <div class="qa-confirm-top">
-          <div style="flex:1">
-            <div class="qa-confirm-name" id="sq-confirm-name">—</div>
-            <div class="qa-confirm-shop" id="sq-confirm-shop">—</div>
-          </div>
-          <div class="qty-wrap">
-            <input type="number" id="sq-qty" class="qty-input" min="0" step="0.5" placeholder="—"
-              onkeydown="if(event.key==='Enter'){event.preventDefault();sqConfirmAdd();}" />
-            <span class="qty-unit" id="sq-unit-label"></span>
-          </div>
-        </div>
-        <input type="text" id="sq-note" class="note-input" placeholder="💬 หมายเหตุ (ไม่บังคับ)" maxlength="100" />
-        <div class="qa-confirm-actions">
-          <button class="btn btn-ghost btn-sm" onclick="sqCancelConfirm()">ยกเลิก</button>
-          <button class="btn btn-orange btn-sm" style="flex:1" onclick="sqConfirmAdd()">✔ เพิ่มรายการนี้</button>
-        </div>
-      </div>
-      <div id="sq-added-list" class="mt3"></div>
-    </div>
-    <div id="summary-content"><div class="empty">ยังไม่มีรายการ<br>เริ่มจดของที่หน้า "จด"</div></div>
-  </section>
-
-  <!-- PAGE: ประวัติ -->
-  <section class="pg" id="pg-history">
-    <div class="card" id="hist-list-view">
-      <div class="card-title">ประวัติการซื้อของ</div>
-      <div id="hist-list"><div class="empty">ยังไม่มีประวัติ</div></div>
-    </div>
-
-    <!-- detail view -->
-    <div id="hist-detail-view" style="display:none">
-      <div class="hist-detail-hdr">
-        <button class="btn btn-ghost btn-sm btn-icon" onclick="closeHistDetail()">← กลับ</button>
-        <div class="hist-detail-title" id="hist-detail-title">—</div>
-        <button class="btn btn-ghost btn-sm" onclick="reopenToSummary(viewingSessionId)">🔓 แก้ไข</button>
-        <button class="btn btn-ghost btn-sm" onclick="duplicateAsNewSession(viewingSessionId)">📋 ทำซ้ำ</button>
-        <button class="btn btn-danger btn-sm" onclick="confirmDeleteSession()">ลบ</button>
-      </div>
-      <div id="hist-detail-content"></div>
-    </div>
-  </section>
-</main>
-
-<!-- Nav -->
-<nav id="nav">
-  <button class="nb on" onclick="goPage('setup',this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12.22 2h-.44a2 2 0 00-2 2v.18a2 2 0 01-1 1.73l-.43.25a2 2 0 01-2 0l-.15-.08a2 2 0 00-2.73.73l-.22.38a2 2 0 00.73 2.73l.15.1a2 2 0 011 1.72v.51a2 2 0 01-1 1.74l-.15.09a2 2 0 00-.73 2.73l.22.38a2 2 0 002.73.73l.15-.08a2 2 0 012 0l.43.25a2 2 0 011 1.73V20a2 2 0 002 2h.44a2 2 0 002-2v-.18a2 2 0 011-1.73l.43-.25a2 2 0 012 0l.15.08a2 2 0 002.73-.73l.22-.39a2 2 0 00-.73-2.73l-.15-.08a2 2 0 01-1-1.74v-.5a2 2 0 011-1.74l.15-.09a2 2 0 00.73-2.73l-.22-.38a2 2 0 00-2.73-.73l-.15.08a2 2 0 01-2 0l-.43-.25a2 2 0 01-1-1.73V4a2 2 0 00-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
-    <span>ตั้งค่า</span>
-  </button>
-  <button class="nb" onclick="goPage('ask',this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-    <span>จด</span>
-  </button>
-  <button class="nb" onclick="goPage('summary',this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-    <span>สรุป</span>
-  </button>
-  <button class="nb" onclick="goPage('history',this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-    <span>ประวัติ</span>
-  </button>
-</nav>
-
-<!-- Modals -->
-<div class="overlay" id="modal-confirm">
+<!-- ════ MODAL ════ -->
+<div class="overlay" id="modal-wrap">
   <div class="modal">
     <h3 id="modal-title">ยืนยัน</h3>
     <p id="modal-msg"></p>
-    <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="closeModal()">ยกเลิก</button>
-      <button class="btn btn-danger" id="modal-ok">ยืนยัน</button>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">ยกเลิก</button>
+      <button class="btn btn-red" style="flex:1" id="modal-ok">ยืนยัน</button>
     </div>
   </div>
 </div>
@@ -814,1274 +682,678 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
-
-// ── CRITICAL: ทุก path ต้องขึ้นต้นด้วย ROOT_PATH ──
-const ROOT_PATH = 'waethua_market';
-
+const ROOT = 'waethua_market';
 const R = {
-  employees : ()   => db.ref(`${ROOT_PATH}/employees`),
-  employee  : (id) => db.ref(`${ROOT_PATH}/employees/${id}`),
-  shops     : ()   => db.ref(`${ROOT_PATH}/shops`),
-  shop      : (id) => db.ref(`${ROOT_PATH}/shops/${id}`),
-  products  : ()   => db.ref(`${ROOT_PATH}/products`),
-  product   : (id) => db.ref(`${ROOT_PATH}/products/${id}`),
-  sessions  : ()   => db.ref(`${ROOT_PATH}/sessions`),
-  session   : (id) => db.ref(`${ROOT_PATH}/sessions/${id}`),
+  employees:()=>db.ref(`${ROOT}/employees`),
+  employee:(id)=>db.ref(`${ROOT}/employees/${id}`),
+  shops:()=>db.ref(`${ROOT}/shops`),
+  shop:(id)=>db.ref(`${ROOT}/shops/${id}`),
+  products:()=>db.ref(`${ROOT}/products`),
+  product:(id)=>db.ref(`${ROOT}/products/${id}`),
+  sessions:()=>db.ref(`${ROOT}/sessions`),
+  session:(id)=>db.ref(`${ROOT}/sessions/${id}`),
 };
 
-// ══════════════════════════════════════════════
-// STATE
-// ══════════════════════════════════════════════
-const S = { employees:{}, shops:{}, products:{}, sessions:{} };
-
-// session ที่กำลังจดอยู่
+// ══ STATE ══
+const S = {employees:{},shops:{},products:{},sessions:{}};
 let activeSessionId = null;
-// พนักงานที่กำลังกรอกข้อมูลอยู่ตอนนี้ (คลิกใครก็เป็นคนนั้น ไม่เรียงลำดับ)
-let currentAskEmpId = null;
-// id พิเศษ สำหรับ "การ์ด" ของสินค้าที่ไม่มีพนักงานรับผิดชอบ (ให้เจ้าของจดเอง)
-const NONE_EMP_ID = '__none';
-const NONE_EMP_NAME = 'ไม่ระบุพนักงาน';
-// สินค้านับเป็น "ไม่มีพนักงาน" ถ้าไม่ได้ผูก employeeId ไว้ หรือผูกไว้กับพนักงานที่ถูกลบไปแล้ว
-function isUnassignedProduct(p){ return !p.employeeId || !S.employees[p.employeeId]; }
+let currentEmpId = null;
+let viewingSessionId = null;
+let prodGroupBy = 'emp';
+const NONE_ID = '__none', NONE_NAME = 'ไม่ระบุพนักงาน';
 
-// ══════════════════════════════════════════════
-// UTIL
-// ══════════════════════════════════════════════
-function esc(s){ const d=document.createElement('div'); d.appendChild(document.createTextNode(s||'')); return d.innerHTML; }
-function today(){ return new Date().toISOString().split('T')[0]; }
+// ══ UTILS ══
+function esc(s){const d=document.createElement('div');d.appendChild(document.createTextNode(s||''));return d.innerHTML}
+function today(){return new Date().toISOString().split('T')[0]}
 function fmtDate(d){
   if(!d) return '';
-  const dt = new Date(d+'T00:00:00');
-  return dt.toLocaleDateString('th-TH',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+  return new Date(d+'T00:00:00').toLocaleDateString('th-TH',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
 }
-function toast(msg,ms=2500){
+function toast(msg,ms=2200){
   const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('on');
-  setTimeout(()=>t.classList.remove('on'),ms);
+  t.textContent=msg;t.classList.add('on');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),ms);
 }
-function getSortedShops(){
-  return Object.entries(S.shops)
-    .map(([id,s])=>({id,...s}))
-    .sort((a,b)=>(a.order||0)-(b.order||0));
+function sortedShops(){
+  return Object.entries(S.shops).map(([id,s])=>({id,...s})).sort((a,b)=>(a.order||0)-(b.order||0));
 }
-function getProductsForEmp(empId){
+function isUnassigned(p){return !p.employeeId||!S.employees[p.employeeId]}
+function prodsForEmp(empId){
   return Object.entries(S.products)
-    .filter(([,p])=> empId===NONE_EMP_ID ? isUnassignedProduct(p) : p.employeeId===empId)
+    .filter(([,p])=>empId===NONE_ID?isUnassigned(p):p.employeeId===empId)
     .sort((a,b)=>(a[1].name||'').localeCompare(b[1].name||'','th'));
 }
+function getLatestSession(){
+  const open=Object.entries(S.sessions).filter(([,s])=>s.completed&&!s.shoppingDone);
+  if(!open.length) return null;
+  return open.sort((a,b)=>b[1].date?.localeCompare(a[1].date||'')||0)[0];
+}
 
-// ══════════════════════════════════════════════
-// NAVIGATION
-// ══════════════════════════════════════════════
-function goPage(name, btn){
+// ══ NAVIGATION ══
+function goPage(name,btn){
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
-  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.tb-btn').forEach(b=>b.classList.remove('on'));
   document.getElementById('pg-'+name).classList.add('on');
   btn.classList.add('on');
   if(name==='summary') renderSummary();
   if(name==='history') renderHistList();
-  if(name==='ask') renderAskStart();
+  if(name==='jot') renderJotStart();
 }
 
-// ══════════════════════════════════════════════
-// MODAL
-// ══════════════════════════════════════════════
-let _modalCb = null;
-function showModal(title,msg,cb){
-  document.getElementById('modal-title').textContent = title;
-  document.getElementById('modal-msg').textContent = msg;
-  _modalCb = cb;
-  document.getElementById('modal-confirm').classList.add('on');
-  document.getElementById('modal-ok').onclick = ()=>{ closeModal(); cb && cb(); };
+// ══ MODAL ══
+let _modalCb=null;
+function showModal(title,msg,cb,okLabel='ยืนยัน',okClass='btn-red'){
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-msg').textContent=msg;
+  _modalCb=cb;
+  const ok=document.getElementById('modal-ok');
+  ok.textContent=okLabel;ok.className=`btn ${okClass}`;ok.style.flex='1';
+  ok.onclick=()=>{closeModal();cb&&cb()};
+  document.getElementById('modal-wrap').classList.add('on');
 }
-function closeModal(){ document.getElementById('modal-confirm').classList.remove('on'); }
+function closeModal(){document.getElementById('modal-wrap').classList.remove('on')}
 
 // ══════════════════════════════════════════════
-// ── EMPLOYEES ──
+// SETUP: EMPLOYEES
 // ══════════════════════════════════════════════
 function addEmployee(){
-  const inp = document.getElementById('emp-input');
-  const name = inp.value.trim();
-  if(!name){ toast('กรุณากรอกชื่อ'); return; }
-  R.employees().push({name});
-  inp.value=''; toast('✅ เพิ่มพนักงานแล้ว');
+  const inp=document.getElementById('emp-input');
+  const name=inp.value.trim();
+  if(!name){toast('กรุณากรอกชื่อพนักงาน');return}
+  R.employees().push({name,createdAt:Date.now()}).then(()=>{inp.value='';toast('✅ เพิ่มพนักงานแล้ว')});
 }
-function updateEmployee(id,name){ if(name.trim()) R.employee(id).update({name:name.trim()}); }
-function deleteEmployee(id){
-  const cnt = Object.values(S.products).filter(p=>p.employeeId===id).length;
-  showModal('ลบพนักงาน',
-    `ลบพนักงาน "${S.employees[id]?.name}"?` +
-    (cnt?`\n\nมีสินค้า ${cnt} รายการที่ผูกอยู่ (จะแสดงเป็น "ไม่ระบุ")`:' '),
-    ()=>{ R.employee(id).remove(); toast('🗑️ ลบแล้ว'); }
-  );
-}
+document.getElementById('emp-input').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addEmployee()}});
+
 function renderEmployees(){
-  const el = document.getElementById('emp-list');
-  const all = Object.entries(S.employees);
-  const q = (document.getElementById('emp-search')?.value||'').trim();
-  const emps = q ? all.filter(([,e])=>(e.name||'').includes(q)) : all;
-  if(!all.length){ el.innerHTML='<div class="empty">ยังไม่มีพนักงาน</div>'; populateSelects(); return; }
-  if(!emps.length){ el.innerHTML=`<div class="empty">ไม่พบพนักงานที่ตรงกับ "${esc(q)}"</div>`; populateSelects(); return; }
-  el.innerHTML = emps.map(([id,e])=>`
-    <div class="row" id="er-${id}">
-      <div class="row-name" id="en-${id}">${esc(e.name)}</div>
-      <div class="row-actions">
-        <button class="btn btn-ghost btn-sm btn-icon" onclick="inlineEditEmp('${id}')">✏️</button>
-        <button class="btn btn-danger btn-sm btn-icon" onclick="deleteEmployee('${id}')">🗑️</button>
+  const q=(document.getElementById('emp-search').value||'').toLowerCase();
+  const el=document.getElementById('emp-list');
+  const list=Object.entries(S.employees).filter(([,e])=>!q||e.name?.toLowerCase().includes(q));
+  if(!list.length){el.innerHTML='<div class="empty">ยังไม่มีพนักงาน</div>';return}
+  el.innerHTML=list.map(([id,e])=>`
+    <div class="lrow">
+      <div class="lrow-name">${esc(e.name)}</div>
+      <div class="lrow-acts">
+        <button class="btn btn-ghost btn-xs" onclick="editEmpName('${id}','${esc(e.name)}')">✏️</button>
+        <button class="btn btn-red btn-xs" onclick="delEmployee('${id}')">🗑️</button>
       </div>
     </div>`).join('');
-  populateSelects();
 }
-function inlineEditEmp(id){
-  const el=document.getElementById(`en-${id}`);
-  const row=el.closest('.row');
-  const orig=S.employees[id]?.name||'';
-  el.outerHTML=`<div class="ie" id="ie-${id}">
-    <input type="text" value="${esc(orig)}" id="ieinp-${id}" />
-    <button class="btn btn-primary btn-sm" onclick="saveEmpEdit('${id}')">✔</button>
-    <button class="btn btn-ghost btn-sm" onclick="renderEmployees()">✕</button>
-  </div>`;
-  row.querySelector('.row-actions').style.display='none';
-  const inp=document.getElementById(`ieinp-${id}`);
-  inp.focus(); inp.select();
-  inp.addEventListener('keydown',e=>{ if(e.key==='Enter') saveEmpEdit(id); });
+function editEmpName(id,cur){
+  const n=prompt('แก้ไขชื่อพนักงาน:',cur);
+  if(n&&n.trim()&&n.trim()!==cur) R.employee(id).update({name:n.trim()}).then(()=>toast('✅ แก้ไขแล้ว'));
 }
-function saveEmpEdit(id){
-  const v=document.getElementById(`ieinp-${id}`)?.value?.trim();
-  if(v) updateEmployee(id,v);
+function delEmployee(id){
+  showModal('ลบพนักงาน','ลบพนักงานคนนี้? (ข้อมูลสินค้าที่เชื่อมอยู่จะยังอยู่)',()=>{
+    R.employee(id).remove().then(()=>toast('🗑️ ลบแล้ว'));
+  });
 }
 
 // ══════════════════════════════════════════════
-// ── SHOPS ──
+// SETUP: SHOPS
 // ══════════════════════════════════════════════
 function addShop(){
   const inp=document.getElementById('shop-input');
   const name=inp.value.trim();
-  if(!name){ toast('กรุณากรอกชื่อร้าน'); return; }
-  const maxOrder=Object.values(S.shops).length
-    ? Math.max(...Object.values(S.shops).map(s=>s.order||0)) : 0;
-  R.shops().push({name, order:maxOrder+1});
-  inp.value=''; toast('✅ เพิ่มร้านค้าแล้ว');
+  if(!name){toast('กรุณากรอกชื่อร้านค้า');return}
+  const order=Object.keys(S.shops).length;
+  R.shops().push({name,order,createdAt:Date.now()}).then(()=>{inp.value='';toast('✅ เพิ่มร้านค้าแล้ว')});
 }
-function updateShop(id,name){ if(name.trim()) R.shop(id).update({name:name.trim()}); }
-function deleteShop(id){
-  const cnt=Object.values(S.products).filter(p=>p.shopId===id).length;
-  showModal('ลบร้านค้า',
-    `ลบร้าน "${S.shops[id]?.name}"?` +
-    (cnt?`\n\nมีสินค้า ${cnt} รายการที่ผูกอยู่`:' '),
-    ()=>{ R.shop(id).remove(); toast('🗑️ ลบแล้ว'); }
-  );
-}
-function moveShop(id,dir){
-  const sorted=getSortedShops();
-  const idx=sorted.findIndex(s=>s.id===id);
-  const swap=dir==='up'?idx-1:idx+1;
-  if(swap<0||swap>=sorted.length) return;
-  const a=sorted[idx], b=sorted[swap];
-  R.shop(a.id).update({order:b.order});
-  R.shop(b.id).update({order:a.order});
-}
+document.getElementById('shop-input').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addShop()}});
+
 function renderShops(){
+  const q=(document.getElementById('shop-search').value||'').toLowerCase();
   const el=document.getElementById('shop-list');
-  const sorted=getSortedShops();
-  const q=(document.getElementById('shop-search')?.value||'').trim();
-  const filtered = q ? sorted.filter(s=>(s.name||'').includes(q)) : sorted;
-  if(!sorted.length){ el.innerHTML='<div class="empty">ยังไม่มีร้านค้า</div>'; populateSelects(); return; }
-  if(!filtered.length){ el.innerHTML=`<div class="empty">ไม่พบร้านค้าที่ตรงกับ "${esc(q)}"</div>`; populateSelects(); return; }
-  el.innerHTML=filtered.map(s=>{
-    const i=sorted.findIndex(x=>x.id===s.id);
-    return `
-    <div class="row" id="sr-${s.id}">
-      <span class="badge">${i+1}</span>
-      <div class="row-name" id="sn-${s.id}">${esc(s.name)}</div>
-      <div class="row-actions">
-        <button class="btn btn-ghost btn-sm btn-icon" onclick="moveShop('${s.id}','up')" ${i===0?'disabled':''}>⬆️</button>
-        <button class="btn btn-ghost btn-sm btn-icon" onclick="moveShop('${s.id}','down')" ${i===sorted.length-1?'disabled':''}>⬇️</button>
-        <button class="btn btn-ghost btn-sm btn-icon" onclick="inlineEditShop('${s.id}')">✏️</button>
-        <button class="btn btn-danger btn-sm btn-icon" onclick="deleteShop('${s.id}')">🗑️</button>
+  const list=sortedShops().filter(s=>!q||s.name?.toLowerCase().includes(q));
+  if(!list.length){el.innerHTML='<div class="empty">ยังไม่มีร้านค้า</div>';return}
+  el.innerHTML=list.map(s=>`
+    <div class="lrow">
+      <div class="lrow-name">${esc(s.name)}</div>
+      <div class="lrow-acts">
+        <button class="btn btn-ghost btn-xs" onclick="editShopName('${s.id}','${esc(s.name)}')">✏️</button>
+        <button class="btn btn-red btn-xs" onclick="delShop('${s.id}')">🗑️</button>
       </div>
-    </div>`;
-  }).join('');
-  populateSelects();
+    </div>`).join('');
 }
-function inlineEditShop(id){
-  const el=document.getElementById(`sn-${id}`);
-  const row=el.closest('.row');
-  const orig=S.shops[id]?.name||'';
-  el.outerHTML=`<div class="ie" id="ies-${id}" style="flex:1">
-    <input type="text" value="${esc(orig)}" id="sieinp-${id}" />
-    <button class="btn btn-primary btn-sm" onclick="saveShopEdit('${id}')">✔</button>
-    <button class="btn btn-ghost btn-sm" onclick="renderShops()">✕</button>
-  </div>`;
-  row.querySelector('.row-actions').style.display='none';
-  row.querySelector('.badge').style.display='none';
-  const inp=document.getElementById(`sieinp-${id}`);
-  inp.focus(); inp.select();
-  inp.addEventListener('keydown',e=>{ if(e.key==='Enter') saveShopEdit(id); });
+function editShopName(id,cur){
+  const n=prompt('แก้ไขชื่อร้านค้า:',cur);
+  if(n&&n.trim()&&n.trim()!==cur) R.shop(id).update({name:n.trim()}).then(()=>toast('✅ แก้ไขแล้ว'));
 }
-function saveShopEdit(id){
-  const v=document.getElementById(`sieinp-${id}`)?.value?.trim();
-  if(v) updateShop(id,v);
-}
-
-// ══════════════════════════════════════════════
-// ── PRODUCTS (template) ──
-// ══════════════════════════════════════════════
-function addProduct(){
-  const empId  = document.getElementById('prod-emp').value;
-  const shopId = document.getElementById('prod-shop').value;
-  const name   = document.getElementById('prod-name').value.trim();
-  const unit   = document.getElementById('prod-unit').value.trim();
-  if(!shopId) { toast('เลือกร้านค้าก่อน'); return; }
-  if(!name)   { toast('กรอกชื่อสินค้า'); return; }
-  if(!unit)   { toast('กรอกหน่วย'); return; }
-
-  const doSave=()=>{
-    const data={shopId, name, unit};
-    if(empId) data.employeeId=empId;
-    R.products().push(data);
-    document.getElementById('prod-name').value='';
-    document.getElementById('prod-unit').value='';
-    document.getElementById('prod-emp').value='';
-    toast('✅ เพิ่มสินค้าแล้ว');
-  };
-
-  const isDup = Object.values(S.products).some(p=>(p.name||'').trim()===name);
-  if(isDup){
-    showModal('มีสินค้านี้อยู่แล้ว',
-      `"${name}" มีอยู่ในรายการแล้ว ต้องการเพิ่มซ้ำอีกรายการหรือไม่?`,
-      doSave);
-  } else {
-    doSave();
-  }
-}
-function bulkAddProducts(){
-  const ta = document.getElementById('prod-bulk');
-  const lines = ta.value.split('\n')
-    .map(s=>s.trim())
-    .filter(s=>s && !s.startsWith('#'));
-  if(!lines.length){ toast('ไม่มีรายการให้นำเข้า'); return; }
-  const existing = new Set(Object.values(S.products).map(p=>(p.name||'').trim()));
-  let added=0, skipped=0;
-  lines.forEach(name=>{
-    if(existing.has(name)){ skipped++; return; }
-    R.products().push({name});
-    existing.add(name);
-    added++;
-  });
-  toast(`✅ นำเข้า ${added} รายการ` + (skipped?` (ข้ามซ้ำ ${skipped})`:''));
-  if(added) ta.value='';
-}
-function deleteProduct(id){
-  showModal('ลบสินค้า',`ลบ "${S.products[id]?.name}"?`,()=>{
-    R.product(id).remove(); toast('🗑️ ลบแล้ว');
-  });
-}
-function inlineEditProduct(id){
-  const p=S.products[id];
-  if(!p) return;
-  const row=document.getElementById(`pr-${id}`);
-  if(!row) return;
-  // build shop options
-  const shopOpts=getSortedShops().map(s=>
-    `<option value="${s.id}" ${s.id===p.shopId?'selected':''}>${esc(s.name)}</option>`
-  ).join('');
-  // build emp options
-  const empOpts=Object.entries(S.employees).map(([eid,e])=>
-    `<option value="${eid}" ${eid===p.employeeId?'selected':''}>${esc(e.name)}</option>`
-  ).join('');
-  row.innerHTML=`
-    <div style="flex:1;display:flex;flex-direction:column;gap:6px">
-      <input type="text" id="pe-name-${id}" value="${esc(p.name)}" placeholder="ชื่อสินค้า" style="padding:6px 10px;font-size:.9rem;border:1.5px solid var(--border);border-radius:var(--radius-sm)"/>
-      <div style="display:flex;gap:6px">
-        <input type="text" id="pe-unit-${id}" value="${esc(p.unit)}" placeholder="หน่วย" style="flex:1;padding:6px 10px;font-size:.85rem;border:1.5px solid var(--border);border-radius:var(--radius-sm)"/>
-        <select id="pe-shop-${id}" style="flex:2;padding:6px 8px;font-size:.85rem;border:1.5px solid var(--border);border-radius:var(--radius-sm)">
-          <option value="">-- ร้านค้า --</option>${shopOpts}
-        </select>
-      </div>
-      <select id="pe-emp-${id}" style="padding:6px 8px;font-size:.85rem;border:1.5px solid var(--border);border-radius:var(--radius-sm)">
-        <option value="">-- พนักงาน --</option>${empOpts}
-      </select>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0;margin-left:8px">
-      <button class="btn btn-primary btn-sm" onclick="saveProductEdit('${id}')">✔</button>
-      <button class="btn btn-ghost btn-sm" onclick="renderProducts()">✕</button>
-    </div>`;
-  document.getElementById(`pe-name-${id}`).focus();
-}
-function saveProductEdit(id){
-  const name=document.getElementById(`pe-name-${id}`)?.value?.trim();
-  const unit=document.getElementById(`pe-unit-${id}`)?.value?.trim();
-  const shopId=document.getElementById(`pe-shop-${id}`)?.value;
-  const empId=document.getElementById(`pe-emp-${id}`)?.value;
-  if(!name){ toast('กรอกชื่อสินค้า'); return; }
-  if(!unit){ toast('กรอกหน่วย'); return; }
-  const upd={name, unit, employeeId: empId || null};
-  if(shopId) upd.shopId=shopId;
-  R.product(id).update(upd).then(()=>toast('✅ บันทึกแล้ว'));
-}
-// view state สำหรับหน้ารายการสินค้า: ดูเป็นการ์ดตามพนักงาน/ร้านค้า แล้วกดเข้าไปดูทีละกลุ่ม
-let prodGroupBy='emp'; // 'emp' | 'shop'
-let prodDetailKey=null; // null = หน้าการ์ดรวม, ไม่ null = กำลังดูรายละเอียดกลุ่มนี้อยู่
-
-function setProdGroupBy(mode){
-  if(prodGroupBy===mode) return;
-  prodGroupBy=mode;
-  prodDetailKey=null;
-  renderProducts();
-}
-function openProdGroup(key){ prodDetailKey=key; renderProducts(); }
-function closeProdGroup(){ prodDetailKey=null; renderProducts(); }
-
-function filterProdDetail(){
-  const q=(document.getElementById('prod-detail-filter')?.value||'').trim();
-  document.querySelectorAll('#prod-list .row[data-name]').forEach(row=>{
-    const name=row.dataset.name||'';
-    row.style.display = !q || name.includes(q) ? '' : 'none';
-  });
-}
-
-function buildProdGroups(){
-  const prods=Object.entries(S.products);
-  const map={};
-  if(prodGroupBy==='emp'){
-    prods.forEach(([id,p])=>{
-      const key=isUnassignedProduct(p) ? '__none' : p.employeeId;
-      (map[key]=map[key]||[]).push([id,p]);
-    });
-    const ordered=Object.entries(S.employees)
-      .filter(([eid])=>map[eid])
-      .map(([eid,e])=>({key:eid, label:e.name, items:map[eid]}));
-    if(map['__none']) ordered.push({key:'__none', label:'ไม่ระบุพนักงาน', items:map['__none']});
-    return ordered;
-  } else {
-    prods.forEach(([id,p])=>{
-      const key=p.shopId||'__none';
-      (map[key]=map[key]||[]).push([id,p]);
-    });
-    const ordered=getSortedShops()
-      .filter(s=>map[s.id])
-      .map(s=>({key:s.id, label:s.name, items:map[s.id]}));
-    if(map['__none']) ordered.push({key:'__none', label:'ไม่ระบุร้านค้า', items:map['__none']});
-    return ordered;
-  }
-}
-
-function renderProductRow(id,p,showBoth){
-  const shopName=S.shops[p.shopId]?.name||'ไม่ระบุร้าน';
-  const empName=S.employees[p.employeeId]?.name||'ไม่ระบุคน';
-  const unitTxt=p.unit?esc(p.unit):'ไม่ระบุหน่วย';
-  const metaTxt = showBoth
-    ? `👤 ${esc(empName)} · 🏪 ${esc(shopName)} · ${unitTxt}`
-    : (prodGroupBy==='emp' ? `${esc(shopName)} · ${unitTxt}` : `${esc(empName)} · ${unitTxt}`);
-  return `<div class="row" id="pr-${id}" data-name="${esc(p.name)}" style="padding:10px 16px">
-    <div style="flex:1">
-      <div style="font-weight:600">${esc(p.name)}</div>
-      <div class="row-meta">${metaTxt}</div>
-    </div>
-    <div class="row-actions">
-      <button class="btn btn-ghost btn-sm btn-icon" onclick="inlineEditProduct('${id}')">✏️</button>
-      <button class="btn btn-danger btn-sm btn-icon" onclick="deleteProduct('${id}')">🗑️</button>
-    </div>
-  </div>`;
-}
-
-function renderProducts(){
-  const el=document.getElementById('prod-list');
-  const prods=Object.entries(S.products);
-
-  // ปรับสไตล์ปุ่มสลับมุมมองให้ตรงกับโหมดปัจจุบัน
-  const btnEmp=document.getElementById('prod-grp-emp-btn');
-  const btnShop=document.getElementById('prod-grp-shop-btn');
-  if(btnEmp&&btnShop){
-    btnEmp.className='btn btn-sm '+(prodGroupBy==='emp'?'btn-primary':'btn-ghost');
-    btnShop.className='btn btn-sm '+(prodGroupBy==='shop'?'btn-primary':'btn-ghost');
-  }
-
-  if(!prods.length){ el.innerHTML='<div class="empty">ยังไม่มีสินค้า</div>'; return; }
-
-  // ── โหมดค้นหา: ค้นทุกกลุ่มพร้อมกัน แสดงผลลัพธ์แบบแบนราบ ──
-  const q=(document.getElementById('prod-search')?.value||'').trim();
-  if(q){
-    const matched=prods.filter(([,p])=>(p.name||'').includes(q))
-      .sort((a,b)=>(a[1].name||'').localeCompare(b[1].name||'','th'));
-    if(!matched.length){
-      el.innerHTML=`<div class="empty">ไม่พบสินค้าที่ตรงกับ "${esc(q)}"</div>`;
-      return;
-    }
-    let html=`<div class="prod-emp-card"><div class="prod-emp-body">`;
-    matched.forEach(([id,p])=>{ html+=renderProductRow(id,p,true); });
-    html+=`</div></div>`;
-    el.innerHTML=html;
-    return;
-  }
-
-  const groups=buildProdGroups();
-
-  // ── มุมมองรายละเอียดของกลุ่มที่กดเข้าไป ──
-  if(prodDetailKey!==null){
-    const g=groups.find(x=>x.key===prodDetailKey);
-    if(!g){ prodDetailKey=null; renderProducts(); return; }
-    let html=`<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-      <button class="btn btn-ghost btn-sm" onclick="closeProdGroup()">← กลับ</button>
-      <div style="font-weight:700;flex:1">${esc(g.label)} <span style="font-weight:400;color:var(--ink3);font-size:.78rem">(${g.items.length} รายการ)</span></div>
-    </div>`;
-    if(g.items.length>6){
-      html+=`<div class="fg"><input type="text" id="prod-detail-filter" placeholder="🔍 ค้นหาในกลุ่มนี้..." oninput="filterProdDetail()" /></div>`;
-    }
-    html+=`<div class="prod-emp-card"><div class="prod-emp-body">`;
-    g.items.forEach(([id,p])=>{ html+=renderProductRow(id,p); });
-    html+=`</div></div>`;
-    el.innerHTML=html;
-    return;
-  }
-
-  // ── มุมมองการ์ดรวม (กดเข้าไปดูทีละกลุ่ม) ──
-  let html='<div class="emp-select-grid">';
-  groups.forEach(g=>{
-    const icon = g.key==='__none' ? '❓' : (prodGroupBy==='emp' ? '👤' : '🏪');
-    html+=`<button class="emp-sel-btn" onclick="openProdGroup('${g.key}')">
-      ${icon} ${esc(g.label)}
-      <span class="sub">${g.items.length} รายการ</span>
-    </button>`;
-  });
-  html+='</div>';
-  el.innerHTML=html;
+function delShop(id){
+  showModal('ลบร้านค้า','ลบร้านค้านี้?',()=>{R.shop(id).remove().then(()=>toast('🗑️ ลบแล้ว'))});
 }
 
 function populateSelects(){
-  // employee dropdowns
-  ['prod-emp'].forEach(sid=>{
-    const sel=document.getElementById(sid);
-    const prev=sel.value;
-    sel.innerHTML='<option value="">-- ไม่ระบุ / จัดการเอง --</option>';
-    Object.entries(S.employees).forEach(([id,e])=>{
-      sel.innerHTML+=`<option value="${id}">${esc(e.name)}</option>`;
-    });
-    sel.value=prev;
-  });
-  // shop dropdowns
-  ['prod-shop'].forEach(sid=>{
-    const sel=document.getElementById(sid);
-    const prev=sel.value;
-    sel.innerHTML='<option value="">-- เลือกร้านค้า --</option>';
-    getSortedShops().forEach(s=>{
-      sel.innerHTML+=`<option value="${s.id}">${esc(s.name)}</option>`;
-    });
-    sel.value=prev;
-  });
+  const shops=sortedShops();
+  const shopOpts=`<option value="">-- เลือก --</option>`+shops.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
+  const shopOptsBlank=`<option value="">-- ไม่ระบุ --</option>`+shops.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
+  document.getElementById('prod-shop').innerHTML=shopOpts;
+  document.getElementById('bulk-shop').innerHTML=shopOptsBlank;
+
+  const emps=Object.entries(S.employees).sort((a,b)=>a[1].name?.localeCompare(b[1].name||'','th'));
+  const empOpts=`<option value="">-- ไม่ระบุ --</option>`+emps.map(([id,e])=>`<option value="${id}">${esc(e.name)}</option>`).join('');
+  document.getElementById('prod-emp').innerHTML=empOpts;
+  document.getElementById('bulk-emp').innerHTML=empOpts;
 }
 
 // ══════════════════════════════════════════════
-// ── SESSION / ASK ──
+// SETUP: PRODUCTS
 // ══════════════════════════════════════════════
-function renderAskStart(){
-  document.getElementById('ask-start-view').style.display='';
-  document.getElementById('ask-session-view').style.display='none';
-  document.getElementById('session-date').value=today();
+function addProduct(){
+  const name=document.getElementById('prod-name').value.trim();
+  if(!name){toast('กรุณากรอกชื่อสินค้า');return}
+  const empId=document.getElementById('prod-emp').value;
+  const shopId=document.getElementById('prod-shop').value;
+  const unit=document.getElementById('prod-unit').value.trim();
+  const empName=empId?S.employees[empId]?.name||'':NONE_NAME;
+  const shopName=shopId?S.shops[shopId]?.name||'':'';
+  R.products().push({name,unit,employeeId:empId,shopId,empName,shopName,createdAt:Date.now()})
+    .then(()=>{
+      document.getElementById('prod-name').value='';
+      document.getElementById('prod-unit').value='';
+      toast('✅ เพิ่มสินค้าแล้ว');
+    });
+}
+document.getElementById('prod-name').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addProduct()}});
 
-  // หา session ที่ยังไม่เสร็จ (incomplete)
-  const incomplete=Object.entries(S.sessions)
-    .filter(([,s])=>!s.completed)
-    .sort((a,b)=>b[1].date?.localeCompare(a[1].date||'')||0);
+function bulkAddProducts(){
+  const text=document.getElementById('prod-bulk').value.trim();
+  if(!text){toast('กรุณากรอกรายการ');return}
+  const empId=document.getElementById('bulk-emp').value;
+  const shopId=document.getElementById('bulk-shop').value;
+  const shopName=shopId?S.shops[shopId]?.name||'':'';
+  const lines=text.split('\n').map(l=>l.trim()).filter(l=>l&&!l.startsWith('#'));
+  if(!lines.length){toast('ไม่มีรายการที่นำเข้าได้');return}
+  const existingNames=Object.values(S.products).map(p=>p.name?.toLowerCase());
+  const toAdd=lines.filter(l=>!existingNames.includes(l.toLowerCase()));
+  if(!toAdd.length){toast('สินค้าทั้งหมดมีอยู่แล้ว');return}
+  const ops=toAdd.map(name=>R.products().push({name,unit:'',employeeId:empId,shopId,shopName,createdAt:Date.now()}));
+  Promise.all(ops).then(()=>toast(`✅ นำเข้า ${toAdd.length} รายการแล้ว`));
+}
 
-  const card=document.getElementById('active-session-card');
-  if(incomplete.length){
-    const [sid,sess]=incomplete[0];
-    activeSessionId=sid;
-    const done=Object.values(sess.entries||{}).length;
-    const hasUnassigned=Object.values(S.products).some(isUnassignedProduct);
-    const total=Object.keys(S.employees).length + (hasUnassigned?1:0);
-    document.getElementById('active-session-info').textContent=
-      `${fmtDate(sess.date)} · ถามไปแล้ว ${done}/${total} คน`;
-    card.style.display='';
+let _grp='emp';
+function setGrp(g){
+  _grp=g;
+  document.getElementById('grp-emp-btn').className='btn btn-xs '+(g==='emp'?'btn-green':'btn-ghost');
+  document.getElementById('grp-shop-btn').className='btn btn-xs '+(g==='shop'?'btn-green':'btn-ghost');
+  renderProducts();
+}
+
+function renderProducts(){
+  const q=(document.getElementById('prod-search').value||'').toLowerCase();
+  const el=document.getElementById('prod-list');
+  const all=Object.entries(S.products).filter(([,p])=>!q||p.name?.toLowerCase().includes(q));
+  if(!all.length){el.innerHTML='<div class="empty">ยังไม่มีสินค้า</div>';return}
+
+  let groups={};
+  if(_grp==='emp'){
+    const empList=[...Object.entries(S.employees),['__none_grp',{name:NONE_NAME}]];
+    empList.forEach(([eid,e])=>{
+      const prods=all.filter(([,p])=>eid==='__none_grp'?isUnassigned(p):p.employeeId===eid);
+      if(prods.length) groups[e.name]={prods,color:'var(--brand)'};
+    });
   } else {
-    activeSessionId=null;
+    sortedShops().forEach(s=>{
+      const prods=all.filter(([,p])=>p.shopId===s.id);
+      if(prods.length) groups[s.name]={prods,color:'var(--orange)'};
+    });
+    const noShop=all.filter(([,p])=>!p.shopId);
+    if(noShop.length) groups['ไม่ระบุร้านค้า']={prods:noShop,color:'var(--ink3)'};
+  }
+
+  el.innerHTML=Object.entries(groups).map(([gname,{prods,color}])=>`
+    <div style="margin-bottom:14px">
+      <div style="font-size:.78rem;font-weight:700;color:${color};margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em">${esc(gname)}</div>
+      ${prods.map(([id,p])=>`
+        <div class="lrow">
+          <div class="lrow-name">
+            ${esc(p.name)}
+            <div class="lrow-sub">${p.unit?`${esc(p.unit)} · `:''}${p.shopName?`🏪 ${esc(p.shopName)}`:''}</div>
+          </div>
+          <div class="lrow-acts">
+            <button class="btn btn-ghost btn-xs" onclick="editProduct('${id}')">✏️</button>
+            <button class="btn btn-red btn-xs" onclick="delProduct('${id}')">🗑️</button>
+          </div>
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+function editProduct(id){
+  const p=S.products[id];if(!p)return;
+  const n=prompt('ชื่อสินค้า:',p.name);if(n===null)return;
+  const u=prompt('หน่วย (เช่น กำ, กิโล):',p.unit||'');if(u===null)return;
+  R.product(id).update({name:n.trim()||p.name,unit:u.trim()}).then(()=>toast('✅ แก้ไขแล้ว'));
+}
+function delProduct(id){
+  showModal('ลบสินค้า','ลบสินค้านี้?',()=>{R.product(id).remove().then(()=>toast('🗑️ ลบแล้ว'))});
+}
+
+// ══════════════════════════════════════════════
+// SESSION / JOT
+// ══════════════════════════════════════════════
+function renderJotStart(){
+  const active=getLatestSession();
+  const card=document.getElementById('active-session-card');
+  if(active){
+    card.style.display='';
+    document.getElementById('active-session-info').textContent=
+      `วันที่ ${fmtDate(active[1].date)} — กำลังจดอยู่`;
+    activeSessionId=active[0];
+  } else {
     card.style.display='none';
   }
+  document.getElementById('jot-start').style.display='';
+  document.getElementById('jot-board').style.display='none';
+  document.getElementById('jot-emp').style.display='none';
 }
 
 function startSession(){
-  const date=document.getElementById('session-date').value||today();
-  // เช็คว่ามีรายการ "รอซื้อ" ค้างอยู่ไหม
-  const pending=Object.entries(S.sessions)
-    .filter(([,s])=>s.completed && !s.shoppingDone && !s.cleared);
-  const doCreate=()=>{
-    R.sessions().push({date, completed:false, cleared:false, shoppingDone:false, createdAt:Date.now()}).then(ref=>{
-      activeSessionId=ref.key;
-      openEmpBoard();
-    });
-  };
-  if(pending.length){
-    const [,ps]=pending[0];
-    showModal('มีรายการรอซื้ออยู่',
-      `ยังมีรายการวันที่ ${fmtDate(ps.date)} ที่ยังไม่ได้ไปซื้อของอยู่\n\nต้องการสร้างรอบใหม่ทับหรือไม่? (รายการเดิมจะยังอยู่ในหน้าสรุปเหมือนเดิม ไม่หาย)`,
-      doCreate
-    );
-  } else {
-    doCreate();
-  }
+  const date=document.getElementById('session-date').value;
+  if(!date){toast('กรุณาเลือกวันที่');return}
+  R.sessions().push({date,completed:false,cleared:false,shoppingDone:false,createdAt:Date.now()})
+    .then(ref=>{activeSessionId=ref.key;openEmpBoard()});
 }
 
 function resumeSession(){
-  if(!activeSessionId) return;
-  openEmpBoard();
+  const latest=getLatestSession();
+  if(!latest){toast('ไม่มีรอบค้าง');return}
+  activeSessionId=latest[0];openEmpBoard();
 }
 
 function openEmpBoard(){
-  const emps=Object.entries(S.employees);
-  const hasUnassigned=Object.values(S.products).some(isUnassignedProduct);
-  if(!emps.length && !hasUnassigned){ toast('ยังไม่มีพนักงานหรือสินค้า'); return; }
-  currentAskEmpId=null;
-  qaTargetSessionId=null; // หน้าจดใช้ activeSessionId เสมอ
-  renderEmpBoard();
-  qaResetUI();
-  renderQuickAddList();
-  document.getElementById('ask-start-view').style.display='none';
-  document.getElementById('ask-pick-view').style.display='';
-  document.getElementById('ask-session-view').style.display='none';
+  document.getElementById('jot-start').style.display='none';
+  document.getElementById('jot-board').style.display='';
+  document.getElementById('jot-emp').style.display='none';
+  renderEmpGrid();
+  renderQaList();
 }
 
-function renderEmpBoard(){
-  const emps=Object.entries(S.employees);
-  const hasUnassigned=Object.values(S.products).some(isUnassignedProduct);
-  const boardItems=emps.map(([id,e])=>({id, name:e.name}));
-  if(hasUnassigned) boardItems.push({id:NONE_EMP_ID, name:NONE_EMP_NAME});
-
+function renderEmpGrid(){
   const sess=S.sessions[activeSessionId];
   const entries=sess?.entries||{};
-  document.getElementById('pick-emp-grid').innerHTML=boardItems.map(({id,name})=>{
-    const entry=entries[id];
-    const isSkipped=!!entry?.skipped;
-    const isDone=!!entry && !isSkipped;
-    const sub = isDone ? '✅ บันทึกแล้ว · แตะเพื่อแก้ไข'
-              : isSkipped ? '⏭ ไม่ซื้อวันนี้ · แตะเพื่อแก้ไข'
-              : 'แตะเพื่อกรอก';
-    const icon = id===NONE_EMP_ID ? '📦 ' : '';
-    return `<button class="emp-sel-btn ${isDone?'done':''} ${isSkipped?'already-done':''}"
-      onclick="openAskForEmp('${id}')">
-      ${icon}${esc(name)}
-      <span class="sub">${sub}</span>
+  const empList=[...Object.entries(S.employees),[NONE_ID,{name:NONE_NAME}]];
+  const done=empList.filter(([id])=>entries[id]?.saved).length;
+  const total=empList.filter(([id,])=>id===NONE_ID?prodsForEmp(NONE_ID).length>0:prodsForEmp(id).length>0).length;
+  document.getElementById('board-progress').textContent=`กรอกแล้ว ${done} / ${total} คน`;
+
+  document.getElementById('emp-grid').innerHTML=empList.map(([id,e])=>{
+    const prods=prodsForEmp(id);
+    if(!prods.length) return '';
+    const saved=entries[id]?.saved;
+    const itemCount=Object.keys(entries[id]?.items||{}).length;
+    return `<button class="emp-tile ${saved?'done':''}" onclick="openEmpInput('${id}')">
+      <div class="emp-tile-name">${esc(e.name)}</div>
+      <div class="emp-tile-sub">${saved?`✔ ${itemCount} รายการ`:`${prods.length} สินค้า`}</div>
     </button>`;
   }).join('');
-
-  document.getElementById('board-progress').textContent=
-    `กรอกแล้ว ${Object.keys(entries).length}/${boardItems.length} คน`;
 }
 
-function openAskForEmp(id){
-  currentAskEmpId=id;
-  document.getElementById('ask-pick-view').style.display='none';
-  document.getElementById('ask-session-view').style.display='';
-  renderAskEmp();
-}
-
-function backToBoard(){
-  currentAskEmpId=null;
-  renderEmpBoard();
-  qaResetUI();
-  renderQuickAddList();
-  document.getElementById('ask-session-view').style.display='none';
-  document.getElementById('ask-pick-view').style.display='';
-}
-
-function cancelBoard(){
-  // ถ้าเป็น session ใหม่ที่ยังไม่มี entry เลย ให้ลบทิ้ง
+function openEmpInput(empId){
+  currentEmpId=empId;
+  const emp=empId===NONE_ID?{name:NONE_NAME}:S.employees[empId]||{name:'?'};
   const sess=S.sessions[activeSessionId];
-  if(activeSessionId && !Object.keys(sess?.entries||{}).length){
-    R.session(activeSessionId).remove();
-    activeSessionId=null;
-  }
-  qaResetUI();
-  document.getElementById('ask-pick-view').style.display='none';
-  document.getElementById('ask-start-view').style.display='';
+  const savedItems=sess?.entries?.[empId]?.items||{};
+  document.getElementById('jot-emp-name').textContent=emp.name;
+  document.getElementById('jot-emp-sub').textContent=`${fmtDate(sess?.date)} · กรอกของที่ต้องซื้อ`;
+  document.getElementById('emp-filter').value='';
+  document.getElementById('jot-board').style.display='none';
+  document.getElementById('jot-emp').style.display='';
+  renderEmpProducts(savedItems);
 }
 
-function renderAskEmp(){
-  const id=currentAskEmpId;
-  const emp = id===NONE_EMP_ID ? {name:NONE_EMP_NAME} : (S.employees[id]||{});
+function renderEmpProducts(savedItems){
+  const q=(document.getElementById('emp-filter').value||'').toLowerCase();
+  const prods=prodsForEmp(currentEmpId).filter(([,p])=>!q||p.name?.toLowerCase().includes(q));
+  const el=document.getElementById('emp-prod-list');
+  if(!prods.length){el.innerHTML='<div class="empty">ไม่มีสินค้า</div>';return}
+
+  el.innerHTML=prods.map(([id,p])=>{
+    const saved=savedItems[id];
+    const qty=saved?.qty||'';
+    const hasVal=qty!=='';
+    return `<div class="prod-row" id="pr-${id}">
+      <div class="prod-row-info">
+        <div class="prod-row-name ${hasVal?'bought':''}" id="pn-${id}">${esc(p.name)}</div>
+        <div class="prod-row-shop">${p.shopName?`🏪 ${esc(p.shopName)}`:''}</div>
+      </div>
+      <div class="qty-wrap">
+        <button class="qty-btn" onclick="qtyChange('${id}',-1)">−</button>
+        <input type="number" class="qty-num ${hasVal?'has-val':''}" id="qty-${id}"
+          value="${hasVal?qty:''}" min="0" step="0.5" placeholder="—"
+          oninput="qtyInput('${id}',this)" />
+        <div class="qty-unit">${esc(p.unit||'')}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterEmpProducts(){
   const sess=S.sessions[activeSessionId];
-  const existingItems=sess?.entries?.[id]?.items||{};
-  const products=getProductsForEmp(id);
-
-  document.getElementById('ask-emp-name').textContent=emp.name||'—';
-  document.getElementById('ask-emp-sub').textContent=`${products.length} รายการ`;
-
-  // เคลียร์ช่องค้นหาทุกครั้งที่เปลี่ยนคน
-  const filterInp=document.getElementById('ask-filter');
-  if(filterInp) filterInp.value='';
-
-  // products list (พรีฟิลค่าที่เคยบันทึกไว้ ถ้าเป็นการแก้ไขรายการเดิม)
-  const list=document.getElementById('ask-products-list');
-  if(!products.length){
-    list.innerHTML='<div class="empty">ไม่มีสินค้าที่รับผิดชอบ<br><span style="font-size:.8rem">ตั้งค่าสินค้าได้ที่หน้า "ตั้งค่า"</span></div>';
-  } else {
-    list.innerHTML=products.map(([pid,p])=>{
-      const shopName=S.shops[p.shopId]?.name||'ไม่ระบุ';
-      const ex=existingItems[pid];
-      const qtyVal=ex&&ex.qty!=null ? ex.qty : '';
-      const noteVal=ex ? (ex.note||'') : '';
-      const hasVal=(ex && ex.qty>0) ? 'has-val' : '';
-      return `<div class="product-ask-row" data-name="${esc(p.name)}">
-        <div class="product-ask-top">
-          <div style="flex:1">
-            <div class="product-ask-name">${esc(p.name)}</div>
-            <div class="product-ask-shop">🏪 ${esc(shopName)}</div>
-          </div>
-          <div class="qty-wrap">
-            <input type="number" class="qty-input ${hasVal}" id="qty-${pid}"
-              min="0" step="0.5" placeholder="—" value="${qtyVal}"
-              oninput="onQtyInput(this)"
-            />
-            <span class="qty-unit">${esc(p.unit)}</span>
-          </div>
-        </div>
-        <input type="text" class="note-input" id="note-${pid}"
-          value="${esc(noteVal)}"
-          placeholder="💬 หมายเหตุ (ไม่บังคับ)" maxlength="100" />
-      </div>`;
-    }).join('');
-  }
+  const savedItems=sess?.entries?.[currentEmpId]?.items||{};
+  renderEmpProducts(savedItems);
 }
 
-function filterAskProducts(){
-  const q=(document.getElementById('ask-filter')?.value||'').trim();
-  document.querySelectorAll('#ask-products-list .product-ask-row').forEach(row=>{
-    const name=row.dataset.name||'';
-    row.style.display = !q || name.includes(q) ? '' : 'none';
-  });
+function qtyInput(id,el){
+  const val=parseFloat(el.value);
+  const hasVal=el.value!==''&&!isNaN(val)&&val>0;
+  el.className='qty-num'+(hasVal?' has-val':'');
+  const nameEl=document.getElementById('pn-'+id);
+  if(nameEl) nameEl.className='prod-row-name'+(hasVal?' bought':'');
 }
 
-function onQtyInput(inp){
-  const v=parseFloat(inp.value);
-  if(v>0) inp.classList.add('has-val');
-  else inp.classList.remove('has-val');
+function qtyChange(id,delta){
+  const el=document.getElementById('qty-'+id);
+  const cur=parseFloat(el.value)||0;
+  const next=Math.max(0,cur+delta);
+  el.value=next||'';
+  qtyInput(id,el);
 }
 
-function saveEmployee(){
-  const id=currentAskEmpId;
-  const emp = id===NONE_EMP_ID ? {name:NONE_EMP_NAME} : (S.employees[id]||{});
-  const products=getProductsForEmp(id);
+function collectItems(){
+  const sess=S.sessions[activeSessionId];
+  const oldItems=sess?.entries?.[currentEmpId]?.items||{};
+  const prods=prodsForEmp(currentEmpId);
   const items={};
-  products.forEach(([pid,p])=>{
-    const inp=document.getElementById(`qty-${pid}`);
-    const noteInp=document.getElementById(`note-${pid}`);
+  prods.forEach(([id,p])=>{
+    const inp=document.getElementById('qty-'+id);
     const qty=parseFloat(inp?.value);
-    if(qty>0){
-      const note=(noteInp?.value||'').trim();
-      items[pid]={
-        name:p.name, unit:p.unit,
-        shopId:p.shopId, shopName:S.shops[p.shopId]?.name||'ไม่ระบุ',
-        qty,
-        ...(note?{note}:{})
+    if(!isNaN(qty)&&qty>0){
+      items[id]={
+        name:p.name,unit:p.unit||'',qty,
+        shopId:p.shopId||'',shopName:p.shopName||'',
+        note:oldItems[id]?.note||''
       };
     }
   });
-  const entryData={
-    empName:emp.name||'',
-    savedAt:Date.now(),
-    hasItems: Object.keys(items).length>0
-  };
-  // เซ็ต entry ก่อน แล้วค่อยเซ็ต/ล้าง items แยก (รองรับกรณีแก้ไขแล้วเอาจำนวนออกหมด)
-  const entryRef=R.session(activeSessionId).child(`entries/${id}`);
-  entryRef.set(entryData).then(()=>{
-    return entryRef.child('items').set(Object.keys(items).length>0 ? items : null);
-  }).then(()=>{
-    toast(`✅ บันทึก ${emp.name||''} แล้ว`);
-    // รอ realtime listener sync ก่อนค่อยกลับไปหน้าเลือกคน
-    setTimeout(()=>backToBoard(), 300);
-  });
+  return items;
+}
+
+function saveEmployee(){
+  const items=collectItems();
+  R.session(activeSessionId).child(`entries/${currentEmpId}`).set({items,saved:true,savedAt:Date.now()})
+    .then(()=>{toast('✅ บันทึกแล้ว');backToBoard()});
 }
 
 function skipEmployee(){
-  const id=currentAskEmpId;
-  const emp = id===NONE_EMP_ID ? {name:NONE_EMP_NAME} : (S.employees[id]||{});
-  R.session(activeSessionId).child(`entries/${id}`).set({
-    empName:emp.name||'', savedAt:Date.now(), hasItems:false, skipped:true
-  }).then(()=>{
-    toast(`⏭ ${emp.name||''} ไม่ซื้อวันนี้`);
-    setTimeout(()=>backToBoard(), 300);
-  });
+  R.session(activeSessionId).child(`entries/${currentEmpId}`).set({items:{},saved:true,skipped:true,savedAt:Date.now()})
+    .then(()=>{toast('⏭ ข้ามแล้ว');backToBoard()});
+}
+
+function backToBoard(){
+  document.getElementById('jot-emp').style.display='none';
+  openEmpBoard();
 }
 
 function finishSession(){
-  if(!activeSessionId) return;
-  R.session(activeSessionId).update({completed:true}).then(()=>{
-    toast('✅ บันทึกรอบนี้เสร็จแล้ว! ดูสรุปได้เลย');
-    document.getElementById('ask-session-view').style.display='none';
-    document.getElementById('ask-pick-view').style.display='none';
-    document.getElementById('ask-start-view').style.display='';
-    activeSessionId=null;
-    currentAskEmpId=null;
-    // switch to summary
+  R.session(activeSessionId).update({completed:true,completedAt:Date.now()}).then(()=>{
+    toast('✅ เสร็จสิ้น!');
+    // go to summary
     document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
-    document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
+    document.querySelectorAll('.tb-btn').forEach(b=>b.classList.remove('on'));
     document.getElementById('pg-summary').classList.add('on');
-    document.querySelectorAll('.nb')[2].classList.add('on');
+    document.querySelectorAll('.tb-btn')[1].classList.add('on');
     renderSummary();
   });
 }
 
-// ══════════════════════════════════════════════
-// ── QUICK ADD (เพิ่มสินค้าด่วน — ทางลัด ไม่ต้องเข้าไปทีละคน) ──
-// ══════════════════════════════════════════════
-let qaSelectedProductId=null;
-// session ที่ quick-add กำลัง target อยู่ (ใช้ได้ทั้งหน้าจดและหน้าสรุป)
-let qaTargetSessionId=null;
-
-// หา item ที่เคยถูกเพิ่มไว้แล้วในรอบที่ target อยู่
-function qaFindExistingItem(pid){
-  const sess=S.sessions[qaTargetSessionId||activeSessionId];
-  if(!sess) return null;
-  for(const [empId,entry] of Object.entries(sess.entries||{})){
-    if(entry.items && entry.items[pid]) return {empId, item:entry.items[pid]};
-  }
-  return null;
+function cancelBoard(){
+  showModal('ยกเลิกรอบนี้','ยกเลิกรอบการจดของนี้? (ข้อมูลที่กรอกไปจะหายไป)',()=>{
+    R.session(activeSessionId).remove().then(()=>{
+      activeSessionId=null;
+      toast('🗑️ ยกเลิกรอบแล้ว');
+      renderJotStart();
+    });
+  });
 }
 
-function qaResetUI(){
-  const search=document.getElementById('qa-search');
-  const suggest=document.getElementById('qa-suggest');
-  const confirmArea=document.getElementById('qa-confirm-area');
-  qaSelectedProductId=null;
-  if(search) search.value='';
-  if(suggest){ suggest.style.display='none'; suggest.innerHTML=''; }
-  if(confirmArea) confirmArea.style.display='none';
-}
-
-function qaSearchInput(){
-  const q=(document.getElementById('qa-search').value||'').trim();
+// ── QUICK ADD in board ──
+let qaSelected=null;
+function qaSearch(){
+  const q=document.getElementById('qa-search').value.toLowerCase().trim();
   const box=document.getElementById('qa-suggest');
-  qaSelectedProductId=null;
-  document.getElementById('qa-confirm-area').style.display='none';
-  if(!q){ box.style.display='none'; box.innerHTML=''; return; }
-
-  const matched=Object.entries(S.products)
-    .filter(([,p])=>(p.name||'').includes(q))
-    .sort((a,b)=>(a[1].name||'').localeCompare(b[1].name||'','th'))
-    .slice(0,8);
-
-  if(!matched.length){
-    box.innerHTML='<div class="qa-suggest-empty">ไม่พบสินค้าที่ตรงกับคำค้นนี้</div>';
-    box.style.display='block';
-    return;
+  if(!q){box.style.display='none';return}
+  const results=Object.entries(S.products).filter(([,p])=>p.name?.toLowerCase().includes(q)).slice(0,10);
+  if(!results.length){
+    box.innerHTML=`<div class="sug-empty">ไม่พบสินค้า</div>`;
+    box.style.display='block';return;
   }
-
-  box.innerHTML=matched.map(([pid,p])=>{
-    const shopName=p.shopId ? (S.shops[p.shopId]?.name||'ไม่ระบุร้าน') : 'ยังไม่ระบุร้าน';
-    const existing=qaFindExistingItem(pid);
-    const tag=existing ? `<span class="qa-suggest-tag">✓ มีแล้ว ${existing.item.qty} ${esc(p.unit||'')}</span>` : '';
-    return `<button type="button" class="qa-suggest-item" onclick="qaPickProduct('${pid}')">
-      <span class="qa-suggest-name">${esc(p.name)}</span>
-      <span class="qa-suggest-meta">🏪 ${esc(shopName)} ${tag}</span>
-    </button>`;
-  }).join('');
+  box.innerHTML=results.map(([id,p])=>
+    `<button class="sug-item" onclick="qaSelect('${id}')">
+      <div class="sug-name">${esc(p.name)}</div>
+      <div class="sug-meta">${p.shopName?`🏪 ${esc(p.shopName)}`:''}${p.unit?` · ${esc(p.unit)}`:''}</div>
+    </button>`).join('');
   box.style.display='block';
 }
-
-function qaPickProduct(pid){
-  const p=S.products[pid];
-  if(!p) return;
-  qaSelectedProductId=pid;
+function qaSelect(id){
+  const p=S.products[id];if(!p)return;
+  qaSelected={id,...p};
   document.getElementById('qa-suggest').style.display='none';
   document.getElementById('qa-search').value=p.name;
-
-  const existing=qaFindExistingItem(pid);
-  const shopName=p.shopId ? (S.shops[p.shopId]?.name||'ไม่ระบุร้าน') : 'ยังไม่ระบุร้าน';
-
   document.getElementById('qa-confirm-name').textContent=p.name;
-  document.getElementById('qa-confirm-shop').textContent='🏪 '+shopName;
-  document.getElementById('qa-unit-label').textContent=p.unit||'';
-
-  const qtyInput=document.getElementById('qa-qty');
-  qtyInput.value = existing ? existing.item.qty : '';
-  document.getElementById('qa-note').value = existing ? (existing.item.note||'') : '';
-
-  document.getElementById('qa-confirm-area').style.display='block';
-  qtyInput.focus();
+  document.getElementById('qa-confirm-shop').textContent=p.shopName?`🏪 ${p.shopName}`:'';
+  document.getElementById('qa-unit').textContent=p.unit||'';
+  document.getElementById('qa-qty').value='';
+  document.getElementById('qa-note').value='';
+  document.getElementById('qa-confirm').style.display='';
+  document.getElementById('qa-qty').focus();
 }
-
-function qaCancelConfirm(){
-  qaSelectedProductId=null;
-  document.getElementById('qa-confirm-area').style.display='none';
+function qaCancel(){qaSelected=null;document.getElementById('qa-confirm').style.display='none';document.getElementById('qa-search').value=''}
+function qaConfirm(){
+  if(!qaSelected)return;
+  const qty=parseFloat(document.getElementById('qa-qty').value);
+  if(isNaN(qty)||qty<=0){toast('กรุณากรอกจำนวน');return}
+  const note=document.getElementById('qa-note').value.trim();
+  const p=qaSelected;
+  const empId=p.employeeId||NONE_ID;
+  R.session(activeSessionId).child(`entries/${empId}/items/${p.id}`)
+    .set({name:p.name,unit:p.unit||'',qty,shopId:p.shopId||'',shopName:p.shopName||'',note})
+    .then(()=>{toast(`✅ เพิ่ม ${p.name} แล้ว`);qaCancel();renderQaList()});
 }
-
-function qaConfirmAdd(){
-  if(!qaSelectedProductId){ toast('เลือกสินค้าก่อน'); return; }
-  const targetSid=qaTargetSessionId||activeSessionId;
-  if(!targetSid){ toast('ยังไม่ได้เริ่มจดของวันนี้'); return; }
-  const pid=qaSelectedProductId;
-  const p=S.products[pid];
-  if(!p){ toast('ไม่พบสินค้านี้'); return; }
-
-  const qtyInput=document.getElementById('qa-qty');
-  const qty=parseFloat(qtyInput?.value);
-  if(!(qty>0)){ toast('กรอกจำนวนให้ถูกต้อง'); qtyInput?.focus(); return; }
-  const note=(document.getElementById('qa-note')?.value||'').trim();
-
-  const empId = isUnassignedProduct(p) ? NONE_EMP_ID : p.employeeId;
-  const empName = empId===NONE_EMP_ID ? NONE_EMP_NAME : (S.employees[empId]?.name||'');
-
-  const itemData={ name:p.name, unit:p.unit||'', qty };
-  if(p.shopId){ itemData.shopId=p.shopId; itemData.shopName=S.shops[p.shopId]?.name||'ไม่ระบุ'; }
-  else { itemData.shopName='ไม่ระบุ'; }
-  if(note) itemData.note=note;
-
-  const entryRef=R.session(targetSid).child(`entries/${empId}`);
-  entryRef.update({ empName, savedAt:Date.now(), hasItems:true, skipped:false }).then(()=>{
-    return entryRef.child(`items/${pid}`).set(itemData);
-  }).then(()=>{
-    toast(`✅ เพิ่ม ${p.name} ${qty} ${p.unit||''} แล้ว`);
-    qaResetUI();
-    setTimeout(()=>{
-      if(qaTargetSessionId){ renderSummary(); }
-      else { renderEmpBoard(); renderQuickAddList(); }
-    }, 300);
-  });
-}
-
-function renderQuickAddList(){
-  const el=document.getElementById('qa-added-list');
-  if(!el) return;
-  const sess=S.sessions[qaTargetSessionId||activeSessionId];
-  if(!sess){ el.innerHTML=''; return; }
-
+function renderQaList(){
+  const sess=S.sessions[activeSessionId];if(!sess)return;
+  const el=document.getElementById('qa-list');if(!el)return;
   const items=[];
   Object.entries(sess.entries||{}).forEach(([empId,entry])=>{
-    Object.entries(entry.items||{}).forEach(([pid,item])=>{
-      items.push({pid,empId,...item});
-    });
+    Object.entries(entry.items||{}).forEach(([pid,item])=>{items.push({pid,empId,...item})});
   });
-
-  if(!items.length){ el.innerHTML=''; return; }
+  if(!items.length){el.innerHTML='';return}
   items.sort((a,b)=>(a.name||'').localeCompare(b.name||'','th'));
-
-  el.innerHTML = `<div class="qa-list-title">เพิ่มไปแล้วตอนนี้ (${items.length} รายการ)</div>` +
+  el.innerHTML=`<div style="font-size:.75rem;font-weight:700;color:var(--ink3);margin-bottom:6px">รายการที่เพิ่มแล้ว (${items.length})</div>`+
     items.map(it=>`
-      <div class="qa-item-row">
-        <div class="qa-item-info">
-          <div class="qa-item-name">${esc(it.name)}</div>
-          <div class="qa-item-shop">🏪 ${esc(it.shopName||'ไม่ระบุ')}</div>
+      <div class="lrow" style="padding:10px 0">
+        <div class="lrow-name" style="font-size:.88rem">
+          ${esc(it.name)}
+          <div class="lrow-sub">${it.shopName?`🏪 ${esc(it.shopName)}`:''}</div>
         </div>
-        <input type="number" class="qa-item-qty" value="${it.qty}" min="0" step="0.5"
-          onchange="qaUpdateQty('${it.empId}','${it.pid}',this.value)" />
-        <span class="qa-item-unit">${esc(it.unit||'')}</span>
-        <button class="btn btn-ghost btn-sm btn-icon" onclick="qaRemoveItem('${it.empId}','${it.pid}')">🗑️</button>
-      </div>
-    `).join('');
+        <div style="color:var(--brand);font-weight:700;font-size:.9rem;flex-shrink:0">${it.qty} ${esc(it.unit||'')}</div>
+        <button class="btn btn-red btn-xs" onclick="qaRemove('${it.empId}','${it.pid}')">×</button>
+      </div>`).join('');
+}
+function qaRemove(empId,pid){
+  R.session(activeSessionId).child(`entries/${empId}/items/${pid}`).remove()
+    .then(()=>{toast('ลบแล้ว');renderQaList()});
 }
 
-function qaUpdateQty(empId,pid,val){
-  const targetSid=qaTargetSessionId||activeSessionId;
-  if(!targetSid) return;
-  const qty=parseFloat(val);
-  if(qty>0){
-    R.session(targetSid).child(`entries/${empId}/items/${pid}/qty`).set(qty).then(()=>{
-      toast('✅ อัปเดตจำนวนแล้ว');
-      setTimeout(()=>{
-        if(qaTargetSessionId){ renderSummary(); }
-        else { renderEmpBoard(); renderQuickAddList(); }
-      }, 300);
-    });
-  } else {
-    qaRemoveItem(empId,pid);
-  }
-}
-
-function qaRemoveItem(empId,pid){
-  const targetSid=qaTargetSessionId||activeSessionId;
-  if(!targetSid) return;
-  R.session(targetSid).child(`entries/${empId}/items/${pid}`).remove().then(()=>{
-    toast('🗑️ ลบแล้ว');
-    setTimeout(()=>{
-      if(qaTargetSessionId){ renderSummary(); }
-      else { renderEmpBoard(); renderQuickAddList(); }
-    }, 300);
-  });
-}
-
-// ══════════════════════════════════════════════
-// ── SUMMARY ──
-// ══════════════════════════════════════════════
-function getLatestSession(){
-  // ดึง session ล่าสุดที่ completed=true, ยังไม่ได้ไปซื้อของจริง และไม่ถูก cleared
-  const completed=Object.entries(S.sessions)
-    .filter(([,s])=> s.completed && !s.shoppingDone && !s.cleared)
-    .sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0));
-  if(completed.length) return completed[0];
-
-  // fallback: session ที่มี entries แต่ยังไม่ complete (กำลังจดอยู่)
-  const withEntries=Object.entries(S.sessions)
-    .filter(([,s])=> !s.cleared && Object.keys(s.entries||{}).length>0)
-    .sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0));
-  return withEntries[0]||null;
-}
-
-function renderSummary(){
-  const latest=getLatestSession();
-  const content=document.getElementById('summary-content');
-  const sqCard=document.getElementById('summary-quick-add-card');
-
-  if(!latest){
-    qaTargetSessionId=null;
-    if(sqCard) sqCard.style.display='none';
-    document.getElementById('summary-title').textContent='สรุปรายการ';
-    document.getElementById('summary-meta').textContent='';
-    content.innerHTML='<div class="empty">ยังไม่มีรายการ<br>เริ่มจดของที่หน้า "จด"</div>';
-    return;
-  }
-  const [sid,sess]=latest;
-  qaTargetSessionId=sid;
-  if(sqCard) sqCard.style.display='';
-  sqResetUI();
-  sqRenderList();
-
-  document.getElementById('summary-title').textContent='สรุปรายการ';
-  document.getElementById('summary-meta').textContent=
-    fmtDate(sess.date) + (!sess.completed?' · (กำลังจดอยู่)':'');
-
-  content.innerHTML=buildSummaryHTML(sess, true);
-}
-
-function buildSummaryHTML(sess, editable=false){
-  // รวมสินค้าทั้งหมดจากทุก entry จัดกลุ่มตามร้าน
-  const byShop={};
-  Object.values(sess.entries||{}).forEach(entry=>{
-    const entryItems=entry.items||{};
-    Object.entries(entryItems).forEach(([prodId,item])=>{
-      if(!item||!item.name) return; // skip invalid
-      const key=item.shopId||'__none';
-      if(!byShop[key]) byShop[key]={name:item.shopName||'ไม่ระบุ', items:[]};
-      // หลีกเลี่ยง prodId ซ้ำ (รวม qty ถ้าซ้ำ)
-      const exist=byShop[key].items.find(x=>x.prodId===prodId);
-      if(exist){ exist.qty=(parseFloat(exist.qty)||0)+(parseFloat(item.qty)||0); }
-      else byShop[key].items.push({prodId,...item});
-    });
-  });
-
-  const sorted=getSortedShops();
-  let html='';
-  let hasAny=false;
-
-  sorted.forEach(shop=>{
-    const g=byShop[shop.id];
-    if(!g||!g.items.length) return;
-    hasAny=true;
-    html+=`<div class="shop-block">
-      <div class="shop-block-hdr">🏪 ${esc(shop.name)}</div>`;
-    g.items.forEach(item=>{
-      html+=`<div class="summary-item">
-        <div class="si-name">
-          ${esc(item.name)}
-          ${item.note?`<div style="font-size:.78rem;color:var(--ink3);margin-top:3px">💬 ${esc(item.note)}</div>`:''}
-        </div>
-        ${editable
-          ? `<div class="si-edit-wrap">
-              <input type="number" class="si-qty-input" id="sq-${item.prodId}"
-                value="${item.qty}" min="0" step="0.5"
-                onchange="updateSummaryQty('${item.prodId}','${shop.id}',this.value)"
-              />
-              <span style="font-size:.82rem;color:var(--ink3)">${esc(item.unit)}</span>
-             </div>`
-          : `<div class="si-qty">${item.qty} ${esc(item.unit)}</div>`
-        }
-      </div>`;
-    });
-    html+='</div>';
-  });
-
-  if(byShop['__none']?.items.length){
-    hasAny=true;
-    html+=`<div class="shop-block">
-      <div class="shop-block-hdr">❓ ไม่ระบุร้านค้า</div>`;
-    byShop['__none'].items.forEach(item=>{
-      html+=`<div class="summary-item">
-        <div class="si-name">${esc(item.name)}</div>
-        <div class="si-qty">${item.qty} ${esc(item.unit)}</div>
-      </div>`;
-    });
-    html+='</div>';
-  }
-
-  return hasAny ? html : '<div class="empty">ไม่มีรายการ (พนักงานไม่ได้สั่งของ)</div>';
-}
-
-function updateSummaryQty(prodId, shopId, newVal){
-  const qty=parseFloat(newVal);
-  const latest=getLatestSession();
-  if(!latest) return;
-  const [sid,sess]=latest;
-  // หา entry ที่มี prodId นี้
-  Object.entries(sess.entries||{}).forEach(([empId,entry])=>{
-    if(entry.items && entry.items[prodId]!==undefined){
-      if(qty>0){
-        R.session(sid).child(`entries/${empId}/items/${prodId}/qty`).set(qty);
-      } else {
-        // qty=0 → ลบออก
-        R.session(sid).child(`entries/${empId}/items/${prodId}`).remove();
-      }
-    }
-  });
-}
-
-function confirmClearSession(){
-  const latest=getLatestSession();
-  if(!latest){ toast('ไม่มีรายการให้ล้าง'); return; }
-  showModal('ล้างรายการ',
-    `ล้างรายการ ${fmtDate(latest[1].date)} ออกทั้งหมด?\n\nรายการนี้จะยังอยู่ในประวัติ`,
-    ()=>{
-      // mark session ว่า cleared แต่ไม่ลบออกจาก history
-      R.session(latest[0]).update({completed:false, cleared:true}).then(()=>{
-        toast('✅ ล้างรายการแล้ว');
-        renderSummary();
-      });
-    }
-  );
-}
-
-// ══════════════════════════════════════════════
-// ── SUMMARY QUICK ADD (sq*) ──
-// ══════════════════════════════════════════════
-let sqSelectedProductId=null;
-
-function sqFindExistingItem(pid){
-  const sess=S.sessions[qaTargetSessionId];
-  if(!sess) return null;
-  for(const [empId,entry] of Object.entries(sess.entries||{})){
-    if(entry.items && entry.items[pid]) return {empId, item:entry.items[pid]};
-  }
-  return null;
-}
-
-function sqResetUI(){
-  sqSelectedProductId=null;
-  const search=document.getElementById('sq-search');
-  const suggest=document.getElementById('sq-suggest');
-  const confirmArea=document.getElementById('sq-confirm-area');
-  if(search) search.value='';
-  if(suggest){ suggest.style.display='none'; suggest.innerHTML=''; }
-  if(confirmArea) confirmArea.style.display='none';
-}
-
-function sqSearchInput(){
-  const q=(document.getElementById('sq-search')?.value||'').trim();
+// ── QUICK ADD in summary ──
+let sqSelected=null;
+function sqSearch(){
+  const q=document.getElementById('sq-search').value.toLowerCase().trim();
   const box=document.getElementById('sq-suggest');
-  sqSelectedProductId=null;
-  document.getElementById('sq-confirm-area').style.display='none';
-  if(!q){ box.style.display='none'; box.innerHTML=''; return; }
-
-  const matched=Object.entries(S.products)
-    .filter(([,p])=>(p.name||'').includes(q))
-    .sort((a,b)=>(a[1].name||'').localeCompare(b[1].name||'','th'))
-    .slice(0,8);
-
-  if(!matched.length){
-    box.innerHTML='<div class="qa-suggest-empty">ไม่พบสินค้าที่ตรงกับคำค้นนี้</div>';
-    box.style.display='block';
-    return;
-  }
-
-  box.innerHTML=matched.map(([pid,p])=>{
-    const shopName=p.shopId ? (S.shops[p.shopId]?.name||'ไม่ระบุร้าน') : 'ยังไม่ระบุร้าน';
-    const existing=sqFindExistingItem(pid);
-    const tag=existing ? `<span class="qa-suggest-tag">✓ มีแล้ว ${existing.item.qty} ${esc(p.unit||'')}</span>` : '';
-    return `<button type="button" class="qa-suggest-item" onclick="sqPickProduct('${pid}')">
-      <span class="qa-suggest-name">${esc(p.name)}</span>
-      <span class="qa-suggest-meta">🏪 ${esc(shopName)} ${tag}</span>
-    </button>`;
-  }).join('');
+  if(!q){box.style.display='none';return}
+  const results=Object.entries(S.products).filter(([,p])=>p.name?.toLowerCase().includes(q)).slice(0,10);
+  if(!results.length){box.innerHTML=`<div class="sug-empty">ไม่พบสินค้า</div>`;box.style.display='block';return}
+  box.innerHTML=results.map(([id,p])=>
+    `<button class="sug-item" onclick="sqSelect('${id}')">
+      <div class="sug-name">${esc(p.name)}</div>
+      <div class="sug-meta">${p.shopName?`🏪 ${esc(p.shopName)}`:''}${p.unit?` · ${esc(p.unit)}`:''}</div>
+    </button>`).join('');
   box.style.display='block';
 }
-
-function sqPickProduct(pid){
-  const p=S.products[pid];
-  if(!p) return;
-  sqSelectedProductId=pid;
+function sqSelect(id){
+  const p=S.products[id];if(!p)return;
+  sqSelected={id,...p};
   document.getElementById('sq-suggest').style.display='none';
   document.getElementById('sq-search').value=p.name;
-
-  const existing=sqFindExistingItem(pid);
-  const shopName=p.shopId ? (S.shops[p.shopId]?.name||'ไม่ระบุร้าน') : 'ยังไม่ระบุร้าน';
-
   document.getElementById('sq-confirm-name').textContent=p.name;
-  document.getElementById('sq-confirm-shop').textContent='🏪 '+shopName;
-  document.getElementById('sq-unit-label').textContent=p.unit||'';
-
-  const qtyInput=document.getElementById('sq-qty');
-  qtyInput.value = existing ? existing.item.qty : '';
-  document.getElementById('sq-note').value = existing ? (existing.item.note||'') : '';
-
-  document.getElementById('sq-confirm-area').style.display='block';
-  qtyInput.focus();
+  document.getElementById('sq-confirm-shop').textContent=p.shopName?`🏪 ${p.shopName}`:'';
+  document.getElementById('sq-unit').textContent=p.unit||'';
+  document.getElementById('sq-qty').value='';
+  document.getElementById('sq-note').value='';
+  document.getElementById('sq-confirm').style.display='';
+  document.getElementById('sq-qty').focus();
+}
+function sqCancel(){sqSelected=null;document.getElementById('sq-confirm').style.display='none';document.getElementById('sq-search').value=''}
+function sqConfirm(){
+  if(!sqSelected)return;
+  const qty=parseFloat(document.getElementById('sq-qty').value);
+  if(isNaN(qty)||qty<=0){toast('กรุณากรอกจำนวน');return}
+  const note=document.getElementById('sq-note').value.trim();
+  const p=sqSelected;
+  const latest=getLatestSession();
+  if(!latest){toast('ไม่มีรายการที่ active');return}
+  const [sid]=latest;
+  const empId=p.employeeId||NONE_ID;
+  R.session(sid).child(`entries/${empId}/items/${p.id}`)
+    .set({name:p.name,unit:p.unit||'',qty,shopId:p.shopId||'',shopName:p.shopName||'',note})
+    .then(()=>{toast(`✅ เพิ่ม ${p.name} แล้ว`);sqCancel();renderSummary()});
 }
 
-function sqCancelConfirm(){
-  sqSelectedProductId=null;
-  document.getElementById('sq-confirm-area').style.display='none';
-}
-
-function sqConfirmAdd(){
-  if(!sqSelectedProductId){ toast('เลือกสินค้าก่อน'); return; }
-  if(!qaTargetSessionId){ toast('ไม่พบรายการที่จะเพิ่ม'); return; }
-  const pid=sqSelectedProductId;
-  const p=S.products[pid];
-  if(!p){ toast('ไม่พบสินค้านี้'); return; }
-
-  const qtyInput=document.getElementById('sq-qty');
-  const qty=parseFloat(qtyInput?.value);
-  if(!(qty>0)){ toast('กรอกจำนวนให้ถูกต้อง'); qtyInput?.focus(); return; }
-  const note=(document.getElementById('sq-note')?.value||'').trim();
-
-  const empId = isUnassignedProduct(p) ? NONE_EMP_ID : p.employeeId;
-  const empName = empId===NONE_EMP_ID ? NONE_EMP_NAME : (S.employees[empId]?.name||'');
-
-  const itemData={ name:p.name, unit:p.unit||'', qty };
-  if(p.shopId){ itemData.shopId=p.shopId; itemData.shopName=S.shops[p.shopId]?.name||'ไม่ระบุ'; }
-  else { itemData.shopName='ไม่ระบุ'; }
-  if(note) itemData.note=note;
-
-  const entryRef=R.session(qaTargetSessionId).child(`entries/${empId}`);
-  entryRef.update({ empName, savedAt:Date.now(), hasItems:true, skipped:false }).then(()=>{
-    return entryRef.child(`items/${pid}`).set(itemData);
-  }).then(()=>{
-    toast(`✅ เพิ่ม ${p.name} ${qty} ${p.unit||''} แล้ว`);
-    sqResetUI();
-    setTimeout(()=>renderSummary(), 300);
-  });
-}
-
-function sqUpdateQty(empId,pid,val){
-  if(!qaTargetSessionId) return;
-  const qty=parseFloat(val);
-  if(qty>0){
-    R.session(qaTargetSessionId).child(`entries/${empId}/items/${pid}/qty`).set(qty).then(()=>{
-      toast('✅ อัปเดตจำนวนแล้ว');
-      setTimeout(()=>renderSummary(), 300);
-    });
-  } else {
-    sqRemoveItem(empId,pid);
+// ══════════════════════════════════════════════
+// SUMMARY
+// ══════════════════════════════════════════════
+function renderSummary(){
+  const latest=getLatestSession();
+  const qaCard=document.getElementById('sum-qa-card');
+  if(!latest){
+    document.getElementById('sum-title').textContent='ไม่มีรายการ';
+    document.getElementById('sum-meta').textContent='';
+    document.getElementById('sum-content').innerHTML='<div class="empty"><div class="empty-icon">📋</div>ยังไม่มีรายการ<br>ไปที่หน้า "จด" เพื่อเริ่มได้เลย</div>';
+    qaCard.style.display='none';
+    return;
   }
-}
-
-function sqRemoveItem(empId,pid){
-  if(!qaTargetSessionId) return;
-  R.session(qaTargetSessionId).child(`entries/${empId}/items/${pid}`).remove().then(()=>{
-    toast('🗑️ ลบแล้ว');
-    setTimeout(()=>renderSummary(), 300);
-  });
-}
-
-function sqRenderList(){
-  const el=document.getElementById('sq-added-list');
-  if(!el) return;
-  const sess=S.sessions[qaTargetSessionId];
-  if(!sess){ el.innerHTML=''; return; }
-
-  const items=[];
-  Object.entries(sess.entries||{}).forEach(([empId,entry])=>{
-    Object.entries(entry.items||{}).forEach(([pid,item])=>{
-      items.push({pid,empId,...item});
-    });
-  });
-
-  if(!items.length){ el.innerHTML=''; return; }
-  items.sort((a,b)=>(a.name||'').localeCompare(b.name||'','th'));
-
-  el.innerHTML = `<div class="qa-list-title">รายการทั้งหมด (${items.length} รายการ)</div>` +
-    items.map(it=>`
-      <div class="qa-item-row">
-        <div class="qa-item-info">
-          <div class="qa-item-name">${esc(it.name)}</div>
-          <div class="qa-item-shop">🏪 ${esc(it.shopName||'ไม่ระบุ')}</div>
-        </div>
-        <input type="number" class="qa-item-qty" value="${it.qty}" min="0" step="0.5"
-          onchange="sqUpdateQty('${it.empId}','${it.pid}',this.value)" />
-        <span class="qa-item-unit">${esc(it.unit||'')}</span>
-        <button class="btn btn-ghost btn-sm btn-icon" onclick="sqRemoveItem('${it.empId}','${it.pid}')">🗑️</button>
-      </div>
-    `).join('');
-}
-
-function markShoppingDone(){
-  const latest=getLatestSession();
-  if(!latest){ toast('ไม่มีรายการ'); return; }
-  showModal('ยืนยันซื้อของเสร็จแล้ว',
-    `ยืนยันว่าไปซื้อของตามรายการวันที่ ${fmtDate(latest[1].date)} เสร็จเรียบร้อยแล้ว?\n\nรายการนี้จะย้ายไปอยู่ในประวัติ`,
-    ()=>{
-      R.session(latest[0]).update({shoppingDone:true, shoppingDoneAt:Date.now()}).then(()=>{
-        toast('✅ บันทึกว่าซื้อของเสร็จแล้ว');
-        renderSummary();
-      });
-    }
-  );
-}
-
-// ══════════════════════════════════════════════
-// ── PRINT ──
-// ══════════════════════════════════════════════
-function printSummary(){
-  const latest=getLatestSession();
-  if(!latest){ toast('ไม่มีรายการ'); return; }
-  const [,sess]=latest;
-  const byShop={};
+  const [sid,sess]=latest;
+  const allItems=[];
   Object.values(sess.entries||{}).forEach(entry=>{
-    Object.entries(entry.items||{}).forEach(([,item])=>{
+    Object.values(entry.items||{}).forEach(item=>allItems.push(item));
+  });
+  document.getElementById('sum-title').textContent=`สรุป · ${fmtDate(sess.date)}`;
+  document.getElementById('sum-meta').textContent=`${allItems.length} รายการ`;
+  qaCard.style.display='';
+
+  const byShop={};
+  sortedShops().forEach(s=>byShop[s.id]={name:s.name,items:[]});
+  byShop['__none']={name:'ไม่ระบุร้านค้า',items:[]};
+
+  Object.values(sess.entries||{}).forEach(entry=>{
+    Object.values(entry.items||{}).forEach(item=>{
       const key=item.shopId||'__none';
       if(!byShop[key]) byShop[key]={name:item.shopName||'ไม่ระบุ',items:[]};
       byShop[key].items.push(item);
     });
   });
-  let shopCount=0,itemCount=0,content='';
-  getSortedShops().forEach(shop=>{
-    const g=byShop[shop.id];
+
+  let html='';
+  [...sortedShops().map(s=>s.id),'__none'].forEach(key=>{
+    const g=byShop[key];
     if(!g||!g.items.length) return;
-    shopCount++;
-    content+=`<div class="p-shop">${esc(shop.name)}</div>`;
-    g.items.forEach(item=>{
-      itemCount++;
-      content+=`<div class="p-item"><span class="p-box"></span><span>${esc(item.name)} ${item.qty} ${esc(item.unit)}${item.note?` · ${esc(item.note)}`:''}</span></div>`;
+    html+=`<div class="shop-block">
+      <div class="shop-hdr">
+        <div class="shop-hdr-name">🏪 ${esc(g.name)}</div>
+        <div class="shop-hdr-count">${g.items.length} รายการ</div>
+      </div>
+      ${g.items.sort((a,b)=>(a.name||'').localeCompare(b.name||'','th')).map(item=>`
+        <div class="sum-item">
+          <div class="sum-item-name">
+            ${esc(item.name)}
+            ${item.note?`<div class="sum-item-note">💬 ${esc(item.note)}</div>`:''}
+          </div>
+          <div class="sum-qty">${item.qty} ${esc(item.unit||'')}</div>
+        </div>`).join('')}
+    </div>`;
+  });
+
+  document.getElementById('sum-content').innerHTML=html||'<div class="empty"><div class="empty-icon">📋</div>ยังไม่มีรายการ</div>';
+  renderSqList();
+}
+
+function renderSqList(){
+  const latest=getLatestSession();if(!latest)return;
+  const [,sess]=latest;
+  const el=document.getElementById('sq-list');if(!el)return;
+  const items=[];
+  Object.entries(sess.entries||{}).forEach(([empId,entry])=>{
+    Object.entries(entry.items||{}).forEach(([pid,item])=>{items.push({pid,empId,...item})});
+  });
+  if(!items.length){el.innerHTML='';return}
+  el.innerHTML=`<div style="font-size:.75rem;font-weight:700;color:var(--ink3);margin-bottom:6px">รายการที่เพิ่มแล้ว (${items.length})</div>`+
+    items.sort((a,b)=>(a.name||'').localeCompare(b.name||'','th')).map(it=>`
+      <div class="lrow" style="padding:10px 0">
+        <div class="lrow-name" style="font-size:.88rem">${esc(it.name)}<div class="lrow-sub">${it.shopName?`🏪 ${esc(it.shopName)}`:''}</div></div>
+        <div style="color:var(--brand);font-weight:700;font-size:.9rem;flex-shrink:0">${it.qty} ${esc(it.unit||'')}</div>
+      </div>`).join('');
+}
+
+function markDone(){
+  const latest=getLatestSession();
+  if(!latest){toast('ไม่มีรายการ');return}
+  showModal('ซื้อของเสร็จแล้ว?',`ยืนยันว่าซื้อของวันที่ ${fmtDate(latest[1].date)} เสร็จแล้ว? รายการนี้จะย้ายไปประวัติ`,()=>{
+    R.session(latest[0]).update({shoppingDone:true,shoppingDoneAt:Date.now()}).then(()=>{
+      toast('✅ บันทึกเสร็จแล้ว');renderSummary();
     });
+  },'ยืนยัน','btn-green');
+}
+
+function printSummary(){
+  const latest=getLatestSession();
+  if(!latest){toast('ไม่มีรายการ');return}
+  const [,sess]=latest;
+  const byShop={};
+  Object.values(sess.entries||{}).forEach(entry=>{
+    Object.values(entry.items||{}).forEach(item=>{
+      const k=item.shopId||'__none';
+      if(!byShop[k]) byShop[k]={name:item.shopName||'ไม่ระบุ',items:[]};
+      byShop[k].items.push(item);
+    });
+  });
+  let shopCount=0,itemCount=0,content='';
+  sortedShops().forEach(s=>{
+    const g=byShop[s.id];if(!g||!g.items.length)return;
+    shopCount++;
+    content+=`<div class="p-shop">${esc(s.name)}</div>`;
+    g.items.forEach(it=>{itemCount++;content+=`<div class="p-item"><span class="p-box"></span><span>${esc(it.name)} ${it.qty} ${esc(it.unit)}${it.note?` · ${esc(it.note)}`:''}</span></div>`});
     content+=`<div class="p-note">หมายเหตุ / ราคา: ___________________________</div>`;
   });
   if(byShop['__none']?.items.length){
-    shopCount++;
-    content+=`<div class="p-shop">ไม่ระบุร้านค้า</div>`;
-    byShop['__none'].items.forEach(item=>{
-      itemCount++;
-      content+=`<div class="p-item"><span class="p-box"></span><span>${esc(item.name)} ${item.qty} ${esc(item.unit)}${item.note?` · ${esc(item.note)}`:''}</span></div>`;
-    });
+    shopCount++;content+=`<div class="p-shop">ไม่ระบุร้านค้า</div>`;
+    byShop['__none'].items.forEach(it=>{itemCount++;content+=`<div class="p-item"><span class="p-box"></span><span>${esc(it.name)} ${it.qty} ${esc(it.unit)}${it.note?` · ${esc(it.note)}`:''}</span></div>`});
     content+=`<div class="p-note">หมายเหตุ: ___________________________</div>`;
   }
   document.getElementById('print-view').innerHTML=`
     <div class="p-title">รายการซื้อของตลาด · ร้านอาหารแวะถัวะ</div>
     <div class="p-date">วันที่ ${fmtDate(sess.date)}</div>
     ${content}
-    <div class="p-sum">จำนวนร้าน: ${shopCount} ร้าน &nbsp;·&nbsp; รายการทั้งหมด: ${itemCount} รายการ</div>`;
+    <div class="p-sum">ร้าน: ${shopCount} ร้าน &nbsp;·&nbsp; รายการ: ${itemCount} รายการ</div>`;
   window.print();
 }
 
 // ══════════════════════════════════════════════
-// ── HISTORY ──
+// HISTORY
 // ══════════════════════════════════════════════
-let viewingSessionId=null;
-
 function renderHistList(){
-  document.getElementById('hist-list-view').style.display='';
-  document.getElementById('hist-detail-view').style.display='none';
+  document.getElementById('hist-list-wrap').style.display='';
+  document.getElementById('hist-detail-wrap').style.display='none';
   const el=document.getElementById('hist-list');
-  const completed=Object.entries(S.sessions)
-    .filter(([,s])=>s.completed && s.shoppingDone)
+  const done=Object.entries(S.sessions)
+    .filter(([,s])=>s.completed&&s.shoppingDone)
     .sort((a,b)=>b[1].date?.localeCompare(a[1].date||'')||0);
-  if(!completed.length){ el.innerHTML='<div class="empty">ยังไม่มีประวัติ</div>'; return; }
-  el.innerHTML=completed.map(([id,sess])=>{
-    const totalItems=Object.values(sess.entries||{})
-      .reduce((sum,e)=>sum+Object.keys(e.items||{}).length,0);
-    return `<div class="hist-item" onclick="openHistDetail('${id}')">
+  if(!done.length){el.innerHTML='<div class="empty"><div class="empty-icon">📅</div>ยังไม่มีประวัติ</div>';return}
+  el.innerHTML=done.map(([id,sess])=>{
+    const total=Object.values(sess.entries||{}).reduce((s,e)=>s+Object.keys(e.items||{}).length,0);
+    return `<div class="hist-row" onclick="openHistDetail('${id}')">
       <div style="flex:1">
         <div class="hist-date">${fmtDate(sess.date)}</div>
-        <div class="hist-meta">${totalItems} รายการ</div>
+        <div class="hist-meta">${total} รายการ</div>
       </div>
-      <svg class="hist-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--ink4)" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
     </div>`;
   }).join('');
 }
@@ -2089,119 +1361,96 @@ function renderHistList(){
 function openHistDetail(sid){
   viewingSessionId=sid;
   const sess=S.sessions[sid];
-  document.getElementById('hist-list-view').style.display='none';
-  document.getElementById('hist-detail-view').style.display='';
+  document.getElementById('hist-list-wrap').style.display='none';
+  document.getElementById('hist-detail-wrap').style.display='';
   document.getElementById('hist-detail-title').textContent=fmtDate(sess?.date);
-  document.getElementById('hist-detail-content').innerHTML=buildSummaryHTML(sess, false);
+  document.getElementById('hist-detail-content').innerHTML=buildSummaryHTML(sess);
 }
+function closeHistDetail(){viewingSessionId=null;renderHistList()}
 
-function closeHistDetail(){
-  viewingSessionId=null;
-  renderHistList();
-}
-
-function confirmDeleteSession(){
-  if(!viewingSessionId) return;
-  const sess=S.sessions[viewingSessionId];
-  showModal('ลบประวัติ',`ลบประวัติ ${fmtDate(sess?.date)}?\n\nไม่สามารถย้อนกลับได้`,()=>{
-    R.session(viewingSessionId).remove().then(()=>{
-      toast('🗑️ ลบประวัติแล้ว');
-      closeHistDetail();
+function buildSummaryHTML(sess){
+  const byShop={};
+  Object.values(sess?.entries||{}).forEach(entry=>{
+    Object.values(entry.items||{}).forEach(item=>{
+      const k=item.shopId||'__none';
+      if(!byShop[k]) byShop[k]={name:item.shopName||'ไม่ระบุ',items:[]};
+      byShop[k].items.push(item);
     });
+  });
+  let html='';
+  [...sortedShops().map(s=>s.id),'__none'].forEach(key=>{
+    const g=byShop[key];if(!g||!g.items.length)return;
+    html+=`<div class="shop-block">
+      <div class="shop-hdr"><div class="shop-hdr-name">🏪 ${esc(g.name)}</div><div class="shop-hdr-count">${g.items.length} รายการ</div></div>
+      ${g.items.sort((a,b)=>(a.name||'').localeCompare(b.name||'','th')).map(item=>`
+        <div class="sum-item">
+          <div class="sum-item-name">${esc(item.name)}${item.note?`<div class="sum-item-note">💬 ${esc(item.note)}</div>`:''}</div>
+          <div class="sum-qty">${item.qty} ${esc(item.unit||'')}</div>
+        </div>`).join('')}
+    </div>`;
+  });
+  return html||'<div class="empty">ไม่มีรายการ</div>';
+}
+
+function reopenSession(sid){
+  const sess=S.sessions[sid];
+  showModal('เปิดกลับมาแก้ไข',`ย้ายรายการวันที่ ${fmtDate(sess?.date)} กลับมาแก้ไขอีกครั้ง?`,()=>{
+    R.session(sid).update({shoppingDone:false,shoppingDoneAt:null}).then(()=>{
+      toast('🔓 เปิดกลับมาแล้ว — ดูที่หน้า "สรุป"');closeHistDetail();
+    });
+  },'เปิดกลับมา','btn-orange');
+}
+function dupSession(sid){
+  const sess=S.sessions[sid];
+  showModal('ทำซ้ำเป็นรอบใหม่',`คัดลอกรายการวันที่ ${fmtDate(sess?.date)} มาเป็นรอบใหม่?`,()=>{
+    R.sessions().push({date:today(),completed:false,cleared:false,shoppingDone:false,createdAt:Date.now(),entries:sess.entries||{}})
+      .then(ref=>{
+        activeSessionId=ref.key;toast('📋 สร้างรอบใหม่แล้ว');closeHistDetail();
+        document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+        document.querySelectorAll('.tb-btn').forEach(b=>b.classList.remove('on'));
+        document.getElementById('pg-jot').classList.add('on');
+        document.querySelectorAll('.tb-btn')[0].classList.add('on');
+        openEmpBoard();
+      });
+  },'ทำซ้ำ','btn-green');
+}
+function deleteSession(sid){
+  const sess=S.sessions[sid];
+  showModal('ลบประวัติ',`ลบประวัติวันที่ ${fmtDate(sess?.date)}? ไม่สามารถย้อนกลับได้`,()=>{
+    R.session(sid).remove().then(()=>{toast('🗑️ ลบแล้ว');closeHistDetail()});
   });
 }
 
-function reopenToSummary(sid){
-  if(!sid) return;
-  const sess=S.sessions[sid];
-  showModal('เปิดกลับมาแก้ไข',
-    `ย้ายรายการวันที่ ${fmtDate(sess?.date)} กลับไปที่หน้า "สรุป" เพื่อแก้ไข/เพิ่มสินค้าได้อีกครั้ง?`,
-    ()=>{
-      R.session(sid).update({shoppingDone:false, shoppingDoneAt:null}).then(()=>{
-        toast('🔓 เปิดกลับมาแก้ไขแล้ว ไปที่หน้า "สรุป" ได้เลย');
-        closeHistDetail();
-      });
-    }
-  );
-}
+// ══ CLOSE SUGGEST ON OUTSIDE CLICK ══
+document.addEventListener('click',e=>{
+  ['qa-suggest','sq-suggest'].forEach(id=>{
+    const box=document.getElementById(id);
+    const inp=document.getElementById(id==='qa-suggest'?'qa-search':'sq-search');
+    if(box&&inp&&!inp.contains(e.target)&&!box.contains(e.target)) box.style.display='none';
+  });
+});
+document.getElementById('modal-wrap').addEventListener('click',e=>{
+  if(e.target===document.getElementById('modal-wrap')) closeModal();
+});
 
-function duplicateAsNewSession(sid){
-  const sess=S.sessions[sid];
-  if(!sess) return;
-  showModal('ทำซ้ำเป็นรอบใหม่',
-    `คัดลอกรายการวันที่ ${fmtDate(sess.date)} มาเป็นรอบจดใหม่?`,
-    ()=>{
-      R.sessions().push({
-        date: today(),
-        completed:false, cleared:false, shoppingDone:false,
-        createdAt: Date.now(),
-        entries: sess.entries || {}
-      }).then(ref=>{
-        toast('📋 สร้างรอบใหม่จากรายการเดิมแล้ว');
-        activeSessionId=ref.key;
-        closeHistDetail();
-        document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
-        document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
-        document.getElementById('pg-ask').classList.add('on');
-        document.querySelectorAll('.nb')[1].classList.add('on');
-        openEmpBoard();
-      });
-    }
-  );
-}
-
-// ══════════════════════════════════════════════
-// REALTIME LISTENERS
-// ══════════════════════════════════════════════
-R.employees().on('value', snap=>{
-  S.employees = snap.val()||{};
-  renderEmployees();
-  renderProducts();
-});
-R.shops().on('value', snap=>{
-  S.shops = snap.val()||{};
-  renderShops();
-  renderProducts();
-  populateSelects();
-});
-R.products().on('value', snap=>{
-  S.products = snap.val()||{};
-  renderProducts();
-});
-R.sessions().on('value', snap=>{
-  S.sessions = snap.val()||{};
-  // อัปเดต summary ถ้ากำลังดูอยู่
+// ══ FIREBASE REALTIME LISTENERS ══
+R.employees().on('value',snap=>{S.employees=snap.val()||{};renderEmployees();renderProducts();populateSelects()});
+R.shops().on('value',snap=>{S.shops=snap.val()||{};renderShops();renderProducts();populateSelects()});
+R.products().on('value',snap=>{S.products=snap.val()||{};renderProducts()});
+R.sessions().on('value',snap=>{
+  S.sessions=snap.val()||{};
   if(document.getElementById('pg-summary').classList.contains('on')) renderSummary();
-  if(document.getElementById('pg-history').classList.contains('on')) {
-    if(viewingSessionId) openHistDetail(viewingSessionId);
-    else renderHistList();
+  if(document.getElementById('pg-history').classList.contains('on')){
+    if(viewingSessionId) openHistDetail(viewingSessionId); else renderHistList();
   }
-  if(document.getElementById('pg-ask').classList.contains('on')
-     && document.getElementById('ask-pick-view').style.display!=='none'){
-    renderEmpBoard();
-    renderQuickAddList();
+  if(document.getElementById('pg-jot').classList.contains('on')){
+    renderJotStart();
+    if(document.getElementById('jot-board').style.display!=='none'){renderEmpGrid();renderQaList()}
   }
 });
 
-// ── Quick add: ปิด dropdown รายการแนะนำเมื่อแตะนอกกล่อง ──
-document.addEventListener('click', e=>{
-  const card=document.getElementById('quick-add-card');
-  if(card && !card.contains(e.target)){
-    const box=document.getElementById('qa-suggest');
-    if(box) box.style.display='none';
-  }
-  const sqCard=document.getElementById('summary-quick-add-card');
-  if(sqCard && !sqCard.contains(e.target)){
-    const box=document.getElementById('sq-suggest');
-    if(box) box.style.display='none';
-  }
-});
-
-// ── Init ──
-document.getElementById('session-date').value = today();
-document.getElementById('modal-confirm').addEventListener('click', e=>{
-  if(e.target===document.getElementById('modal-confirm')) closeModal();
-});
+// ── INIT ──
+document.getElementById('session-date').value=today();
 </script>
 </body>
 </html>
