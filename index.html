@@ -229,6 +229,21 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
   font-size:.95rem;font-weight:700;color:var(--brand);
   white-space:nowrap;flex-shrink:0;
 }
+/* ─── SUMMARY: double-tap to strike ─── */
+.sum-item{cursor:pointer;transition:background .15s;user-select:none;-webkit-user-select:none}
+.sum-item:active{background:var(--bg)}
+.sum-item.ticked .sum-item-name{text-decoration:line-through;color:var(--ink4);opacity:.55}
+.sum-item.ticked .sum-qty{color:var(--ink4);opacity:.55}
+.sum-item.ticked::before{content:'✓';font-size:.85rem;font-weight:700;color:var(--brand);margin-right:4px;flex-shrink:0}
+.shop-block.all-done .shop-hdr{background:var(--ink4)}
+.shop-block.all-done .shop-hdr-name::after{content:' ✓';font-size:.8rem;opacity:.8}
+.shop-hdr-prog{font-size:.75rem;opacity:.85;margin-left:auto;padding-left:8px;white-space:nowrap}
+.shop-num{
+  background:rgba(255,255,255,.25);
+  border-radius:50%;width:22px;height:22px;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:.7rem;font-weight:800;flex-shrink:0;
+}
 
 /* ─── HISTORY ─── */
 .hist-row{
@@ -321,22 +336,30 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
   transition:width .3s ease;
 }
 
-/* ─── PRINT ─── */
-@media print{
-  body{background:#fff;padding:0}
-  #topbar,#toast,.overlay,#nav-bottom{display:none!important}
-  .pg{display:none!important}
-  #print-view{display:block!important}
-  @page{size:A4;margin:15mm 18mm}
+
+
+/* ─── FILTER TABS ─── */
+.filter-tabs{display:flex;gap:6px;margin-bottom:10px}
+.filter-tab{
+  flex:1;padding:8px 4px;border-radius:var(--rs);border:1.5px solid var(--border);
+  background:var(--bg);font-size:.8rem;font-weight:700;
+  font-family:'Noto Sans Thai',sans-serif;cursor:pointer;
+  color:var(--ink3);transition:all .15s;-webkit-tap-highlight-color:transparent;
 }
-#print-view{display:none;font-family:'Noto Sans Thai',serif;color:#000;font-size:13pt}
-.p-title{text-align:center;font-size:18pt;font-weight:bold;margin-bottom:4pt}
-.p-date{text-align:center;font-size:11pt;margin-bottom:16pt;color:#555}
-.p-shop{font-size:14pt;font-weight:bold;border-bottom:2px solid #000;padding-bottom:3pt;margin:14pt 0 6pt}
-.p-item{display:flex;align-items:flex-start;gap:8pt;padding:4pt 0;font-size:12pt}
-.p-box{width:13pt;height:13pt;border:1.5px solid #000;display:inline-block;flex-shrink:0;margin-top:1pt}
-.p-note{margin:4pt 0 12pt;font-size:10pt;color:#555;border-bottom:1px dashed #aaa;padding-bottom:12pt}
-.p-sum{margin-top:18pt;padding-top:10pt;border-top:2px solid #000;font-size:12pt}
+.filter-tab.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+.filter-tab.on-red{background:var(--red);color:#fff;border-color:var(--red)}
+
+/* ─── SKIP / ไม่ซื้อ ─── */
+.skip-btn{
+  width:32px;height:32px;border-radius:50%;border:1.5px solid var(--border);
+  background:var(--bg);font-size:.85rem;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;color:var(--ink4);
+  transition:border-color .15s,background .15s,color .15s;
+  flex-shrink:0;
+}
+.skip-btn.is-skipped{border-color:var(--red);background:var(--red-light);color:var(--red)}
+.prod-row-name.skipped{text-decoration:line-through;color:var(--red);opacity:.6}
 
 /* ─── NOTE INLINE ─── */
 .note-wrap{
@@ -579,7 +602,6 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
           <div class="bold" id="sum-title">สรุปรายการ</div>
           <div class="text-sm mt2" id="sum-meta"></div>
         </div>
-        <button class="btn btn-ghost btn-xs" onclick="printSummary()">🖨️ พิมพ์</button>
         <button class="btn btn-green btn-xs" onclick="markDone()">✔ ซื้อเสร็จแล้ว</button>
       </div>
     </div>
@@ -589,7 +611,7 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
   <div class="card" id="sum-qa-card" style="display:none">
     <div class="card-hdr">
       <span>⚡</span>
-      <span style="flex:1;font-size:.95rem">เพิ่มด่วน</span>
+      <span style="flex:1;font-size:.95rem">เพิ่ม / แก้ไขสินค้า</span>
       <span class="chip chip-gray">แก้ไขได้ทุกเมื่อ</span>
     </div>
     <div class="card-body">
@@ -597,25 +619,41 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
         <input type="text" id="sq-search" class="inp" placeholder="พิมพ์ชื่อสินค้า..." oninput="sqSearch()" autocomplete="off" />
         <div id="sq-suggest" class="suggest-box"></div>
       </div>
-      <div id="sq-confirm" class="confirm-strip">
-        <div class="confirm-strip-top">
-          <div style="flex:1">
-            <div class="confirm-strip-name" id="sq-confirm-name">—</div>
-            <div class="confirm-strip-shop" id="sq-confirm-shop">—</div>
-          </div>
-          <div class="qty-wrap">
-            <input type="number" id="sq-qty" class="qty-num" min="0" step="0.5" placeholder="0"
+      <div id="sq-form" style="display:none;margin-top:12px">
+        <div class="fg">
+          <label class="lbl">ชื่อสินค้า</label>
+          <input type="text" id="sq-name" class="inp" placeholder="ชื่อสินค้า..." maxlength="80" />
+        </div>
+        <div class="row2 fg">
+          <div>
+            <label class="lbl">จำนวน</label>
+            <input type="number" id="sq-qty" class="inp" min="0" step="0.5" placeholder="0"
               onkeydown="if(event.key==='Enter'){event.preventDefault();sqConfirm();}" />
-            <div class="qty-unit" id="sq-unit"></div>
+          </div>
+          <div>
+            <label class="lbl">หน่วย</label>
+            <input type="text" id="sq-unit-inp" class="inp" placeholder="กก., ชิ้น..." maxlength="20" />
           </div>
         </div>
-        <input type="text" id="sq-note" class="inp inp-sm" placeholder="หมายเหตุ (ไม่บังคับ)" maxlength="100" />
+        <div class="fg">
+          <label class="lbl">ร้านค้า</label>
+          <select id="sq-shop" class="inp"></select>
+        </div>
+        <div class="fg">
+          <label class="lbl">หมายเหตุ (ไม่บังคับ)</label>
+          <input type="text" id="sq-note" class="inp" placeholder="หมายเหตุ..." maxlength="100" />
+        </div>
         <div class="confirm-btns">
           <button class="btn btn-ghost btn-sm" onclick="sqCancel()">ยกเลิก</button>
-          <button class="btn btn-orange btn-sm" style="flex:1" onclick="sqConfirm()">✔ เพิ่ม</button>
+          <button class="btn btn-orange btn-sm" style="flex:1" id="sq-submit-btn" onclick="sqConfirm()">✔ เพิ่ม</button>
         </div>
       </div>
-      <div id="sq-list" class="mt3"></div>
+      <div class="filter-tabs mt3" id="sq-filter-tabs">
+        <button class="filter-tab on" onclick="setSqFilter('all',this)">ทั้งหมด</button>
+        <button class="filter-tab" onclick="setSqFilter('buy',this)">🛒 ซื้อ</button>
+        <button class="filter-tab" onclick="setSqFilter('skip',this)">🚫 ไม่ซื้อ</button>
+      </div>
+      <div id="sq-list"></div>
     </div>
   </div>
 
@@ -839,8 +877,6 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
 </div>
 
 <div id="toast"></div>
-<div id="print-view"></div>
-
 <script>
 // ══════════════════════════════════════════════
 // FIREBASE
@@ -1149,6 +1185,9 @@ function populateSelects(){
   const empOpts=`<option value="">-- ไม่ระบุ --</option>`+emps.map(([id,e])=>`<option value="${id}">${esc(e.name)}</option>`).join('');
   document.getElementById('prod-emp').innerHTML=empOpts;
   document.getElementById('bulk-emp').innerHTML=empOpts;
+  // อัพเดท dropdown ร้านค้าของ quick-edit ด้วย
+  const sqShop=document.getElementById('sq-shop');
+  if(sqShop) sqShop.innerHTML=`<option value="">— ไม่ระบุร้านค้า —</option>`+shops.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
 }
 
 // ══════════════════════════════════════════════
@@ -1430,11 +1469,14 @@ function renderEmpProducts(savedItems){
     const saved=savedItems[id];
     const qty=saved?.qty||'';
     const note=saved?.note||'';
-    const hasVal=qty!=='';
+    const isSkipped=!!(saved?.skipped);
+    const hasVal=qty!==''&&!isSkipped;
     const hasNote=!!note;
+    // ชื่อ: ถ้า skipped → ขีดแดง, ถ้า hasVal → ขีดเขียว (bought), ถ้าไม่มี → ปกติ
+    const nameClass=isSkipped?'skipped':hasVal?'bought':'';
     return `<div class="prod-row" id="pr-${id}" style="flex-wrap:wrap">
       <div class="prod-row-info" style="min-width:0;flex:1">
-        <div class="prod-row-name ${hasVal?'bought':''}" id="pn-${id}">${esc(p.name)}</div>
+        <div class="prod-row-name ${nameClass}" id="pn-${id}">${esc(p.name)}</div>
         <div class="prod-row-shop">${p.shopName?`🏪 ${esc(p.shopName)}`:''}</div>
         <div class="note-wrap ${hasNote?'open':''}" id="notewrap-${id}">
           <input type="text" class="note-inp" id="note-${id}"
@@ -1443,14 +1485,16 @@ function renderEmpProducts(savedItems){
         </div>
       </div>
       <div class="qty-wrap" style="flex-shrink:0">
+        <button class="skip-btn ${isSkipped?'is-skipped':''}" id="skipbtn-${id}"
+          onclick="toggleSkipItem('${id}')" title="ไม่ซื้อวันนี้">🚫</button>
+        <button class="qty-btn" onclick="qtyChange('${id}',-0.5)" ${isSkipped?'disabled':''}>−</button>
+        <input type="number" class="qty-num ${hasVal?'has-val':''}" id="qty-${id}"
+          value="${isSkipped?'':(hasVal?qty:'')}" min="0" step="0.5" placeholder="${isSkipped?'✕':'—'}"
+          oninput="qtyInput('${id}',this)" ${isSkipped?'disabled':''} />
+        <button class="qty-btn" onclick="qtyChange('${id}',0.5)" ${isSkipped?'disabled':''}>+</button>
+        <div class="qty-unit">${esc(p.unit||'')}</div>
         <button class="note-btn ${hasNote?'has-note':''}" id="notebtn-${id}"
           onclick="toggleNote('${id}')" title="หมายเหตุ">💬</button>
-        <button class="qty-btn" onclick="qtyChange('${id}',-0.5)">−</button>
-        <input type="number" class="qty-num ${hasVal?'has-val':''}" id="qty-${id}"
-          value="${hasVal?qty:''}" min="0" step="0.5" placeholder="—"
-          oninput="qtyInput('${id}',this)" />
-        <button class="qty-btn" onclick="qtyChange('${id}',0.5)">+</button>
-        <div class="qty-unit">${esc(p.unit||'')}</div>
       </div>
     </div>`;
   }).join('');
@@ -1466,6 +1510,11 @@ function qtyInput(id,el){
   const val=parseFloat(el.value);
   const hasVal=el.value!==''&&!isNaN(val)&&val>0;
   el.className='qty-num'+(hasVal?' has-val':'');
+  el.removeAttribute('disabled');
+  el.placeholder='—';
+  // ล้าง skipped เมื่อกรอกเลข
+  const skipBtn=document.getElementById('skipbtn-'+id);
+  if(skipBtn){skipBtn.classList.remove('is-skipped');skipBtn.dataset.skipped='0';}
   const nameEl=document.getElementById('pn-'+id);
   if(nameEl) nameEl.className='prod-row-name'+(hasVal?' bought':'');
 }
@@ -1491,6 +1540,30 @@ function noteInput(id,el){
   if(btn) btn.classList.toggle('has-note',hasNote);
 }
 
+// toggle ปุ่มไม่ซื้อในแถว (ยังไม่ save — save เมื่อกดบันทึก)
+function toggleSkipItem(id){
+  const skipBtn=document.getElementById('skipbtn-'+id);
+  const nameEl=document.getElementById('pn-'+id);
+  const qtyEl=document.getElementById('qty-'+id);
+  const minusBtn=qtyEl?.previousElementSibling;
+  const plusBtn=qtyEl?.nextElementSibling;
+  const isNowSkipped=!skipBtn.classList.contains('is-skipped');
+  skipBtn.classList.toggle('is-skipped',isNowSkipped);
+  skipBtn.dataset.skipped=isNowSkipped?'1':'0';
+  if(nameEl){
+    nameEl.classList.remove('bought','skipped');
+    if(isNowSkipped) nameEl.classList.add('skipped');
+  }
+  if(qtyEl){
+    qtyEl.disabled=isNowSkipped;
+    qtyEl.value='';
+    qtyEl.className='qty-num';
+    qtyEl.placeholder=isNowSkipped?'✕':'—';
+  }
+  if(minusBtn) minusBtn.disabled=isNowSkipped;
+  if(plusBtn) plusBtn.disabled=isNowSkipped;
+}
+
 function collectItems(){
   const sess=S.sessions[activeSessionId];
   const oldItems=sess?.entries?.[currentEmpId]?.items||{};
@@ -1499,8 +1572,18 @@ function collectItems(){
   prods.forEach(([id,p])=>{
     const inp=document.getElementById('qty-'+id);
     const noteEl=document.getElementById('note-'+id);
+    const skipBtn=document.getElementById('skipbtn-'+id);
+    const isSkipped=skipBtn?.classList.contains('is-skipped')||false;
     const qty=parseFloat(inp?.value);
-    if(!isNaN(qty)&&qty>0){
+    if(isSkipped){
+      // บันทึก skipped — ไม่มี qty
+      items[id]={
+        name:p.name,unit:p.unit||'',qty:0,
+        shopId:p.shopId||'',shopName:p.shopName||'',
+        note:noteEl?.value.trim()||oldItems[id]?.note||'',
+        skipped:true
+      };
+    } else if(!isNaN(qty)&&qty>0){
       items[id]={
         name:p.name,unit:p.unit||'',qty,
         shopId:p.shopId||'',shopName:p.shopName||'',
@@ -1617,48 +1700,170 @@ function qaRemove(empId,pid){
     .then(()=>{toast('ลบแล้ว');renderQaList()});
 }
 
-// ── QUICK ADD in summary ──
-let sqSelected=null;
+// ── QUICK ADD / EDIT in summary ──
+let sqSelected=null; // { id, name, unit, shopId, shopName, employeeId } จาก products หรือ null
+let sqEditMode=null; // { empId, pid } เมื่อแก้ไขของที่มีอยู่แล้ว
+
+function sqPopulateShop(){
+  const sel=document.getElementById('sq-shop');
+  const shops=sortedShops();
+  sel.innerHTML=`<option value="">— ไม่ระบุร้านค้า —</option>`+
+    shops.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
+}
+
 function sqSearch(){
-  const q=document.getElementById('sq-search').value.toLowerCase().trim();
+  const q=document.getElementById('sq-search').value.trim();
   const box=document.getElementById('sq-suggest');
   if(!q){box.style.display='none';return}
-  const results=Object.entries(S.products).filter(([,p])=>p.name?.toLowerCase().includes(q)).slice(0,10);
-  if(!results.length){box.innerHTML=`<div class="sug-empty">ไม่พบสินค้า</div>`;box.style.display='block';return}
+  const ql=q.toLowerCase();
+  const results=Object.entries(S.products).filter(([,p])=>p.name?.toLowerCase().includes(ql)).slice(0,10);
+  // สร้าง option "เพิ่มใหม่" เสมอ
+  const newOpt=`<button class="sug-item" onclick="sqOpenForm(null,'${q.replace(/'/g,"\'")}')">
+    <div class="sug-name">➕ เพิ่ม "<strong>${esc(q)}</strong>" ใหม่</div>
+    <div class="sug-meta">สินค้าที่ไม่มีในรายการสินค้า</div>
+  </button>`;
+  if(!results.length){
+    box.innerHTML=newOpt;box.style.display='block';return;
+  }
   box.innerHTML=results.map(([id,p])=>
-    `<button class="sug-item" onclick="sqSelect('${id}')">
+    `<button class="sug-item" onclick="sqOpenForm('${id}')">
       <div class="sug-name">${esc(p.name)}</div>
       <div class="sug-meta">${p.shopName?`🏪 ${esc(p.shopName)}`:''}${p.unit?` · ${esc(p.unit)}`:''}</div>
-    </button>`).join('');
+    </button>`).join('')+newOpt;
   box.style.display='block';
 }
-function sqSelect(id){
-  const p=S.products[id];if(!p)return;
-  sqSelected={id,...p};
+
+function sqOpenForm(productId, customName){
   document.getElementById('sq-suggest').style.display='none';
-  document.getElementById('sq-search').value=p.name;
-  document.getElementById('sq-confirm-name').textContent=p.name;
-  document.getElementById('sq-confirm-shop').textContent=p.shopName?`🏪 ${p.shopName}`:'';
-  document.getElementById('sq-unit').textContent=p.unit||'';
-  document.getElementById('sq-qty').value='';
-  document.getElementById('sq-note').value='';
-  document.getElementById('sq-confirm').style.display='';
+  sqEditMode=null;
+  sqPopulateShop();
+
+  // ─── ดูว่าสินค้านี้มีในรายการ session ปัจจุบันไหม ───
+  function findExisting(name, shopId){
+    const latest=getLatestSession();if(!latest)return null;
+    const [,sess]=latest;
+    for(const [empId,entry] of Object.entries(sess.entries||{})){
+      for(const [pid,item] of Object.entries(entry.items||{})){
+        // จับคู่ด้วยชื่อ + ร้านค้า (ถ้ามี)
+        const sameName=item.name===name;
+        const sameShop=shopId?item.shopId===shopId:true;
+        if(sameName&&sameShop) return {empId,pid,item};
+      }
+    }
+    return null;
+  }
+
+  if(productId){
+    const p=S.products[productId];if(!p)return;
+    sqSelected={id:productId,...p};
+    document.getElementById('sq-search').value=p.name;
+
+    // ตรวจว่ามีในรายการแล้วหรือไม่
+    const existing=findExisting(p.name, p.shopId||'');
+    if(existing){
+      // โหมดแก้ไข — ดึงค่าเดิมมาแสดง
+      sqEditMode={empId:existing.empId,pid:existing.pid};
+      sqSelected=null;
+      document.getElementById('sq-name').value=existing.item.name;
+      document.getElementById('sq-qty').value=existing.item.qty;
+      document.getElementById('sq-unit-inp').value=existing.item.unit||'';
+      document.getElementById('sq-shop').value=existing.item.shopId||'';
+      document.getElementById('sq-note').value=existing.item.note||'';
+      document.getElementById('sq-submit-btn').textContent='💾 บันทึก (มีอยู่แล้ว)';
+    } else {
+      // ใหม่ — ดึงค่าจาก product template
+      document.getElementById('sq-name').value=p.name;
+      document.getElementById('sq-qty').value='';
+      document.getElementById('sq-unit-inp').value=p.unit||'';
+      document.getElementById('sq-shop').value=p.shopId||'';
+      document.getElementById('sq-note').value='';
+      document.getElementById('sq-submit-btn').textContent='✔ เพิ่ม';
+    }
+  } else {
+    sqSelected=null;
+    const nm=customName||document.getElementById('sq-search').value.trim();
+    document.getElementById('sq-search').value=nm;
+
+    // ตรวจว่ามีชื่อนี้ในรายการแล้วหรือไม่
+    const existing=findExisting(nm, '');
+    if(existing){
+      sqEditMode={empId:existing.empId,pid:existing.pid};
+      document.getElementById('sq-name').value=existing.item.name;
+      document.getElementById('sq-qty').value=existing.item.qty;
+      document.getElementById('sq-unit-inp').value=existing.item.unit||'';
+      document.getElementById('sq-shop').value=existing.item.shopId||'';
+      document.getElementById('sq-note').value=existing.item.note||'';
+      document.getElementById('sq-submit-btn').textContent='💾 บันทึก (มีอยู่แล้ว)';
+    } else {
+      document.getElementById('sq-name').value=nm;
+      document.getElementById('sq-qty').value='';
+      document.getElementById('sq-unit-inp').value='';
+      document.getElementById('sq-shop').value='';
+      document.getElementById('sq-note').value='';
+      document.getElementById('sq-submit-btn').textContent='✔ เพิ่ม';
+    }
+  }
+  document.getElementById('sq-form').style.display='';
   document.getElementById('sq-qty').focus();
 }
-function sqCancel(){sqSelected=null;document.getElementById('sq-confirm').style.display='none';document.getElementById('sq-search').value=''}
+
+// เรียกเมื่อกดปุ่ม "แก้ไข" บน sum-item
+function sqEditItem(empId, pid){
+  const latest=getLatestSession();if(!latest)return;
+  const [,sess]=latest;
+  const item=sess.entries?.[empId]?.items?.[pid];
+  if(!item)return;
+  sqEditMode={empId,pid};
+  sqSelected=null;
+  sqPopulateShop();
+  document.getElementById('sq-search').value=item.name;
+  document.getElementById('sq-name').value=item.name;
+  // ถ้า skipped → แสดงค่าว่าง ให้ user กรอกจำนวนใหม่
+  document.getElementById('sq-qty').value=item.skipped?'':item.qty;
+  document.getElementById('sq-unit-inp').value=item.unit||'';
+  document.getElementById('sq-shop').value=item.shopId||'';
+  document.getElementById('sq-note').value=item.note||'';
+  document.getElementById('sq-submit-btn').textContent=item.skipped?'✔ ยืนยันซื้อ (เคยกด ไม่ซื้อ)':'💾 บันทึก';
+  document.getElementById('sq-form').style.display='';
+  document.getElementById('sq-qty').focus();
+  // scroll ไปที่ form
+  document.getElementById('sum-qa-card').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function sqCancel(){
+  sqSelected=null;sqEditMode=null;
+  document.getElementById('sq-form').style.display='none';
+  document.getElementById('sq-search').value='';
+}
+
 function sqConfirm(){
-  if(!sqSelected)return;
+  const name=document.getElementById('sq-name').value.trim();
+  if(!name){toast('กรุณากรอกชื่อสินค้า');return}
   const qty=parseFloat(document.getElementById('sq-qty').value);
   if(isNaN(qty)||qty<=0){toast('กรุณากรอกจำนวน');return}
+  const unit=document.getElementById('sq-unit-inp').value.trim();
   const note=document.getElementById('sq-note').value.trim();
-  const p=sqSelected;
+  const shopId=document.getElementById('sq-shop').value;
+  const shopName=shopId?(S.shops[shopId]?.name||''):'';
   const latest=getLatestSession();
   if(!latest){toast('ไม่มีรายการที่ active');return}
   const [sid]=latest;
-  const empId=p.employeeId||NONE_ID;
-  R.session(sid).child(`entries/${empId}/items/${p.id}`)
-    .set({name:p.name,unit:p.unit||'',qty,shopId:p.shopId||'',shopName:p.shopName||'',note})
-    .then(()=>{toast(`✅ เพิ่ม ${p.name} แล้ว`);sqCancel();renderSummary()});
+
+  if(sqEditMode){
+    // แก้ไขของเดิม — ล้าง skipped เสมอเมื่อใส่จำนวนใหม่
+    const {empId,pid}=sqEditMode;
+    R.session(sid).child(`entries/${empId}/items/${pid}`)
+      .update({name,unit,qty,shopId,shopName,note,skipped:false})
+      .then(()=>{toast(`✅ แก้ไข ${name} แล้ว`);sqCancel();renderSummary()});
+  } else {
+    // เพิ่มใหม่
+    const p=sqSelected;
+    const itemKey=p?.id||name.replace(/[^a-zA-Zก-๙0-9]/g,'_').slice(0,30)+'_'+Date.now();
+    const empId=(p?.employeeId)||NONE_ID;
+    R.session(sid).child(`entries/${empId}/items/${itemKey}`)
+      .set({name,unit,qty,shopId,shopName,note,skipped:false})
+      .then(()=>{toast(`✅ เพิ่ม ${name} แล้ว`);sqCancel();renderSummary()});
+  }
 }
 
 // ══════════════════════════════════════════════
@@ -1689,6 +1894,7 @@ function renderSummary(){
 
   Object.values(sess.entries||{}).forEach(entry=>{
     Object.values(entry.items||{}).forEach(item=>{
+      if(item.skipped) return; // ซ่อนสินค้าที่กด "ไม่ซื้อ"
       const key=item.shopId||'__none';
       if(!byShop[key]) byShop[key]={name:item.shopName||'ไม่ระบุ',items:[]};
       byShop[key].items.push(item);
@@ -1696,16 +1902,20 @@ function renderSummary(){
   });
 
   let html='';
+  let shopNum=0;
   [...sortedShops().map(s=>s.id),'__none'].forEach(key=>{
     const g=byShop[key];
     if(!g||!g.items.length) return;
-    html+=`<div class="shop-block">
+    shopNum++;
+    const blockId=`shop-block-${key}`;
+    html+=`<div class="shop-block" id="${blockId}">
       <div class="shop-hdr">
+        <span class="shop-num">${shopNum}</span>
         <div class="shop-hdr-name">🏪 ${esc(g.name)}</div>
-        <div class="shop-hdr-count">${g.items.length} รายการ</div>
+        <div class="shop-hdr-count" id="prog-${key}">0/${g.items.length}</div>
       </div>
-      ${g.items.sort((a,b)=>(a.name||'').localeCompare(b.name||'','th')).map(item=>`
-        <div class="sum-item">
+      ${g.items.sort((a,b)=>(a.name||'').localeCompare(b.name||'','th')).map((item,idx)=>`
+        <div class="sum-item" id="si-${key}-${idx}" onclick="tapSumItem('${key}',${idx},'${blockId}')" data-taps="0" data-last="0">
           <div class="sum-item-name">
             ${esc(item.name)}
             ${item.note?`<div class="sum-item-note">💬 ${esc(item.note)}</div>`:''}
@@ -1719,21 +1929,95 @@ function renderSummary(){
   renderSqList();
 }
 
+let sqFilter='all';
+function setSqFilter(f, btn){
+  sqFilter=f;
+  document.querySelectorAll('.filter-tab').forEach(b=>{b.classList.remove('on','on-red')});
+  if(btn){
+    if(f==='skip') btn.classList.add('on-red');
+    else btn.classList.add('on');
+  }
+  renderSqList();
+}
+
 function renderSqList(){
   const latest=getLatestSession();if(!latest)return;
-  const [,sess]=latest;
+  const [sid,sess]=latest;
   const el=document.getElementById('sq-list');if(!el)return;
-  const items=[];
+  const all=[];
   Object.entries(sess.entries||{}).forEach(([empId,entry])=>{
-    Object.entries(entry.items||{}).forEach(([pid,item])=>{items.push({pid,empId,...item})});
+    Object.entries(entry.items||{}).forEach(([pid,item])=>{all.push({pid,empId,...item})});
   });
-  if(!items.length){el.innerHTML='';return}
-  el.innerHTML=`<div style="font-size:.75rem;font-weight:700;color:var(--ink3);margin-bottom:6px">รายการที่เพิ่มแล้ว (${items.length})</div>`+
-    items.sort((a,b)=>(a.name||'').localeCompare(b.name||'','th')).map(it=>`
-      <div class="lrow" style="padding:10px 0">
-        <div class="lrow-name" style="font-size:.88rem">${esc(it.name)}<div class="lrow-sub">${it.shopName?`🏪 ${esc(it.shopName)}`:''}</div></div>
-        <div style="color:var(--brand);font-weight:700;font-size:.9rem;flex-shrink:0">${it.qty} ${esc(it.unit||'')}</div>
-      </div>`).join('');
+  if(!all.length){el.innerHTML='';return}
+  const activeItems=all.filter(it=>!it.skipped);
+  const skippedItems=all.filter(it=>it.skipped);
+
+  // กรองตาม tab
+  let filtered;
+  if(sqFilter==='buy') filtered=activeItems;
+  else if(sqFilter==='skip') filtered=skippedItems;
+  else filtered=all; // all
+
+  // header count
+  const tabEl=document.getElementById('sq-filter-tabs');
+  if(tabEl){
+    const tabs=tabEl.querySelectorAll('.filter-tab');
+    if(tabs[0]) tabs[0].textContent=`ทั้งหมด (${all.length})`;
+    if(tabs[1]) tabs[1].textContent=`🛒 ซื้อ (${activeItems.length})`;
+    if(tabs[2]) tabs[2].textContent=`🚫 ไม่ซื้อ (${skippedItems.length})`;
+  }
+
+  if(!filtered.length){
+    el.innerHTML=`<div class="empty" style="padding:20px 0;font-size:.85rem">ไม่มีรายการ</div>`;
+    return;
+  }
+
+  const renderRow=(it)=>`
+    <div class="lrow" style="padding:10px 0;opacity:${it.skipped?.6:1}">
+      <div class="lrow-name" style="font-size:.88rem;${it.skipped?'text-decoration:line-through;color:var(--red)':''}">
+        ${esc(it.name)}
+        <div class="lrow-sub">${it.shopName?`🏪 ${esc(it.shopName)}`:''}</div>
+      </div>
+      <div style="color:${it.skipped?'var(--red)':'var(--brand)'};font-weight:700;font-size:.9rem;flex-shrink:0;margin-right:8px">
+        ${it.skipped?'🚫':`${it.qty} ${esc(it.unit||'')}`}
+      </div>
+      <div class="lrow-acts">
+        <button class="btn btn-flat btn-xs" onclick="sqEditItem('${it.empId}','${it.pid}')" title="${it.skipped?'เปลี่ยนใจ':'แก้ไข'}">${it.skipped?'↩️':'✏️'}</button>
+        <button class="btn btn-flat btn-xs" style="color:var(--red)" onclick="sqDeleteItem('${sid}','${it.empId}','${it.pid}')">🗑️</button>
+      </div>
+    </div>`;
+
+  el.innerHTML=filtered.sort((a,b)=>(a.name||'').localeCompare(b.name||'','th')).map(renderRow).join('');
+}
+
+function sqDeleteItem(sid,empId,pid){
+  R.session(sid).child(`entries/${empId}/items/${pid}`).remove()
+    .then(()=>{toast('🗑️ ลบแล้ว');renderSummary()});
+}
+
+// ── DOUBLE-TAP TO TICK in summary ──
+function tapSumItem(shopKey, idx, blockId){
+  const el=document.getElementById(`si-${shopKey}-${idx}`);
+  if(!el) return;
+  const now=Date.now();
+  const last=parseInt(el.dataset.last||'0');
+  el.dataset.last=now;
+  if(now-last<400){
+    // double-tap: toggle ticked
+    el.classList.toggle('ticked');
+    updateShopProgress(shopKey, blockId);
+  }
+}
+function updateShopProgress(shopKey, blockId){
+  const block=document.getElementById(blockId);
+  if(!block) return;
+  const items=block.querySelectorAll('.sum-item');
+  const total=items.length;
+  const done=[...items].filter(i=>i.classList.contains('ticked')).length;
+  const prog=document.getElementById(`prog-${shopKey}`);
+  if(prog) prog.textContent=`${done}/${total}`;
+  if(done===total && total>0) block.classList.add('all-done');
+  else block.classList.remove('all-done');
 }
 
 function markDone(){
@@ -1746,38 +2030,7 @@ function markDone(){
   },'ยืนยัน','btn-green');
 }
 
-function printSummary(){
-  const latest=getLatestSession();
-  if(!latest){toast('ไม่มีรายการ');return}
-  const [,sess]=latest;
-  const byShop={};
-  Object.values(sess.entries||{}).forEach(entry=>{
-    Object.values(entry.items||{}).forEach(item=>{
-      const k=item.shopId||'__none';
-      if(!byShop[k]) byShop[k]={name:item.shopName||'ไม่ระบุ',items:[]};
-      byShop[k].items.push(item);
-    });
-  });
-  let shopCount=0,itemCount=0,content='';
-  sortedShops().forEach(s=>{
-    const g=byShop[s.id];if(!g||!g.items.length)return;
-    shopCount++;
-    content+=`<div class="p-shop">${esc(s.name)}</div>`;
-    g.items.forEach(it=>{itemCount++;content+=`<div class="p-item"><span class="p-box"></span><span>${esc(it.name)} ${it.qty} ${esc(it.unit)}${it.note?` · ${esc(it.note)}`:''}</span></div>`});
-    content+=`<div class="p-note">หมายเหตุ / ราคา: ___________________________</div>`;
-  });
-  if(byShop['__none']?.items.length){
-    shopCount++;content+=`<div class="p-shop">ไม่ระบุร้านค้า</div>`;
-    byShop['__none'].items.forEach(it=>{itemCount++;content+=`<div class="p-item"><span class="p-box"></span><span>${esc(it.name)} ${it.qty} ${esc(it.unit)}${it.note?` · ${esc(it.note)}`:''}</span></div>`});
-    content+=`<div class="p-note">หมายเหตุ: ___________________________</div>`;
-  }
-  document.getElementById('print-view').innerHTML=`
-    <div class="p-title">รายการซื้อของตลาด · ร้านอาหารแวะถัวะ</div>
-    <div class="p-date">วันที่ ${fmtDate(sess.date)}</div>
-    ${content}
-    <div class="p-sum">ร้าน: ${shopCount} ร้าน &nbsp;·&nbsp; รายการ: ${itemCount} รายการ</div>`;
-  window.print();
-}
+
 
 // ══════════════════════════════════════════════
 // HISTORY
