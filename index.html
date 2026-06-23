@@ -458,6 +458,92 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
 .srch-drop-item:hover,.srch-drop-item:active{background:var(--brand-light)}
 .srch-drop-empty{padding:12px 14px;font-size:.85rem;color:var(--ink3);text-align:center}
 
+/* ─── WALK PAGE (หน้าเดินซื้อ) ─── */
+:root{
+  --walk-fs: 1.15rem;   /* ควบคุมโดย font-size setting */
+}
+#pg-walk{padding:12px;padding-bottom:100px}
+.walk-empty{text-align:center;padding:60px 20px;color:var(--ink4);font-size:1rem;line-height:1.8}
+.walk-empty-icon{font-size:3rem;margin-bottom:12px}
+
+.walk-shop-block{margin-bottom:16px}
+.walk-shop-hdr{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 16px;
+  background:var(--brand);color:#fff;
+  border-radius:var(--r) var(--r) 0 0;
+}
+.walk-shop-block.all-done .walk-shop-hdr{background:var(--ink4)}
+.walk-shop-num{
+  background:rgba(255,255,255,.25);border-radius:50%;
+  width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;
+  font-size:.8rem;font-weight:800;flex-shrink:0;
+}
+.walk-shop-name{flex:1;font-weight:800;font-size:var(--walk-fs)}
+.walk-shop-prog{font-size:.85rem;opacity:.85;white-space:nowrap}
+
+.walk-item{
+  display:flex;align-items:center;
+  padding:0 16px;
+  min-height:64px;
+  border-bottom:1px solid var(--border);
+  background:var(--surface);
+  cursor:pointer;
+  user-select:none;-webkit-user-select:none;
+  -webkit-tap-highlight-color:transparent;
+  transition:background .12s;
+  gap:14px;
+}
+.walk-item:last-child{border-bottom:none;border-radius:0 0 var(--r) var(--r)}
+.walk-item:active{background:var(--brand-light)}
+.walk-item.ticked{background:#F3FAF5}
+.walk-item.ticked .walk-item-name{text-decoration:line-through;color:var(--ink4);opacity:.5}
+.walk-item.ticked .walk-item-qty{color:var(--ink4);opacity:.5}
+.walk-check{
+  width:28px;height:28px;border-radius:50%;
+  border:2px solid var(--border);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:border-color .15s,background .15s;font-size:1rem;
+}
+.walk-item.ticked .walk-check{background:var(--brand);border-color:var(--brand);color:#fff}
+.walk-item-name{
+  flex:1;font-size:var(--walk-fs);font-weight:600;line-height:1.35;
+  transition:color .2s,opacity .2s;
+}
+.walk-item-note{font-size:.8rem;color:var(--ink3);margin-top:3px;font-weight:400}
+.walk-item-qty{
+  font-size:var(--walk-fs);font-weight:800;color:var(--brand);
+  white-space:nowrap;flex-shrink:0;
+}
+
+/* progress bar bawah shop */
+.walk-prog-bar{height:4px;background:var(--border)}
+.walk-prog-fill{height:100%;background:var(--brand);transition:width .3s}
+.walk-shop-block.all-done .walk-prog-fill{background:var(--ink4)}
+
+/* done banner */
+.walk-done-banner{
+  background:var(--brand);color:#fff;
+  border-radius:var(--r);padding:20px 18px;
+  display:flex;align-items:center;gap:14px;margin-bottom:16px;
+}
+.walk-done-banner.hide{display:none}
+.walk-done-banner-icon{font-size:2rem;flex-shrink:0}
+.walk-done-banner-text{font-size:1.05rem;font-weight:700;line-height:1.4}
+.walk-done-banner-sub{font-size:.82rem;opacity:.85;margin-top:3px;font-weight:400}
+
+/* font size settings */
+.font-size-selector{display:flex;gap:8px;margin-top:8px}
+.fs-btn{
+  flex:1;padding:12px 8px;border-radius:var(--rs);
+  border:1.5px solid var(--border);background:var(--bg);
+  font-family:'Noto Sans Thai',sans-serif;font-weight:700;
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+  transition:all .15s;color:var(--ink2);
+}
+.fs-btn.on{border-color:var(--brand);background:var(--brand-light);color:var(--brand)}
+.fs-btn:active{transform:scale(.96)}
+
 /* ─── UTILS ─── */
 .mt2{margin-top:8px}.mt3{margin-top:12px}.mt4{margin-top:16px}.mt5{margin-top:20px}
 .flex{display:flex}.items-center{align-items:center}.gap2{gap:8px}.gap3{gap:12px}.flex-1{flex:1}
@@ -477,6 +563,10 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
   <button class="tb-btn" onclick="goPage('summary',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
     สรุป
+  </button>
+  <button class="tb-btn" onclick="goPage('walk',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+    เดิน
   </button>
   <button class="tb-btn" onclick="goPage('history',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -660,6 +750,20 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
   <div id="sum-content"><div class="empty"><div class="empty-icon">📋</div>ยังไม่มีรายการ<br>ไปที่หน้า "จด" เพื่อเริ่มได้เลย</div></div>
 </section>
 
+<!-- ════════ PAGE: เดิน (Shopping Walk) ════════ -->
+<section class="pg" id="pg-walk">
+  <div id="walk-done-banner" class="walk-done-banner hide">
+    <div class="walk-done-banner-icon">🎉</div>
+    <div>
+      <div class="walk-done-banner-text">ซื้อครบทุกรายการแล้ว!</div>
+      <div class="walk-done-banner-sub">แตะ "ซื้อเสร็จแล้ว" ที่หน้าสรุปเพื่อบันทึก</div>
+    </div>
+  </div>
+  <div id="walk-content">
+    <div class="walk-empty"><div class="walk-empty-icon">🛒</div>ยังไม่มีรายการ<br>ไปจดของที่หน้า "จด" ก่อนนะ</div>
+  </div>
+</section>
+
 <!-- ════════ PAGE: ประวัติ ════════ -->
 <section class="pg" id="pg-history">
   <div id="hist-list-wrap">
@@ -692,7 +796,19 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
 
   <!-- ── เมนูหลัก ── -->
   <div id="setup-menu">
-    <div class="sec" style="margin-top:8px">จัดการข้อมูล</div>
+    <div class="sec" style="margin-top:8px">การแสดงผล</div>
+    <div class="card">
+      <div class="card-body">
+        <label class="lbl" style="font-size:.88rem">ขนาดตัวหนังสือ (หน้าเดินซื้อของ)</label>
+        <div class="font-size-selector">
+          <button class="fs-btn" id="fs-s" onclick="setWalkFontSize('s')">เล็ก<br><span style="font-size:.72rem;font-weight:400;opacity:.7">ดูได้เยอะ</span></button>
+          <button class="fs-btn on" id="fs-m" onclick="setWalkFontSize('m')">กลาง<br><span style="font-size:.72rem;font-weight:400;opacity:.7">แนะนำ</span></button>
+          <button class="fs-btn" id="fs-l" onclick="setWalkFontSize('l')">ใหญ่<br><span style="font-size:.72rem;font-weight:400;opacity:.7">อ่านง่าย</span></button>
+          <button class="fs-btn" id="fs-xl" onclick="setWalkFontSize('xl')">ใหญ่มาก<br><span style="font-size:.72rem;font-weight:400;opacity:.7">สายตาไม่ดี</span></button>
+        </div>
+      </div>
+    </div>
+    <div class="sec">จัดการข้อมูล</div>
     <div class="card">
       <button class="setup-menu-row" onclick="openSetupSub('emp')">
         <span class="setup-menu-icon">👤</span>
@@ -948,7 +1064,8 @@ function goPage(name,btn){
   if(name==='summary') renderSummary();
   if(name==='history') renderHistList();
   if(name==='jot') renderJotStart();
-  if(name==='setup'){closeSetupSub();updateSetupCounts();}
+  if(name==='walk') renderWalk();
+  if(name==='setup'){closeSetupSub();updateSetupCounts();syncFsBtns();}
 }
 
 // ══ SETUP SUB-PAGES ══
@@ -2118,6 +2235,150 @@ function deleteSession(sid){
   });
 }
 
+// ══════════════════════════════════════════════
+// WALK PAGE (หน้าเดินซื้อของ)
+// ══════════════════════════════════════════════
+const walkTicked = {}; // key: shopKey-idx → boolean (in-memory only, visual state)
+
+function renderWalk(){
+  const latest = getLatestSession();
+  const content = document.getElementById('walk-content');
+  const banner = document.getElementById('walk-done-banner');
+
+  if(!latest){
+    content.innerHTML = `<div class="walk-empty"><div class="walk-empty-icon">🛒</div>ยังไม่มีรายการ<br>ไปจดของที่หน้า "จด" ก่อนนะ</div>`;
+    banner.classList.add('hide');
+    return;
+  }
+
+  const [,sess] = latest;
+  const byShop = {};
+  sortedShops().forEach(s => byShop[s.id] = {name: s.name, items: []});
+  byShop['__none'] = {name: 'ไม่ระบุร้านค้า', items: []};
+
+  Object.values(sess.entries||{}).forEach(entry => {
+    Object.values(entry.items||{}).forEach(item => {
+      if(item.skipped) return;
+      const key = item.shopId || '__none';
+      if(!byShop[key]) byShop[key] = {name: item.shopName||'ไม่ระบุ', items:[]};
+      byShop[key].items.push(item);
+    });
+  });
+
+  let html = '';
+  let shopNum = 0;
+  const shopOrder = [...sortedShops().map(s=>s.id), '__none'];
+
+  shopOrder.forEach(key => {
+    const g = byShop[key];
+    if(!g || !g.items.length) return;
+    shopNum++;
+    const blockId = `wb-${key}`;
+    const sorted = g.items.sort((a,b)=>(a.name||'').localeCompare(b.name||'','th'));
+    const total = sorted.length;
+    const doneCnt = sorted.filter((_,i) => walkTicked[`${key}-${i}`]).length;
+    const progPct = total ? Math.round(doneCnt/total*100) : 0;
+    const allDone = doneCnt === total && total > 0;
+
+    html += `<div class="walk-shop-block${allDone?' all-done':''}" id="${blockId}">
+      <div class="walk-shop-hdr">
+        <span class="walk-shop-num">${shopNum}</span>
+        <div class="walk-shop-name">🏪 ${esc(g.name)}</div>
+        <div class="walk-shop-prog" id="wprog-${key}">${doneCnt}/${total}</div>
+      </div>
+      <div class="walk-prog-bar"><div class="walk-prog-fill" id="wpf-${key}" style="width:${progPct}%"></div></div>
+      ${sorted.map((item,idx) => {
+        const ticked = !!walkTicked[`${key}-${idx}`];
+        return `<div class="walk-item${ticked?' ticked':''}" id="wi-${key}-${idx}"
+          onclick="walkTap('${key}',${idx},'${blockId}',${total})"
+          data-last="0">
+          <div class="walk-check">${ticked?'✓':''}</div>
+          <div class="walk-item-name">
+            ${esc(item.name)}
+            ${item.note ? `<div class="walk-item-note">💬 ${esc(item.note)}</div>` : ''}
+          </div>
+          <div class="walk-item-qty">${item.qty} ${esc(item.unit||'')}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  });
+
+  if(!html){
+    content.innerHTML = `<div class="walk-empty"><div class="walk-empty-icon">🛒</div>ยังไม่มีรายการ<br>ไปจดของที่หน้า "จด" ก่อนนะ</div>`;
+    banner.classList.add('hide');
+    return;
+  }
+
+  content.innerHTML = html;
+
+  // check all done
+  const totalItems = shopOrder.reduce((s,key)=>{const g=byShop[key];return s+(g?g.items.length:0)},0);
+  const doneItems = Object.values(walkTicked).filter(Boolean).length;
+  if(doneItems >= totalItems && totalItems > 0) banner.classList.remove('hide');
+  else banner.classList.add('hide');
+}
+
+function walkTap(shopKey, idx, blockId, total){
+  const el = document.getElementById(`wi-${shopKey}-${idx}`);
+  if(!el) return;
+  const now = Date.now();
+  const last = parseInt(el.dataset.last||'0');
+  el.dataset.last = now;
+
+  if(now - last < 450){
+    // double-tap: toggle
+    const k = `${shopKey}-${idx}`;
+    walkTicked[k] = !walkTicked[k];
+    const ticked = walkTicked[k];
+
+    el.classList.toggle('ticked', ticked);
+    el.querySelector('.walk-check').textContent = ticked ? '✓' : '';
+
+    // update progress
+    let doneCnt = 0;
+    for(let i=0;i<total;i++) if(walkTicked[`${shopKey}-${i}`]) doneCnt++;
+    const pct = Math.round(doneCnt/total*100);
+    const progEl = document.getElementById(`wprog-${shopKey}`);
+    const fillEl = document.getElementById(`wpf-${shopKey}`);
+    if(progEl) progEl.textContent = `${doneCnt}/${total}`;
+    if(fillEl) fillEl.style.width = pct+'%';
+
+    const block = document.getElementById(blockId);
+    if(block) block.classList.toggle('all-done', doneCnt===total && total>0);
+
+    // check global all done
+    const allItems = document.querySelectorAll('.walk-item');
+    const allTicked = document.querySelectorAll('.walk-item.ticked');
+    const banner = document.getElementById('walk-done-banner');
+    if(allTicked.length >= allItems.length && allItems.length>0) banner.classList.remove('hide');
+    else banner.classList.add('hide');
+  }
+}
+
+// ══════════════════════════════════════════════
+// FONT SIZE SETTING
+// ══════════════════════════════════════════════
+const WALK_FS_MAP = {s:'1rem', m:'1.15rem', l:'1.35rem', xl:'1.6rem'};
+let currentFsKey = localStorage.getItem('walkFsKey') || 'm';
+
+function setWalkFontSize(key){
+  currentFsKey = key;
+  localStorage.setItem('walkFsKey', key);
+  document.documentElement.style.setProperty('--walk-fs', WALK_FS_MAP[key]);
+  document.querySelectorAll('.fs-btn').forEach(b => b.classList.remove('on'));
+  const btn = document.getElementById(`fs-${key}`);
+  if(btn) btn.classList.add('on');
+}
+
+function syncFsBtns(){
+  document.querySelectorAll('.fs-btn').forEach(b => b.classList.remove('on'));
+  const btn = document.getElementById(`fs-${currentFsKey}`);
+  if(btn) btn.classList.add('on');
+}
+
+// init font size on load
+document.documentElement.style.setProperty('--walk-fs', WALK_FS_MAP[currentFsKey]||'1.15rem');
+
 // ══ CLOSE SUGGEST ON OUTSIDE CLICK ══
 document.addEventListener('click',e=>{
   ['qa-suggest','sq-suggest'].forEach(id=>{
@@ -2147,6 +2408,7 @@ R.sessions().on('value',snap=>{
     renderJotStart();
     if(document.getElementById('jot-board').style.display!=='none'){renderEmpGrid();renderQaList()}
   }
+  if(document.getElementById('pg-walk').classList.contains('on')) renderWalk();
 });
 
 // ── INIT ──
