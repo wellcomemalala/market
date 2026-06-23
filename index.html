@@ -752,6 +752,9 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
 
 <!-- ════════ PAGE: เดิน (Shopping Walk) ════════ -->
 <section class="pg" id="pg-walk">
+  <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+    <button class="btn btn-ghost btn-sm" onclick="resetWalkTicked()" style="font-size:.78rem;color:var(--ink3)">🔄 ล้างการเช็คทั้งหมด</button>
+  </div>
   <div id="walk-done-banner" class="walk-done-banner hide">
     <div class="walk-done-banner-icon">🎉</div>
     <div>
@@ -2238,7 +2241,15 @@ function deleteSession(sid){
 // ══════════════════════════════════════════════
 // WALK PAGE (หน้าเดินซื้อของ)
 // ══════════════════════════════════════════════
-const walkTicked = {}; // key: shopKey-idx → boolean (in-memory only, visual state)
+// walkTicked: บันทึกใน localStorage → ปิดแล้วเปิดใหม่ข้อมูลไม่หาย
+const WALK_STORAGE_KEY = 'walkTicked_v1';
+function loadWalkTicked(){
+  try{ return JSON.parse(localStorage.getItem(WALK_STORAGE_KEY)||'{}'); }catch(e){ return {}; }
+}
+function saveWalkTicked(obj){
+  try{ localStorage.setItem(WALK_STORAGE_KEY, JSON.stringify(obj)); }catch(e){}
+}
+const walkTicked = loadWalkTicked(); // key: shopKey-idx → boolean
 
 function renderWalk(){
   const latest = getLatestSession();
@@ -2329,6 +2340,7 @@ function walkTap(shopKey, idx, blockId, total){
     // double-tap: toggle
     const k = `${shopKey}-${idx}`;
     walkTicked[k] = !walkTicked[k];
+    saveWalkTicked(walkTicked);
     const ticked = walkTicked[k];
 
     el.classList.toggle('ticked', ticked);
@@ -2353,6 +2365,15 @@ function walkTap(shopKey, idx, blockId, total){
     if(allTicked.length >= allItems.length && allItems.length>0) banner.classList.remove('hide');
     else banner.classList.add('hide');
   }
+}
+
+function resetWalkTicked(){
+  showModal('ล้างการเช็ค','ล้างรายการที่เช็คไว้ทั้งหมด เริ่มใหม่ตั้งแต่ต้น?',()=>{
+    for(const k in walkTicked) delete walkTicked[k];
+    saveWalkTicked(walkTicked);
+    renderWalk();
+    toast('✅ ล้างการเช็คแล้ว เริ่มใหม่ได้เลย');
+  },'ล้างเลย','btn-orange');
 }
 
 // ══════════════════════════════════════════════
