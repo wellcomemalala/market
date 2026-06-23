@@ -338,6 +338,103 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
 .p-note{margin:4pt 0 12pt;font-size:10pt;color:#555;border-bottom:1px dashed #aaa;padding-bottom:12pt}
 .p-sum{margin-top:18pt;padding-top:10pt;border-top:2px solid #000;font-size:12pt}
 
+/* ─── NOTE INLINE ─── */
+.note-wrap{
+  overflow:hidden;max-height:0;
+  transition:max-height .2s ease;
+  padding:0 0 0 2px;
+}
+.note-wrap.open{max-height:80px}
+.note-inp{
+  width:100%;margin-top:8px;
+  padding:8px 11px;border:1.5px solid var(--border);border-radius:var(--rs);
+  font-size:.85rem;color:var(--ink);background:var(--surface);
+  font-family:'Noto Sans Thai',sans-serif;
+  transition:border-color .15s;
+}
+.note-inp:focus{outline:none;border-color:var(--brand)}
+.note-btn{
+  width:32px;height:32px;border-radius:50%;border:1.5px solid var(--border);
+  background:var(--bg);font-size:.9rem;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;color:var(--ink3);
+  transition:border-color .15s,background .15s,color .15s;
+  flex-shrink:0;
+}
+.note-btn.has-note{border-color:var(--orange);background:var(--orange-light);color:var(--orange)}
+
+/* ─── SETUP MENU ─── */
+.setup-menu-row{
+  width:100%;display:flex;align-items:center;gap:14px;
+  padding:16px;border:none;background:transparent;
+  cursor:pointer;font-family:'Noto Sans Thai',sans-serif;
+  border-bottom:1px solid var(--border);
+  -webkit-tap-highlight-color:transparent;
+  transition:background .12s;text-align:left;
+}
+.setup-menu-row:active{background:var(--bg)}
+.setup-menu-icon{font-size:1.4rem;flex-shrink:0;width:32px;text-align:center}
+.setup-menu-text{flex:1}
+.setup-menu-title{font-size:1rem;font-weight:700;color:var(--ink)}
+.setup-menu-sub{font-size:.78rem;color:var(--ink3);margin-top:3px}
+.setup-menu-arrow{font-size:1.4rem;color:var(--ink4);flex-shrink:0}
+.setup-sub-hdr{
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:14px;
+}
+.setup-sub-title{font-size:1.1rem;font-weight:800;color:var(--ink);flex:1}
+
+/* ─── PRODUCT GROUP ACCORDION ─── */
+.grp-btn{
+  width:100%;display:flex;align-items:center;gap:10px;
+  padding:13px 16px;border:none;background:transparent;
+  cursor:pointer;font-family:'Noto Sans Thai',sans-serif;
+  border-bottom:1px solid var(--border);
+  -webkit-tap-highlight-color:transparent;
+  transition:background .12s;
+}
+.grp-btn:active{background:var(--bg)}
+.grp-btn-label{flex:1;font-size:.95rem;font-weight:700;text-align:left}
+.grp-btn-count{font-size:.78rem;font-weight:600;opacity:.7;flex-shrink:0}
+.grp-btn-arrow{font-size:.8rem;color:var(--ink4);transition:transform .2s;flex-shrink:0}
+.grp-btn.open .grp-btn-arrow{transform:rotate(90deg)}
+.grp-body{overflow:hidden;max-height:0;transition:max-height .25s ease}
+.grp-body.open{max-height:9999px}
+.grp-body .lrow{padding:12px 16px}
+.grp-body .lrow:last-child{border-bottom:none}
+
+/* ─── DRAG & DROP ─── */
+.lrow.dragging{opacity:.4;background:var(--brand-light)}
+.lrow.drag-over{border-top:2px solid var(--brand)}
+.drag-handle{
+  cursor:grab;color:var(--ink4);font-size:1.1rem;
+  padding:4px 6px;touch-action:none;user-select:none;
+  flex-shrink:0;
+}
+.drag-handle:active{cursor:grabbing}
+
+/* ─── SEARCHABLE DROPDOWN (inline, inside modal) ─── */
+.srch-drop-wrap{position:relative}
+.srch-drop-input{width:100%;transition:border-color .15s,border-radius .15s}
+.srch-drop-input.open-state{border-bottom-left-radius:0;border-bottom-right-radius:0;border-color:var(--brand)}
+.srch-drop-list{
+  background:var(--surface);
+  border:1.5px solid var(--brand);border-top:none;
+  border-bottom-left-radius:var(--rs);border-bottom-right-radius:var(--rs);
+  max-height:0;overflow:hidden;
+  transition:max-height .22s ease;
+}
+.srch-drop-list.open{max-height:220px;overflow-y:auto}
+.srch-drop-item{
+  width:100%;text-align:left;padding:11px 14px;border:none;background:transparent;
+  cursor:pointer;font-family:'Noto Sans Thai',sans-serif;font-size:.92rem;
+  border-bottom:1px solid var(--border);display:block;
+  -webkit-tap-highlight-color:transparent;
+}
+.srch-drop-item:last-child{border-bottom:none}
+.srch-drop-item:hover,.srch-drop-item:active{background:var(--brand-light)}
+.srch-drop-empty{padding:12px 14px;font-size:.85rem;color:var(--ink3);text-align:center}
+
 /* ─── UTILS ─── */
 .mt2{margin-top:8px}.mt3{margin-top:12px}.mt4{margin-top:16px}.mt5{margin-top:20px}
 .flex{display:flex}.items-center{align-items:center}.gap2{gap:8px}.gap3{gap:12px}.flex-1{flex:1}
@@ -555,104 +652,150 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
 <!-- ════════ PAGE: ตั้งค่า ════════ -->
 <section class="pg" id="pg-setup">
 
-  <!-- พนักงาน -->
-  <div class="sec">พนักงาน</div>
-  <div class="card">
-    <div class="card-body">
-      <div class="fg">
-        <input type="text" id="emp-input" class="inp" placeholder="ชื่อพนักงาน..." />
-      </div>
-      <button class="btn btn-green btn-full" onclick="addEmployee()">+ เพิ่มพนักงาน</button>
-      <hr class="divider">
-      <input type="text" id="emp-search" class="inp inp-sm" placeholder="🔍 ค้นหา..." oninput="renderEmployees()" />
-      <div id="emp-list" class="mt3"></div>
+  <!-- ── เมนูหลัก ── -->
+  <div id="setup-menu">
+    <div class="sec" style="margin-top:8px">จัดการข้อมูล</div>
+    <div class="card">
+      <button class="setup-menu-row" onclick="openSetupSub('emp')">
+        <span class="setup-menu-icon">👤</span>
+        <div class="setup-menu-text">
+          <div class="setup-menu-title">พนักงาน</div>
+          <div class="setup-menu-sub" id="setup-emp-count">—</div>
+        </div>
+        <span class="setup-menu-arrow">›</span>
+      </button>
+      <button class="setup-menu-row" onclick="openSetupSub('shop')">
+        <span class="setup-menu-icon">🏪</span>
+        <div class="setup-menu-text">
+          <div class="setup-menu-title">ร้านค้า</div>
+          <div class="setup-menu-sub" id="setup-shop-count">—</div>
+        </div>
+        <span class="setup-menu-arrow">›</span>
+      </button>
+      <button class="setup-menu-row" style="border-bottom:none" onclick="openSetupSub('prod')">
+        <span class="setup-menu-icon">🛒</span>
+        <div class="setup-menu-text">
+          <div class="setup-menu-title">สินค้า</div>
+          <div class="setup-menu-sub" id="setup-prod-count">—</div>
+        </div>
+        <span class="setup-menu-arrow">›</span>
+      </button>
     </div>
   </div>
 
-  <!-- ร้านค้า -->
-  <div class="sec">ร้านค้า</div>
-  <div class="card">
-    <div class="card-body">
-      <div class="fg">
-        <input type="text" id="shop-input" class="inp" placeholder="เช่น ร้านผัก, ร้านหมู..." />
+  <!-- ── sub: พนักงาน ── -->
+  <div id="setup-sub-emp" style="display:none">
+    <div class="setup-sub-hdr">
+      <button class="btn btn-ghost btn-sm" onclick="closeSetupSub()">← กลับ</button>
+      <div class="setup-sub-title">👤 พนักงาน</div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <div class="fg">
+          <input type="text" id="emp-input" class="inp" placeholder="ชื่อพนักงาน..." />
+        </div>
+        <button class="btn btn-green btn-full" onclick="addEmployee()">+ เพิ่มพนักงาน</button>
+        <hr class="divider">
+        <input type="text" id="emp-search" class="inp inp-sm" placeholder="🔍 ค้นหา..." oninput="renderEmployees()" />
+        <div id="emp-list" class="mt3"></div>
       </div>
-      <button class="btn btn-green btn-full" onclick="addShop()">+ เพิ่มร้านค้า</button>
-      <hr class="divider">
-      <input type="text" id="shop-search" class="inp inp-sm" placeholder="🔍 ค้นหา..." oninput="renderShops()" />
-      <div id="shop-list" class="mt3"></div>
     </div>
   </div>
 
-  <!-- สินค้า -->
-  <div class="sec">สินค้า</div>
-  <div class="card">
-    <div class="card-body">
-      <div class="row2">
+  <!-- ── sub: ร้านค้า ── -->
+  <div id="setup-sub-shop" style="display:none">
+    <div class="setup-sub-hdr">
+      <button class="btn btn-ghost btn-sm" onclick="closeSetupSub()">← กลับ</button>
+      <div class="setup-sub-title">🏪 ร้านค้า</div>
+    </div>
+    <div class="card">
+      <div class="card-body">
         <div class="fg">
-          <label class="lbl">พนักงาน</label>
-          <select id="prod-emp" class="inp"><option value="">-- ไม่ระบุ --</option></select>
+          <input type="text" id="shop-input" class="inp" placeholder="เช่น ร้านผัก, ร้านหมู..." />
         </div>
-        <div class="fg">
-          <label class="lbl">ร้านค้า</label>
-          <select id="prod-shop" class="inp"><option value="">-- เลือก --</option></select>
-        </div>
+        <button class="btn btn-green btn-full" onclick="addShop()">+ เพิ่มร้านค้า</button>
+        <hr class="divider">
+        <input type="text" id="shop-search" class="inp inp-sm" placeholder="🔍 ค้นหา..." oninput="renderShops()" />
+        <div id="shop-list" class="mt3"></div>
       </div>
-      <div class="row2">
-        <div class="fg">
-          <label class="lbl">ชื่อสินค้า</label>
-          <input type="text" id="prod-name" class="inp" placeholder="เช่น ผักชี" />
-        </div>
-        <div class="fg">
-          <label class="lbl">หน่วย</label>
-          <input type="text" id="prod-unit" class="inp" list="unit-list" placeholder="กำ, กิโล..." />
-          <datalist id="unit-list">
-            <option value="กิโลกรัม"><option value="กรัม"><option value="กำ">
-            <option value="มัด"><option value="ถุง"><option value="ชิ้น">
-            <option value="อัน"><option value="แพ็ค"><option value="กล่อง">
-            <option value="ขวด"><option value="ลิตร"><option value="ลูก">
-          </datalist>
-        </div>
-      </div>
-      <button class="btn btn-green btn-full" onclick="addProduct()">+ เพิ่มสินค้า</button>
     </div>
   </div>
 
-  <!-- bulk -->
-  <div class="card">
-    <div class="card-hdr">นำเข้าหลายรายการพร้อมกัน</div>
-    <div class="card-body">
-      <div class="fg">
-        <label class="lbl">พนักงาน / ร้านค้า (ใช้กับทุกบรรทัด)</label>
+  <!-- ── sub: สินค้า ── -->
+  <div id="setup-sub-prod" style="display:none">
+    <div class="setup-sub-hdr">
+      <button class="btn btn-ghost btn-sm" onclick="closeSetupSub()">← กลับ</button>
+      <div class="setup-sub-title">🛒 สินค้า</div>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
         <div class="row2">
-          <select id="bulk-emp" class="inp"><option value="">-- ไม่ระบุ --</option></select>
-          <select id="bulk-shop" class="inp"><option value="">-- เลือก --</option></select>
+          <div class="fg">
+            <label class="lbl">พนักงาน</label>
+            <select id="prod-emp" class="inp"><option value="">-- ไม่ระบุ --</option></select>
+          </div>
+          <div class="fg">
+            <label class="lbl">ร้านค้า</label>
+            <select id="prod-shop" class="inp"><option value="">-- เลือก --</option></select>
+          </div>
         </div>
+        <div class="row2">
+          <div class="fg">
+            <label class="lbl">ชื่อสินค้า</label>
+            <input type="text" id="prod-name" class="inp" placeholder="เช่น ผักชี" />
+          </div>
+          <div class="fg">
+            <label class="lbl">หน่วย</label>
+            <input type="text" id="prod-unit" class="inp" list="unit-list" placeholder="กำ, กิโล..." />
+            <datalist id="unit-list">
+              <option value="กิโลกรัม"><option value="กรัม"><option value="กำ">
+              <option value="มัด"><option value="ถุง"><option value="ชิ้น">
+              <option value="อัน"><option value="แพ็ค"><option value="กล่อง">
+              <option value="ขวด"><option value="ลิตร"><option value="ลูก">
+            </datalist>
+          </div>
+        </div>
+        <button class="btn btn-green btn-full" onclick="addProduct()">+ เพิ่มสินค้า</button>
       </div>
-      <div class="fg">
-        <label class="lbl">รายการ (1 ชื่อ/บรรทัด — # = หัวข้อ ไม่นำเข้า)</label>
-        <textarea id="prod-bulk" class="inp" rows="10" style="resize:vertical;line-height:1.6;font-size:.88rem">ผักชี
+    </div>
+
+    <div class="card">
+      <div class="card-hdr">นำเข้าหลายรายการพร้อมกัน</div>
+      <div class="card-body">
+        <div class="fg">
+          <label class="lbl">พนักงาน / ร้านค้า (ใช้กับทุกบรรทัด)</label>
+          <div class="row2">
+            <select id="bulk-emp" class="inp"><option value="">-- ไม่ระบุ --</option></select>
+            <select id="bulk-shop" class="inp"><option value="">-- เลือก --</option></select>
+          </div>
+        </div>
+        <div class="fg">
+          <label class="lbl">รายการ (1 ชื่อ/บรรทัด — # = หัวข้อ ไม่นำเข้า)</label>
+          <textarea id="prod-bulk" class="inp" rows="8" style="resize:vertical;line-height:1.6;font-size:.88rem">ผักชี
 ต้นหอม
 กระเทียม</textarea>
+        </div>
+        <button class="btn btn-orange btn-full" onclick="bulkAddProducts()">+ นำเข้าทั้งหมด</button>
       </div>
-      <button class="btn btn-orange btn-full" onclick="bulkAddProducts()">+ นำเข้าทั้งหมด</button>
+    </div>
+
+    <div class="sec" style="display:flex;align-items:center;gap:10px">
+      <span style="flex:1">รายการสินค้าทั้งหมด</span>
+      <button class="btn btn-xs btn-green" id="grp-emp-btn" onclick="setGrp('emp')">ตามพนักงาน</button>
+      <button class="btn btn-xs btn-ghost" id="grp-shop-btn" onclick="setGrp('shop')">ตามร้านค้า</button>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <input type="text" id="prod-search" class="inp inp-sm" placeholder="🔍 ค้นหาสินค้า..." oninput="renderProducts()" />
+        <div id="prod-list" class="mt3"></div>
+      </div>
     </div>
   </div>
 
-  <!-- รายการสินค้า -->
-  <div class="sec" style="display:flex;align-items:center;gap:10px">
-    <span style="flex:1">รายการสินค้าทั้งหมด</span>
-    <button class="btn btn-xs btn-green" id="grp-emp-btn" onclick="setGrp('emp')">ตามพนักงาน</button>
-    <button class="btn btn-xs btn-ghost" id="grp-shop-btn" onclick="setGrp('shop')">ตามร้านค้า</button>
-  </div>
-  <div class="card">
-    <div class="card-body">
-      <input type="text" id="prod-search" class="inp inp-sm" placeholder="🔍 ค้นหาสินค้า..." oninput="renderProducts()" />
-      <div id="prod-list" class="mt3"></div>
-    </div>
-  </div>
 </section>
 
-<!-- ════ MODAL ════ -->
+<!-- ════ MODAL: ยืนยัน ════ -->
 <div class="overlay" id="modal-wrap">
   <div class="modal">
     <h3 id="modal-title">ยืนยัน</h3>
@@ -660,6 +803,37 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
     <div class="modal-btns">
       <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">ยกเลิก</button>
       <button class="btn btn-red" style="flex:1" id="modal-ok">ยืนยัน</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ MODAL: แก้ไขสินค้า ════ -->
+<div class="overlay" id="edit-prod-modal">
+  <div class="modal">
+    <h3 style="margin-bottom:16px">✏️ แก้ไขสินค้า</h3>
+    <div class="fg">
+      <label class="lbl">ชื่อสินค้า</label>
+      <input type="text" id="ep-name" class="inp" />
+    </div>
+    <div class="fg">
+      <label class="lbl">หน่วย</label>
+      <input type="text" id="ep-unit" class="inp" list="unit-list" placeholder="กำ, กิโล..." />
+    </div>
+    <div class="fg">
+      <label class="lbl">พนักงานที่รับผิดชอบ</label>
+      <select id="ep-emp" class="inp"></select>
+    </div>
+    <div class="fg">
+      <label class="lbl">ร้านค้า</label>
+      <div class="srch-drop-wrap" id="ep-shop-wrap">
+        <input type="text" id="ep-shop-search" class="inp srch-drop-input" placeholder="🔍 พิมพ์ค้นหาร้านค้า..." autocomplete="off" oninput="epShopFilter()" onfocus="epShopOpen()" />
+        <input type="hidden" id="ep-shop" value="" />
+        <div id="ep-shop-list" class="srch-drop-list"></div>
+      </div>
+    </div>
+    <div class="modal-btns" style="margin-top:4px">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeEditProd()">ยกเลิก</button>
+      <button class="btn btn-green" style="flex:1" onclick="saveEditProd()">✔ บันทึก</button>
     </div>
   </div>
 </div>
@@ -738,6 +912,36 @@ function goPage(name,btn){
   if(name==='summary') renderSummary();
   if(name==='history') renderHistList();
   if(name==='jot') renderJotStart();
+  if(name==='setup'){closeSetupSub();updateSetupCounts();}
+}
+
+// ══ SETUP SUB-PAGES ══
+function openSetupSub(key){
+  document.getElementById('setup-menu').style.display='none';
+  ['emp','shop','prod'].forEach(k=>{
+    document.getElementById(`setup-sub-${k}`).style.display=k===key?'':'none';
+  });
+  if(key==='emp'){renderEmployees();}
+  if(key==='shop'){renderShops();}
+  if(key==='prod'){renderProducts();}
+}
+function closeSetupSub(){
+  document.getElementById('setup-menu').style.display='';
+  ['emp','shop','prod'].forEach(k=>{
+    document.getElementById(`setup-sub-${k}`).style.display='none';
+  });
+  updateSetupCounts();
+}
+function updateSetupCounts(){
+  const empN=Object.keys(S.employees).length;
+  const shopN=Object.keys(S.shops).length;
+  const prodN=Object.keys(S.products).length;
+  const ec=document.getElementById('setup-emp-count');
+  const sc=document.getElementById('setup-shop-count');
+  const pc=document.getElementById('setup-prod-count');
+  if(ec) ec.textContent=empN?`${empN} คน`:'ยังไม่มีข้อมูล';
+  if(sc) sc.textContent=shopN?`${shopN} ร้าน`:'ยังไม่มีข้อมูล';
+  if(pc) pc.textContent=prodN?`${prodN} รายการ`:'ยังไม่มีข้อมูล';
 }
 
 // ══ MODAL ══
@@ -803,17 +1007,129 @@ document.getElementById('shop-input').addEventListener('keydown',e=>{if(e.key===
 function renderShops(){
   const q=(document.getElementById('shop-search').value||'').toLowerCase();
   const el=document.getElementById('shop-list');
-  const list=sortedShops().filter(s=>!q||s.name?.toLowerCase().includes(q));
+  const all=sortedShops();
+  const list=all.filter(s=>!q||s.name?.toLowerCase().includes(q));
   if(!list.length){el.innerHTML='<div class="empty">ยังไม่มีร้านค้า</div>';return}
-  el.innerHTML=list.map(s=>`
-    <div class="lrow">
-      <div class="lrow-name">${esc(s.name)}</div>
+  const searching=!!q;
+  el.innerHTML=list.map((s)=>{
+    const realIdx=all.findIndex(x=>x.id===s.id);
+    const isFirst=realIdx===0, isLast=realIdx===all.length-1;
+    return `<div class="lrow" id="shoprow-${s.id}" draggable="${!searching}" 
+      ondragstart="shopDragStart(event,'${s.id}')" ondragover="shopDragOver(event,'${s.id}')"
+      ondrop="shopDrop(event,'${s.id}')" ondragend="shopDragEnd(event)" ondragleave="shopDragLeave(event)">
+      ${!searching?`<span class="drag-handle" title="ลากเพื่อเรียงลำดับ">⠿</span>`:''}
+      <div class="lrow-name">
+        ${!searching?`<span style="font-size:.72rem;color:var(--ink4);margin-right:5px;font-weight:700">${realIdx+1}.</span>`:''}
+        ${esc(s.name)}
+      </div>
       <div class="lrow-acts">
+        ${!searching?`
+          <button class="btn btn-flat btn-xs" style="padding:6px 8px;font-size:1rem;line-height:1"
+            onclick="moveShop('${s.id}',-1)" ${isFirst?'disabled style="opacity:.3;pointer-events:none"':''}>↑</button>
+          <button class="btn btn-flat btn-xs" style="padding:6px 8px;font-size:1rem;line-height:1"
+            onclick="moveShop('${s.id}',1)" ${isLast?'disabled style="opacity:.3;pointer-events:none"':''}>↓</button>
+        `:''}
         <button class="btn btn-ghost btn-xs" onclick="editShopName('${s.id}','${esc(s.name)}')">✏️</button>
         <button class="btn btn-red btn-xs" onclick="delShop('${s.id}')">🗑️</button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
+
+  // Touch drag support
+  initShopTouchDrag();
 }
+
+/* ── Drag & Drop for shops ── */
+let _dragShopId=null;
+function shopDragStart(e,id){
+  _dragShopId=id;
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed='move';
+}
+function shopDragOver(e,id){
+  if(id===_dragShopId)return;
+  e.preventDefault();
+  document.querySelectorAll('.lrow.drag-over').forEach(el=>el.classList.remove('drag-over'));
+  e.currentTarget.classList.add('drag-over');
+}
+function shopDragLeave(e){e.currentTarget.classList.remove('drag-over')}
+function shopDragEnd(e){
+  e.currentTarget.classList.remove('dragging');
+  document.querySelectorAll('.lrow.drag-over').forEach(el=>el.classList.remove('drag-over'));
+  _dragShopId=null;
+}
+function shopDrop(e,targetId){
+  e.preventDefault();
+  if(!_dragShopId||_dragShopId===targetId)return;
+  const all=sortedShops();
+  const fromIdx=all.findIndex(s=>s.id===_dragShopId);
+  const toIdx=all.findIndex(s=>s.id===targetId);
+  if(fromIdx<0||toIdx<0)return;
+  // reorder: remove from, insert at to
+  const reordered=[...all];
+  const [moved]=reordered.splice(fromIdx,1);
+  reordered.splice(toIdx,0,moved);
+  // write new orders
+  const updates={};
+  reordered.forEach((s,i)=>{updates[`${ROOT}/shops/${s.id}/order`]=i});
+  db.ref().update(updates);
+}
+
+/* ── Touch drag for mobile ── */
+function initShopTouchDrag(){
+  let touchDragId=null, clone=null, startY=0;
+  document.querySelectorAll('#shop-list .drag-handle').forEach(handle=>{
+    handle.addEventListener('touchstart',e=>{
+      const row=handle.closest('.lrow');
+      touchDragId=row.id.replace('shoprow-','');
+      startY=e.touches[0].clientY;
+      row.classList.add('dragging');
+      clone=row.cloneNode(true);
+      clone.style.cssText=`position:fixed;left:${row.getBoundingClientRect().left}px;width:${row.offsetWidth}px;z-index:9999;opacity:.85;pointer-events:none;background:var(--surface);box-shadow:var(--sh);border-radius:var(--rs)`;
+      clone.style.top=row.getBoundingClientRect().top+'px';
+      document.body.appendChild(clone);
+      e.preventDefault();
+    },{passive:false});
+    handle.addEventListener('touchmove',e=>{
+      if(!clone)return;
+      const dy=e.touches[0].clientY-startY;
+      clone.style.transform=`translateY(${dy}px)`;
+      const el=document.elementFromPoint(e.touches[0].clientX,e.touches[0].clientY);
+      const targetRow=el?.closest?.('#shop-list .lrow');
+      document.querySelectorAll('#shop-list .lrow.drag-over').forEach(r=>r.classList.remove('drag-over'));
+      if(targetRow&&targetRow.id!==`shoprow-${touchDragId}`) targetRow.classList.add('drag-over');
+      e.preventDefault();
+    },{passive:false});
+    handle.addEventListener('touchend',e=>{
+      if(!touchDragId)return;
+      const touch=e.changedTouches[0];
+      const el=document.elementFromPoint(touch.clientX,touch.clientY);
+      const targetRow=el?.closest?.('#shop-list .lrow');
+      const targetId=targetRow?.id?.replace('shoprow-','');
+      if(targetId&&targetId!==touchDragId){
+        _dragShopId=touchDragId;
+        shopDrop({preventDefault:()=>{}},targetId);
+      }
+      document.querySelectorAll('#shop-list .lrow').forEach(r=>{r.classList.remove('dragging','drag-over')});
+      clone?.remove();clone=null;touchDragId=null;
+    });
+  });
+}
+
+function moveShop(id, dir){
+  const all=sortedShops();
+  const idx=all.findIndex(s=>s.id===id);
+  const swapIdx=idx+dir;
+  if(swapIdx<0||swapIdx>=all.length) return;
+  // สลับ order ระหว่างสองร้านนี้
+  const a=all[idx], b=all[swapIdx];
+  const orderA=a.order??idx, orderB=b.order??swapIdx;
+  const updates={};
+  updates[`${ROOT}/shops/${a.id}/order`]=orderB;
+  updates[`${ROOT}/shops/${b.id}/order`]=orderA;
+  db.ref().update(updates);
+}
+
 function editShopName(id,cur){
   const n=prompt('แก้ไขชื่อร้านค้า:',cur);
   if(n&&n.trim()&&n.trim()!==cur) R.shop(id).update({name:n.trim()}).then(()=>toast('✅ แก้ไขแล้ว'));
@@ -871,11 +1187,24 @@ function bulkAddProducts(){
 }
 
 let _grp='emp';
+// track which groups are open; default all open on first render
+const _openGrps=new Set();
+
 function setGrp(g){
   _grp=g;
+  _openGrps.clear();
   document.getElementById('grp-emp-btn').className='btn btn-xs '+(g==='emp'?'btn-green':'btn-ghost');
   document.getElementById('grp-shop-btn').className='btn btn-xs '+(g==='shop'?'btn-green':'btn-ghost');
   renderProducts();
+}
+
+function toggleGrp(key){
+  if(_openGrps.has(key)) _openGrps.delete(key); else _openGrps.add(key);
+  // toggle classes directly without full re-render
+  const btn=document.getElementById(`grpbtn-${CSS.escape(key)}`);
+  const body=document.getElementById(`grpbody-${CSS.escape(key)}`);
+  if(btn) btn.classList.toggle('open',_openGrps.has(key));
+  if(body) body.classList.toggle('open',_openGrps.has(key));
 }
 
 function renderProducts(){
@@ -884,45 +1213,136 @@ function renderProducts(){
   const all=Object.entries(S.products).filter(([,p])=>!q||p.name?.toLowerCase().includes(q));
   if(!all.length){el.innerHTML='<div class="empty">ยังไม่มีสินค้า</div>';return}
 
-  let groups={};
+  let groups=[];
   if(_grp==='emp'){
     const empList=[...Object.entries(S.employees),['__none_grp',{name:NONE_NAME}]];
     empList.forEach(([eid,e])=>{
       const prods=all.filter(([,p])=>eid==='__none_grp'?isUnassigned(p):p.employeeId===eid);
-      if(prods.length) groups[e.name]={prods,color:'var(--brand)'};
+      if(prods.length) groups.push({key:e.name,label:e.name,prods,color:'var(--brand)'});
     });
   } else {
     sortedShops().forEach(s=>{
       const prods=all.filter(([,p])=>p.shopId===s.id);
-      if(prods.length) groups[s.name]={prods,color:'var(--orange)'};
+      if(prods.length) groups.push({key:s.name,label:s.name,prods,color:'var(--orange)'});
     });
     const noShop=all.filter(([,p])=>!p.shopId);
-    if(noShop.length) groups['ไม่ระบุร้านค้า']={prods:noShop,color:'var(--ink3)'};
+    if(noShop.length) groups.push({key:'ไม่ระบุร้านค้า',label:'ไม่ระบุร้านค้า',prods:noShop,color:'var(--ink3)'});
   }
 
-  el.innerHTML=Object.entries(groups).map(([gname,{prods,color}])=>`
-    <div style="margin-bottom:14px">
-      <div style="font-size:.78rem;font-weight:700;color:${color};margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em">${esc(gname)}</div>
-      ${prods.map(([id,p])=>`
-        <div class="lrow">
-          <div class="lrow-name">
-            ${esc(p.name)}
-            <div class="lrow-sub">${p.unit?`${esc(p.unit)} · `:''}${p.shopName?`🏪 ${esc(p.shopName)}`:''}</div>
-          </div>
-          <div class="lrow-acts">
-            <button class="btn btn-ghost btn-xs" onclick="editProduct('${id}')">✏️</button>
-            <button class="btn btn-red btn-xs" onclick="delProduct('${id}')">🗑️</button>
-          </div>
-        </div>`).join('')}
-    </div>`).join('');
+  // if search active, open all
+  if(q) groups.forEach(g=>_openGrps.add(g.key));
+  // if no state yet, open all by default
+  if(!_openGrps.size) groups.forEach(g=>_openGrps.add(g.key));
+
+  el.innerHTML=groups.map(({key,label,prods,color})=>{
+    const isOpen=_openGrps.has(key);
+    const safeKey=key.replace(/[^a-zA-Zก-๙0-9_-]/g,'_');
+    return `<div style="margin-bottom:4px">
+      <button class="grp-btn ${isOpen?'open':''}" id="grpbtn-${safeKey}" onclick="toggleGrpByKey('${safeKey}','${key.replace(/'/g,'\\\'')}')" style="color:${color}">
+        <span class="grp-btn-label">${esc(label)}</span>
+        <span class="grp-btn-count">${prods.length} รายการ</span>
+        <span class="grp-btn-arrow">▶</span>
+      </button>
+      <div class="grp-body ${isOpen?'open':''}" id="grpbody-${safeKey}">
+        ${prods.map(([id,p])=>`
+          <div class="lrow">
+            <div class="lrow-name">
+              ${esc(p.name)}
+              <div class="lrow-sub">${p.unit?`${esc(p.unit)} · `:''}${p.shopName?`🏪 ${esc(p.shopName)}`:''}</div>
+            </div>
+            <div class="lrow-acts">
+              <button class="btn btn-ghost btn-xs" onclick="editProduct('${id}')">✏️</button>
+              <button class="btn btn-red btn-xs" onclick="delProduct('${id}')">🗑️</button>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
 }
 
+// Map safe key back to original for toggle
+const _keyMap={};
+function toggleGrpByKey(safeKey,origKey){
+  _keyMap[safeKey]=origKey;
+  if(_openGrps.has(origKey)) _openGrps.delete(origKey); else _openGrps.add(origKey);
+  const btn=document.getElementById(`grpbtn-${safeKey}`);
+  const body=document.getElementById(`grpbody-${safeKey}`);
+  if(btn) btn.classList.toggle('open',_openGrps.has(origKey));
+  if(body) body.classList.toggle('open',_openGrps.has(origKey));
+}
+
+let _editProdId=null;
 function editProduct(id){
   const p=S.products[id];if(!p)return;
-  const n=prompt('ชื่อสินค้า:',p.name);if(n===null)return;
-  const u=prompt('หน่วย (เช่น กำ, กิโล):',p.unit||'');if(u===null)return;
-  R.product(id).update({name:n.trim()||p.name,unit:u.trim()}).then(()=>toast('✅ แก้ไขแล้ว'));
+  _editProdId=id;
+
+  document.getElementById('ep-name').value=p.name||'';
+  document.getElementById('ep-unit').value=p.unit||'';
+
+  const emps=Object.entries(S.employees).sort((a,b)=>a[1].name?.localeCompare(b[1].name||'','th'));
+  document.getElementById('ep-emp').innerHTML=
+    `<option value="">-- ไม่ระบุ --</option>`+
+    emps.map(([eid,e])=>`<option value="${eid}" ${p.employeeId===eid?'selected':''}>${esc(e.name)}</option>`).join('');
+
+  // set searchable shop dropdown
+  const curShop=p.shopId?S.shops[p.shopId]:null;
+  document.getElementById('ep-shop').value=p.shopId||'';
+  document.getElementById('ep-shop-search').value=curShop?curShop.name:'';
+  epShopRenderList('');
+
+  document.getElementById('edit-prod-modal').classList.add('on');
+  document.getElementById('ep-name').focus();
 }
+function closeEditProd(){
+  _editProdId=null;
+  document.getElementById('edit-prod-modal').classList.remove('on');
+  epShopClose();
+}
+function saveEditProd(){
+  if(!_editProdId)return;
+  const name=document.getElementById('ep-name').value.trim();
+  if(!name){toast('กรุณากรอกชื่อสินค้า');return}
+  const unit=document.getElementById('ep-unit').value.trim();
+  const empId=document.getElementById('ep-emp').value;
+  const shopId=document.getElementById('ep-shop').value;
+  const shopName=shopId?S.shops[shopId]?.name||'':'';
+  R.product(_editProdId).update({name,unit,employeeId:empId,shopId,shopName})
+    .then(()=>{toast('✅ แก้ไขแล้ว');closeEditProd()});
+}
+
+/* ── Searchable shop dropdown helpers ── */
+function epShopRenderList(q){
+  const list=document.getElementById('ep-shop-list');
+  const shops=sortedShops().filter(s=>!q||s.name.toLowerCase().includes(q.toLowerCase()));
+  const items=[{id:'',name:'-- ไม่ระบุ --'},...shops];
+  list.innerHTML=items.map(s=>
+    `<button class="srch-drop-item" onmousedown="epShopSelect('${s.id}','${esc(s.name)}')">${esc(s.name)}</button>`
+  ).join('')||`<div class="srch-drop-empty">ไม่พบร้านค้า</div>`;
+}
+function epShopOpen(){
+  epShopRenderList(document.getElementById('ep-shop-search').value);
+  document.getElementById('ep-shop-list').classList.add('open');
+  document.getElementById('ep-shop-search').classList.add('open-state');
+}
+function epShopFilter(){
+  epShopRenderList(document.getElementById('ep-shop-search').value);
+  document.getElementById('ep-shop-list').classList.add('open');
+  document.getElementById('ep-shop-search').classList.add('open-state');
+}
+function epShopSelect(id,name){
+  document.getElementById('ep-shop').value=id;
+  document.getElementById('ep-shop-search').value=id?name:'';
+  document.getElementById('ep-shop-list').classList.remove('open');
+  document.getElementById('ep-shop-search').classList.remove('open-state');
+}
+function epShopClose(){
+  document.getElementById('ep-shop-list').classList.remove('open');
+  document.getElementById('ep-shop-search').classList.remove('open-state');
+}
+document.addEventListener('click',e=>{
+  const wrap=document.getElementById('ep-shop-wrap');
+  if(wrap&&!wrap.contains(e.target)) epShopClose();
+});
 function delProduct(id){
   showModal('ลบสินค้า','ลบสินค้านี้?',()=>{R.product(id).remove().then(()=>toast('🗑️ ลบแล้ว'))});
 }
@@ -1009,17 +1429,27 @@ function renderEmpProducts(savedItems){
   el.innerHTML=prods.map(([id,p])=>{
     const saved=savedItems[id];
     const qty=saved?.qty||'';
+    const note=saved?.note||'';
     const hasVal=qty!=='';
-    return `<div class="prod-row" id="pr-${id}">
-      <div class="prod-row-info">
+    const hasNote=!!note;
+    return `<div class="prod-row" id="pr-${id}" style="flex-wrap:wrap">
+      <div class="prod-row-info" style="min-width:0;flex:1">
         <div class="prod-row-name ${hasVal?'bought':''}" id="pn-${id}">${esc(p.name)}</div>
         <div class="prod-row-shop">${p.shopName?`🏪 ${esc(p.shopName)}`:''}</div>
+        <div class="note-wrap ${hasNote?'open':''}" id="notewrap-${id}">
+          <input type="text" class="note-inp" id="note-${id}"
+            value="${esc(note)}" placeholder="หมายเหตุ..."
+            maxlength="80" oninput="noteInput('${id}',this)" />
+        </div>
       </div>
-      <div class="qty-wrap">
-        <button class="qty-btn" onclick="qtyChange('${id}',-1)">−</button>
+      <div class="qty-wrap" style="flex-shrink:0">
+        <button class="note-btn ${hasNote?'has-note':''}" id="notebtn-${id}"
+          onclick="toggleNote('${id}')" title="หมายเหตุ">💬</button>
+        <button class="qty-btn" onclick="qtyChange('${id}',-0.5)">−</button>
         <input type="number" class="qty-num ${hasVal?'has-val':''}" id="qty-${id}"
           value="${hasVal?qty:''}" min="0" step="0.5" placeholder="—"
           oninput="qtyInput('${id}',this)" />
+        <button class="qty-btn" onclick="qtyChange('${id}',0.5)">+</button>
         <div class="qty-unit">${esc(p.unit||'')}</div>
       </div>
     </div>`;
@@ -1048,6 +1478,19 @@ function qtyChange(id,delta){
   qtyInput(id,el);
 }
 
+function toggleNote(id){
+  const wrap=document.getElementById('notewrap-'+id);
+  const inp=document.getElementById('note-'+id);
+  const isOpen=wrap.classList.toggle('open');
+  if(isOpen) setTimeout(()=>inp?.focus(),210);
+}
+
+function noteInput(id,el){
+  const hasNote=el.value.trim()!=='';
+  const btn=document.getElementById('notebtn-'+id);
+  if(btn) btn.classList.toggle('has-note',hasNote);
+}
+
 function collectItems(){
   const sess=S.sessions[activeSessionId];
   const oldItems=sess?.entries?.[currentEmpId]?.items||{};
@@ -1055,12 +1498,13 @@ function collectItems(){
   const items={};
   prods.forEach(([id,p])=>{
     const inp=document.getElementById('qty-'+id);
+    const noteEl=document.getElementById('note-'+id);
     const qty=parseFloat(inp?.value);
     if(!isNaN(qty)&&qty>0){
       items[id]={
         name:p.name,unit:p.unit||'',qty,
         shopId:p.shopId||'',shopName:p.shopName||'',
-        note:oldItems[id]?.note||''
+        note:noteEl?.value.trim()||oldItems[id]?.note||''
       };
     }
   });
@@ -1432,11 +1876,14 @@ document.addEventListener('click',e=>{
 document.getElementById('modal-wrap').addEventListener('click',e=>{
   if(e.target===document.getElementById('modal-wrap')) closeModal();
 });
+document.getElementById('edit-prod-modal').addEventListener('click',e=>{
+  if(e.target===document.getElementById('edit-prod-modal')) closeEditProd();
+});
 
 // ══ FIREBASE REALTIME LISTENERS ══
-R.employees().on('value',snap=>{S.employees=snap.val()||{};renderEmployees();renderProducts();populateSelects()});
-R.shops().on('value',snap=>{S.shops=snap.val()||{};renderShops();renderProducts();populateSelects()});
-R.products().on('value',snap=>{S.products=snap.val()||{};renderProducts()});
+R.employees().on('value',snap=>{S.employees=snap.val()||{};renderEmployees();renderProducts();populateSelects();updateSetupCounts()});
+R.shops().on('value',snap=>{S.shops=snap.val()||{};renderShops();renderProducts();populateSelects();updateSetupCounts()});
+R.products().on('value',snap=>{S.products=snap.val()||{};renderProducts();updateSetupCounts()});
 R.sessions().on('value',snap=>{
   S.sessions=snap.val()||{};
   if(document.getElementById('pg-summary').classList.contains('on')) renderSummary();
