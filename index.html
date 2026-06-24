@@ -1351,6 +1351,16 @@ let _grp='emp';
 // track which groups are open; default all open on first render
 const _openGrps=new Set();
 
+function updateGrpBadges(){
+  const all=Object.values(S.products);
+  const noEmp=all.filter(p=>isUnassigned(p)).length;
+  const noShop=all.filter(p=>!p.shopId).length;
+  const neBtn=document.getElementById('grp-noemp-btn');
+  const nsBtn=document.getElementById('grp-noshop-btn');
+  if(neBtn) neBtn.textContent=noEmp?`ไม่ระบุพนักงาน (${noEmp})`:'ไม่ระบุพนักงาน';
+  if(nsBtn) nsBtn.textContent=noShop?`ไม่ระบุร้านค้า (${noShop})`:'ไม่ระบุร้านค้า';
+}
+
 function setGrp(g){
   _grp=g;
   _openGrps.clear();
@@ -1371,6 +1381,7 @@ function toggleGrp(key){
 }
 
 function renderProducts(){
+  updateGrpBadges();
   const q=(document.getElementById('prod-search').value||'').toLowerCase();
   const el=document.getElementById('prod-list');
   const all=Object.entries(S.products).filter(([,p])=>!q||p.name?.toLowerCase().includes(q));
@@ -1591,22 +1602,137 @@ function openEmpInput(empId){
   renderEmpProducts(savedItems);
 }
 
+// ── PRODUCT ORDER per employee ──
+// key: empId → [prodId, prodId, ...]
+const _empProdOrder = {};
+
+function getEmpProdOrder(empId) {
+  const base = prodsForEmp(empId).map(([id]) => id);
+  if (!_empProdOrder[empId]) {
+    _empProdOrder[empId] = [...base];
+  } else {
+    // เพิ่ม id ใหม่ที่ยังไม่มีในลิสต์, ลบ id ที่หายไป
+    const existing = new Set(_empProdOrder[empId]);
+    base.forEach(id => { if (!existing.has(id)) _empProdOrder[empId].push(id); });
+    _empProdOrder[empId] = _empProdOrder[empId].filter(id => base.includes(id));
+  }
+  return _empProdOrder[empId];
+}
+
+function moveEmpProd(empId, idx, dir) {
+  const order = getEmpProdOrder(empId);
+  const swapIdx = idx + dir;
+  if (swapIdx < 0 || swapIdx >= order.length) return;
+  [order[idx], order[swapIdx]] = [order[swapIdx], order[idx]];
+  const sess = S.sessions[activeSessionId];
+  renderEmpProducts(sess?.entries?.[empId]?.items || {});
+}
+
+let _dragProdIdx = null;
+let _dragProdEmpId = null;
+
+function prodDragStart(e, empId, idx) {
+  _dragProdIdx = idx;
+  _dragProdEmpId = empId;
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+function prodDragOver(e, idx) {
+  if (idx === _dragProdIdx) return;
+  e.preventDefault();
+  document.querySelectorAll('#emp-prod-list .prod-row.drag-over').forEach(el => el.classList.remove('drag-over'));
+  e.currentTarget.classList.add('drag-over');
+}
+function prodDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+function prodDragEnd(e) {
+  e.currentTarget.classList.remove('dragging');
+  document.querySelectorAll('#emp-prod-list .prod-row.drag-over').forEach(el => el.classList.remove('drag-over'));
+}
+function prodDrop(e, toIdx) {
+  e.preventDefault();
+  if (_dragProdIdx === null || _dragProdIdx === toIdx) return;
+  const order = getEmpProdOrder(_dragProdEmpId);
+  const [moved] = order.splice(_dragProdIdx, 1);
+  order.splice(toIdx, 0, moved);
+  _dragProdIdx = null;
+  document.querySelectorAll('#emp-prod-list .prod-row').forEach(el => el.classList.remove('dragging', 'drag-over'));
+  const sess = S.sessions[activeSessionId];
+  renderEmpProducts(sess?.entries?.[_dragProdEmpId]?.items || {});
+}
+
+function initProdTouchDrag(empId) {
+  let touchIdx = null, clone = null, startY = 0;
+  document.querySelectorAll('#emp-prod-list .drag-handle').forEach((handle, idx) => {
+    handle.addEventListener('touchstart', e => {
+      touchIdx = idx;
+      startY = e.touches[0].clientY;
+      const row = handle.closest('.prod-row');
+      row.classList.add('dragging');
+      clone = row.cloneNode(true);
+      clone.style.cssText = `position:fixed;left:${row.getBoundingClientRect().left}px;width:${row.offsetWidth}px;z-index:9999;opacity:.85;pointer-events:none;background:var(--surface);box-shadow:var(--sh);border-radius:var(--rs)`;
+      clone.style.top = row.getBoundingClientRect().top + 'px';
+      document.body.appendChild(clone);
+      e.preventDefault();
+    }, { passive: false });
+    handle.addEventListener('touchmove', e => {
+      if (!clone) return;
+      const dy = e.touches[0].clientY - startY;
+      clone.style.transform = `translateY(${dy}px)`;
+      const el = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+      const targetRow = el?.closest?.('#emp-prod-list .prod-row');
+      document.querySelectorAll('#emp-prod-list .prod-row.drag-over').forEach(r => r.classList.remove('drag-over'));
+      if (targetRow) targetRow.classList.add('drag-over');
+      e.preventDefault();
+    }, { passive: false });
+    handle.addEventListener('touchend', e => {
+      if (touchIdx === null) return;
+      const touch = e.changedTouches[0];
+      const el = document.elementFromPoint(touch.clientX, touch.clientY);
+      const targetRow = el?.closest?.('#emp-prod-list .prod-row');
+      const rows = [...document.querySelectorAll('#emp-prod-list .prod-row')];
+      const toIdx = targetRow ? rows.indexOf(targetRow) : -1;
+      if (toIdx >= 0 && toIdx !== touchIdx) {
+        const order = getEmpProdOrder(empId);
+        const [moved] = order.splice(touchIdx, 1);
+        order.splice(toIdx, 0, moved);
+        const sess = S.sessions[activeSessionId];
+        renderEmpProducts(sess?.entries?.[empId]?.items || {});
+      }
+      document.querySelectorAll('#emp-prod-list .prod-row').forEach(r => r.classList.remove('dragging', 'drag-over'));
+      clone?.remove(); clone = null; touchIdx = null;
+    });
+  });
+}
+
 function renderEmpProducts(savedItems){
   const q=(document.getElementById('emp-filter').value||'').toLowerCase();
-  const prods=prodsForEmp(currentEmpId).filter(([,p])=>!q||p.name?.toLowerCase().includes(q));
+  const order = getEmpProdOrder(currentEmpId);
+  const allProds = Object.fromEntries(prodsForEmp(currentEmpId));
+  const prods = order
+    .filter(id => allProds[id])
+    .map(id => [id, allProds[id]])
+    .filter(([,p]) => !q || p.name?.toLowerCase().includes(q));
   const el=document.getElementById('emp-prod-list');
   if(!prods.length){el.innerHTML='<div class="empty">ไม่มีสินค้า</div>';return}
+  const isSearching = !!q;
 
-  el.innerHTML=prods.map(([id,p])=>{
+  el.innerHTML=prods.map(([id,p], idx)=>{
     const saved=savedItems[id];
     const qty=saved?.qty||'';
     const note=saved?.note||'';
     const isSkipped=!!(saved?.skipped);
     const hasVal=qty!==''&&!isSkipped;
     const hasNote=!!note;
-    // ชื่อ: ถ้า skipped → ขีดแดง, ถ้า hasVal → ขีดเขียว (bought), ถ้าไม่มี → ปกติ
     const nameClass=isSkipped?'skipped':hasVal?'bought':'';
-    return `<div class="prod-row" id="pr-${id}" style="flex-wrap:wrap">
+    const isFirst = idx === 0, isLast = idx === prods.length - 1;
+    return `<div class="prod-row" id="pr-${id}" style="flex-wrap:wrap"
+        draggable="${!isSearching}"
+        ondragstart="prodDragStart(event,'${currentEmpId}',${idx})"
+        ondragover="prodDragOver(event,${idx})"
+        ondragleave="prodDragLeave(event)"
+        ondragend="prodDragEnd(event)"
+        ondrop="prodDrop(event,${idx})">
+      ${!isSearching ? `<span class="drag-handle" title="ลากเพื่อเรียง" style="align-self:center">⠿</span>` : ''}
       <div class="prod-row-info" style="min-width:0;flex:1">
         <div class="prod-row-name ${nameClass}" id="pn-${id}">${esc(p.name)}</div>
         <div class="prod-row-shop">${p.shopName?`🏪 ${esc(p.shopName)}`:''}</div>
@@ -1615,6 +1741,12 @@ function renderEmpProducts(savedItems){
             value="${esc(note)}" placeholder="หมายเหตุ..."
             maxlength="80" oninput="noteInput('${id}',this)" />
         </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0;align-self:center;margin-right:2px">
+        ${!isSearching ? `
+        <button onclick="moveEmpProd('${currentEmpId}',${idx},-1)" ${isFirst?'disabled':''} style="width:26px;height:26px;border-radius:6px;border:1.5px solid var(--border);background:var(--bg);cursor:pointer;font-size:.75rem;display:flex;align-items:center;justify-content:center;${isFirst?'opacity:.3;pointer-events:none':''}">▲</button>
+        <button onclick="moveEmpProd('${currentEmpId}',${idx},1)" ${isLast?'disabled':''} style="width:26px;height:26px;border-radius:6px;border:1.5px solid var(--border);background:var(--bg);cursor:pointer;font-size:.75rem;display:flex;align-items:center;justify-content:center;${isLast?'opacity:.3;pointer-events:none':''}">▼</button>
+        ` : ''}
       </div>
       <div class="qty-wrap" style="flex-shrink:0">
         <button class="skip-btn ${isSkipped?'is-skipped':''}" id="skipbtn-${id}"
@@ -1630,6 +1762,8 @@ function renderEmpProducts(savedItems){
       </div>
     </div>`;
   }).join('');
+
+  if (!isSearching) initProdTouchDrag(currentEmpId);
 }
 
 function filterEmpProducts(){
