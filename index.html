@@ -937,10 +937,12 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
       </div>
     </div>
 
-    <div class="sec" style="display:flex;align-items:center;gap:10px">
+    <div class="sec" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <span style="flex:1">รายการสินค้าทั้งหมด</span>
       <button class="btn btn-xs btn-green" id="grp-emp-btn" onclick="setGrp('emp')">ตามพนักงาน</button>
       <button class="btn btn-xs btn-ghost" id="grp-shop-btn" onclick="setGrp('shop')">ตามร้านค้า</button>
+      <button class="btn btn-xs btn-ghost" id="grp-noshop-btn" onclick="setGrp('noshop')" style="white-space:nowrap">ไม่ระบุร้านค้า</button>
+      <button class="btn btn-xs btn-ghost" id="grp-noemp-btn" onclick="setGrp('noemp')" style="white-space:nowrap">ไม่ระบุพนักงาน</button>
     </div>
     <div class="card">
       <div class="card-body">
@@ -1354,6 +1356,8 @@ function setGrp(g){
   _openGrps.clear();
   document.getElementById('grp-emp-btn').className='btn btn-xs '+(g==='emp'?'btn-green':'btn-ghost');
   document.getElementById('grp-shop-btn').className='btn btn-xs '+(g==='shop'?'btn-green':'btn-ghost');
+  document.getElementById('grp-noshop-btn').className='btn btn-xs '+(g==='noshop'?'btn-orange':'btn-ghost');
+  document.getElementById('grp-noemp-btn').className='btn btn-xs '+(g==='noemp'?'btn-orange':'btn-ghost');
   renderProducts();
 }
 
@@ -1379,6 +1383,14 @@ function renderProducts(){
       const prods=all.filter(([,p])=>eid==='__none_grp'?isUnassigned(p):p.employeeId===eid);
       if(prods.length) groups.push({key:e.name,label:e.name,prods,color:'var(--brand)'});
     });
+  } else if(_grp==='noshop'){
+    const noShop=all.filter(([,p])=>!p.shopId);
+    if(noShop.length) groups.push({key:'ไม่ระบุร้านค้า',label:`🏪 ไม่ระบุร้านค้า (${noShop.length} รายการ)`,prods:noShop,color:'var(--orange)'});
+    if(!noShop.length){el.innerHTML='<div class="empty"><div class="empty-icon">✅</div>สินค้าทุกรายการมีร้านค้าแล้ว</div>';return}
+  } else if(_grp==='noemp'){
+    const noEmp=all.filter(([,p])=>isUnassigned(p));
+    if(noEmp.length) groups.push({key:'ไม่ระบุพนักงาน',label:`👤 ไม่ระบุพนักงาน (${noEmp.length} รายการ)`,prods:noEmp,color:'var(--orange)'});
+    if(!noEmp.length){el.innerHTML='<div class="empty"><div class="empty-icon">✅</div>สินค้าทุกรายการมีพนักงานแล้ว</div>';return}
   } else {
     sortedShops().forEach(s=>{
       const prods=all.filter(([,p])=>p.shopId===s.id);
