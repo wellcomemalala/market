@@ -271,8 +271,18 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
 .sug-item:last-child{border-bottom:none}
 .sug-item:active,.sug-item:hover{background:var(--brand-light)}
 .sug-name{font-size:.92rem;font-weight:600;color:var(--ink)}
+.sug-name mark{background:#FDE7B8;color:inherit;border-radius:3px;padding:0 1px}
 .sug-meta{font-size:.74rem;color:var(--ink3);margin-top:2px}
 .sug-empty{padding:14px;font-size:.85rem;color:var(--ink3);text-align:center}
+.sug-warn-header{
+  position:sticky;top:0;z-index:2;
+  display:flex;align-items:center;gap:6px;
+  background:var(--orange-light);color:var(--orange);
+  font-weight:700;font-size:.78rem;
+  padding:8px 14px;border-bottom:1.5px solid var(--orange);
+}
+.suggest-box.has-dup{border-color:var(--orange);max-height:320px}
+.suggest-box.portal-fixed{position:fixed}
 
 .confirm-strip{
   margin-top:12px;padding:14px;
@@ -430,8 +440,8 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
 .lrow.dragging{opacity:.4;background:var(--brand-light)}
 .lrow.drag-over{border-top:2px solid var(--brand)}
 .drag-handle{
-  cursor:grab;color:var(--ink4);font-size:1.1rem;
-  padding:4px 6px;touch-action:none;user-select:none;
+  cursor:grab;color:var(--ink4);font-size:1.25rem;
+  padding:10px 10px;touch-action:none;user-select:none;
   flex-shrink:0;
 }
 .drag-handle:active{cursor:grabbing}
@@ -521,6 +531,21 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
 .walk-prog-fill{height:100%;background:var(--brand);transition:width .3s}
 .walk-shop-block.all-done .walk-prog-fill{background:var(--ink4)}
 
+/* ปุ่มไอคอนในหัวร้าน: คัดลอกข้อความสั่งของ / ซื้อครบทั้งร้าน — แตะสองครั้งเพื่อยืนยัน กันมือพลาด */
+.walk-shop-hdr-acts{display:flex;gap:8px;flex-shrink:0}
+.walk-hdr-icon-btn{
+  width:48px;height:48px;border-radius:var(--rs);
+  border:none;background:rgba(255,255,255,.22);color:#fff;
+  font-size:1.5rem;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;flex-shrink:0;padding:0;
+  -webkit-tap-highlight-color:transparent;
+  transition:background .15s,transform .1s,color .15s;
+}
+.walk-hdr-icon-btn:active{transform:scale(.92)}
+.walk-hdr-icon-btn.armed{background:rgba(255,255,255,.5);box-shadow:0 0 0 2px rgba(255,255,255,.6)}
+/* สถานะ "คัดลอกแล้ว" ใช้โทนฟ้าแยกจากปุ่ม "ซื้อครบทั้งร้าน" (เขียว) กันสับสนว่าเป็นปุ่มเดียวกัน */
+.walk-hdr-icon-btn.copied{background:#fff;color:#1A73E8;box-shadow:none}
+
 /* done banner */
 .walk-done-banner{
   background:var(--brand);color:#fff;
@@ -543,6 +568,10 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
 }
 .fs-btn.on{border-color:var(--brand);background:var(--brand-light);color:var(--brand)}
 .fs-btn:active{transform:scale(.96)}
+
+/* ─── UNDECIDED ITEM HIGHLIGHT (บังคับเช็คให้ครบ) ─── */
+@keyframes flashWarn{0%,100%{background:var(--surface);border-color:var(--border)}50%{background:var(--red-light);border-color:var(--red)}}
+.prod-row.flash-warn{animation:flashWarn .55s ease-in-out 2;border-radius:var(--rs)}
 
 /* ─── UTILS ─── */
 .mt2{margin-top:8px}.mt3{margin-top:12px}.mt4{margin-top:16px}.mt5{margin-top:20px}
@@ -583,7 +612,15 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
 
   <!-- start view -->
   <div id="jot-start">
-    <div class="card mt4" style="margin-top:16px">
+    <!-- บล็อกไม่ให้จดรอบใหม่ ถ้ามีรอบเก่าที่จดเสร็จแล้วแต่ยังไม่ได้กด "ซื้อของเสร็จแล้ว" ค้างอยู่ -->
+    <div class="card mt4" id="pending-round-block" style="display:none;margin-top:16px;border:1.5px solid var(--orange)">
+      <div class="card-body">
+        <div class="text-sm bold" style="margin-bottom:4px;color:var(--orange)">⚠️ ยังมีรอบเก่าค้างอยู่</div>
+        <div class="text-sm" id="pending-round-msg" style="margin-bottom:14px"></div>
+        <button class="btn btn-orange btn-full" onclick="goToPendingRound()">→ ไปจัดการรอบเก่าให้เสร็จก่อน</button>
+      </div>
+    </div>
+    <div class="card mt4" id="new-round-card" style="margin-top:16px">
       <div class="card-body">
         <div class="fg">
           <label class="lbl">วันที่</label>
@@ -599,6 +636,10 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
         <div class="text-sm bold" style="margin-bottom:4px">มีรอบค้างอยู่</div>
         <div class="text-sm" id="active-session-info" style="margin-bottom:14px"></div>
         <button class="btn btn-green btn-full" onclick="resumeSession()">→ จดต่อจากเดิม</button>
+        <div id="stray-session-warn" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--line)">
+          <div class="text-sm" style="color:var(--orange);margin-bottom:8px" id="stray-session-msg"></div>
+          <button class="btn btn-red btn-full btn-xs" onclick="clearStrayJotSessions()">🧹 ล้างรอบค้างซ้อนทิ้ง (เก็บแค่รอบล่าสุด)</button>
+        </div>
       </div>
     </div>
   </div>
@@ -675,7 +716,7 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
         <hr class="divider">
         <div style="display:flex;gap:10px">
           <button class="btn btn-ghost" id="skip-btn" onclick="skipEmployee()">ไม่ซื้อวันนี้</button>
-          <button class="btn btn-green" style="flex:1" onclick="saveEmployee()">✔ บันทึก</button>
+          <button class="btn btn-green" style="flex:1" onclick="saveEmployee()">✔ เสร็จแล้ว → กลับ</button>
         </div>
       </div>
     </div>
@@ -757,9 +798,10 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
   </div>
   <div id="walk-done-banner" class="walk-done-banner hide">
     <div class="walk-done-banner-icon">🎉</div>
-    <div>
+    <div style="flex:1">
       <div class="walk-done-banner-text">ซื้อครบทุกรายการแล้ว!</div>
-      <div class="walk-done-banner-sub">แตะ "ซื้อเสร็จแล้ว" ที่หน้าสรุปเพื่อบันทึก</div>
+      <div class="walk-done-banner-sub">กดปุ่มด้านล่างเพื่อบันทึกว่าซื้อเสร็จแล้ว</div>
+      <button class="btn btn-green btn-full" style="margin-top:10px" onclick="markDone()">✅ ซื้อเสร็จแล้ว</button>
     </div>
   </div>
   <div id="walk-content">
@@ -871,6 +913,9 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
           <input type="text" id="shop-input" class="inp" placeholder="เช่น ร้านผัก, ร้านหมู..." />
         </div>
         <button class="btn btn-green btn-full" onclick="addShop()">+ เพิ่มร้านค้า</button>
+        <div class="text-sm" style="color:var(--ink3);margin-top:10px;line-height:1.5">
+          💡 แตะป้าย <b>💬 สั่งทางไลน์ / 🚶 ต้องไปเอง</b> ที่ร้านค้าแต่ละร้านเพื่อสลับได้ — ร้านที่ตั้งเป็น "สั่งทางไลน์" จะมีปุ่มคัดลอกข้อความสั่งของโผล่ที่หน้า "เดิน" ให้ก๊อปไปวางแชทได้เลย
+        </div>
         <hr class="divider">
         <input type="text" id="shop-search" class="inp inp-sm" placeholder="🔍 ค้นหา..." oninput="renderShops()" />
         <div id="shop-list" class="mt3"></div>
@@ -898,9 +943,10 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
           </div>
         </div>
         <div class="row2">
-          <div class="fg">
+          <div class="fg" style="position:relative">
             <label class="lbl">ชื่อสินค้า</label>
-            <input type="text" id="prod-name" class="inp" placeholder="เช่น ผักชี" />
+            <input type="text" id="prod-name" class="inp" placeholder="เช่น ผักชี" oninput="prodNameCheckDup()" autocomplete="off" />
+            <div id="prodname-suggest" class="suggest-box"></div>
           </div>
           <div class="fg">
             <label class="lbl">หน่วย</label>
@@ -914,26 +960,6 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
           </div>
         </div>
         <button class="btn btn-green btn-full" onclick="addProduct()">+ เพิ่มสินค้า</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-hdr">นำเข้าหลายรายการพร้อมกัน</div>
-      <div class="card-body">
-        <div class="fg">
-          <label class="lbl">พนักงาน / ร้านค้า (ใช้กับทุกบรรทัด)</label>
-          <div class="row2">
-            <select id="bulk-emp" class="inp"><option value="">-- ไม่ระบุ --</option></select>
-            <select id="bulk-shop" class="inp"><option value="">-- เลือก --</option></select>
-          </div>
-        </div>
-        <div class="fg">
-          <label class="lbl">รายการ (1 ชื่อ/บรรทัด — # = หัวข้อ ไม่นำเข้า)</label>
-          <textarea id="prod-bulk" class="inp" rows="8" style="resize:vertical;line-height:1.6;font-size:.88rem">ผักชี
-ต้นหอม
-กระเทียม</textarea>
-        </div>
-        <button class="btn btn-orange btn-full" onclick="bulkAddProducts()">+ นำเข้าทั้งหมด</button>
       </div>
     </div>
 
@@ -1035,7 +1061,24 @@ const NONE_ID = '__none', NONE_NAME = 'ไม่ระบุพนักงา�
 
 // ══ UTILS ══
 function esc(s){const d=document.createElement('div');d.appendChild(document.createTextNode(s||''));return d.innerHTML}
-function today(){return new Date().toISOString().split('T')[0]}
+// สำหรับฝังข้อความ (เช่น ชื่อพนักงาน/ร้าน/สินค้า) เข้าไปเป็นอาร์กิวเมนต์ JS string ภายใน onclick="..."
+// esc() ธรรมดาเอสเคปแค่ &,<,> ไม่เอสเคป ' — ถ้าชื่อมีเครื่องหมายคำพูดเดี่ยว จะทำให้ onclick พังทันที
+function escJsAttr(s){
+  s=String(s??'');
+  s=s.replace(/\\/g,'\\\\').replace(/'/g,"\\'"); // เอสเคปสำหรับ JS string literal แบบ '...'
+  s=s.replace(/&/g,'&amp;').replace(/"/g,'&quot;'); // เอสเคปสำหรับฝังใน HTML attribute แบบ "..."
+  return s;
+}
+// เดิม: ใช้ toISOString() ซึ่งอิงเวลา UTC ไม่ใช่เวลาท้องถิ่น
+// ประเทศไทยอยู่ UTC+7 ถ้าเปิดแอปช่วงเที่ยงคืน–ตี 7 (เวลาที่มักไปตลาดกันพอดี) วันที่จะเพี้ยนไปเป็นเมื่อวานทันที
+// แก้แล้ว: ประกอบวันที่จาก getFullYear/getMonth/getDate ซึ่งเป็นเวลาท้องถิ่นของเครื่องผู้ใช้จริงๆ
+function today(){
+  const d=new Date();
+  const y=d.getFullYear();
+  const m=String(d.getMonth()+1).padStart(2,'0');
+  const day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
 function fmtDate(d){
   if(!d) return '';
   return new Date(d+'T00:00:00').toLocaleDateString('th-TH',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
@@ -1058,6 +1101,13 @@ function getLatestSession(){
   const open=Object.entries(S.sessions).filter(([,s])=>s.completed&&!s.shoppingDone);
   if(!open.length) return null;
   return open.sort((a,b)=>b[1].date?.localeCompare(a[1].date||'')||0)[0];
+}
+// รอบที่กำลังจดอยู่ (ยังไม่กด "เสร็จแล้ว") — ใช้คนละเงื่อนไขกับ getLatestSession()
+// ห้ามใช้ completed&&!shoppingDone เพราะรอบที่กำลังจดยังไม่ completed เลย
+function getActiveJotSession(){
+  const open=Object.entries(S.sessions).filter(([,s])=>!s.completed);
+  if(!open.length) return null;
+  return open.sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0))[0];
 }
 
 // ══ NAVIGATION ══
@@ -1115,6 +1165,15 @@ function showModal(title,msg,cb,okLabel='ยืนยัน',okClass='btn-red'){
 }
 function closeModal(){document.getElementById('modal-wrap').classList.remove('on')}
 
+// ══ FIREBASE ERROR HANDLING ══
+// เดิม: ทุกการเขียนข้อมูลลง Firebase (.set/.update/.remove/.push) ในไฟล์นี้ไม่มี .catch() เลยสักจุด
+// ถ้าเขียนล้มเหลว (เน็ตหลุด, permission ถูกปฏิเสธ, ฯลฯ) ปุ่มจะดูเหมือน "กดแล้วไม่มีอะไรเกิดขึ้น"
+// โดยไม่มี error หรือ toast แจ้งเตือนอะไรเลย ผู้ใช้เข้าใจผิดว่าไม่ได้กดหรือระบบค้าง
+function fbErr(err){
+  console.error('Firebase error:',err);
+  toast('❌ บันทึกไม่สำเร็จ: '+(err?.message||'เกิดข้อผิดพลาด กรุณาลองใหม่'));
+}
+
 // ══════════════════════════════════════════════
 // SETUP: EMPLOYEES
 // ══════════════════════════════════════════════
@@ -1122,7 +1181,7 @@ function addEmployee(){
   const inp=document.getElementById('emp-input');
   const name=inp.value.trim();
   if(!name){toast('กรุณากรอกชื่อพนักงาน');return}
-  R.employees().push({name,createdAt:Date.now()}).then(()=>{inp.value='';toast('✅ เพิ่มพนักงานแล้ว')});
+  R.employees().push({name,createdAt:Date.now()}).then(()=>{inp.value='';toast('✅ เพิ่มพนักงานแล้ว')}).catch(fbErr);
 }
 document.getElementById('emp-input').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addEmployee()}});
 
@@ -1135,18 +1194,18 @@ function renderEmployees(){
     <div class="lrow">
       <div class="lrow-name">${esc(e.name)}</div>
       <div class="lrow-acts">
-        <button class="btn btn-ghost btn-xs" onclick="editEmpName('${id}','${esc(e.name)}')">✏️</button>
+        <button class="btn btn-ghost btn-xs" onclick="editEmpName('${id}','${escJsAttr(e.name)}')">✏️</button>
         <button class="btn btn-red btn-xs" onclick="delEmployee('${id}')">🗑️</button>
       </div>
     </div>`).join('');
 }
 function editEmpName(id,cur){
   const n=prompt('แก้ไขชื่อพนักงาน:',cur);
-  if(n&&n.trim()&&n.trim()!==cur) R.employee(id).update({name:n.trim()}).then(()=>toast('✅ แก้ไขแล้ว'));
+  if(n&&n.trim()&&n.trim()!==cur) R.employee(id).update({name:n.trim()}).then(()=>toast('✅ แก้ไขแล้ว')).catch(fbErr);
 }
 function delEmployee(id){
   showModal('ลบพนักงาน','ลบพนักงานคนนี้? (ข้อมูลสินค้าที่เชื่อมอยู่จะยังอยู่)',()=>{
-    R.employee(id).remove().then(()=>toast('🗑️ ลบแล้ว'));
+    R.employee(id).remove().then(()=>toast('🗑️ ลบแล้ว')).catch(fbErr);
   });
 }
 
@@ -1158,7 +1217,7 @@ function addShop(){
   const name=inp.value.trim();
   if(!name){toast('กรุณากรอกชื่อร้านค้า');return}
   const order=Object.keys(S.shops).length;
-  R.shops().push({name,order,createdAt:Date.now()}).then(()=>{inp.value='';toast('✅ เพิ่มร้านค้าแล้ว')});
+  R.shops().push({name,order,lineOrder:false,createdAt:Date.now()}).then(()=>{inp.value='';toast('✅ เพิ่มร้านค้าแล้ว')}).catch(fbErr);
 }
 document.getElementById('shop-input').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addShop()}});
 
@@ -1172,13 +1231,19 @@ function renderShops(){
   el.innerHTML=list.map((s)=>{
     const realIdx=all.findIndex(x=>x.id===s.id);
     const isFirst=realIdx===0, isLast=realIdx===all.length-1;
-    return `<div class="lrow" id="shoprow-${s.id}" draggable="${!searching}" 
-      ondragstart="shopDragStart(event,'${s.id}')" ondragover="shopDragOver(event,'${s.id}')"
+    return `<div class="lrow" id="shoprow-${s.id}" 
+      ondragover="shopDragOver(event,'${s.id}')"
       ondrop="shopDrop(event,'${s.id}')" ondragend="shopDragEnd(event)" ondragleave="shopDragLeave(event)">
-      ${!searching?`<span class="drag-handle" title="ลากเพื่อเรียงลำดับ">⠿</span>`:''}
+      ${!searching?`<span class="drag-handle" title="ลากเพื่อเรียงลำดับ" draggable="true" ondragstart="shopDragStart(event,'${s.id}')">⠿</span>`:''}
       <div class="lrow-name">
         ${!searching?`<span style="font-size:.72rem;color:var(--ink4);margin-right:5px;font-weight:700">${realIdx+1}.</span>`:''}
         ${esc(s.name)}
+        <div style="margin-top:4px">
+          <button class="chip ${s.lineOrder?'chip-green':'chip-gray'}" style="border:none;cursor:pointer;font-family:'Noto Sans Thai',sans-serif"
+            onclick="toggleShopLineOrder('${s.id}')" title="สั่งของร้านนี้ทางไลน์ได้ไหม">
+            ${s.lineOrder?'💬 สั่งทางไลน์':'🚶 ต้องไปเอง'}
+          </button>
+        </div>
       </div>
       <div class="lrow-acts">
         ${!searching?`
@@ -1187,7 +1252,7 @@ function renderShops(){
           <button class="btn btn-flat btn-xs" style="padding:6px 8px;font-size:1rem;line-height:1"
             onclick="moveShop('${s.id}',1)" ${isLast?'disabled style="opacity:.3;pointer-events:none"':''}>↓</button>
         `:''}
-        <button class="btn btn-ghost btn-xs" onclick="editShopName('${s.id}','${esc(s.name)}')">✏️</button>
+        <button class="btn btn-ghost btn-xs" onclick="editShopName('${s.id}','${escJsAttr(s.name)}')">✏️</button>
         <button class="btn btn-red btn-xs" onclick="delShop('${s.id}')">🗑️</button>
       </div>
     </div>`;
@@ -1201,7 +1266,7 @@ function renderShops(){
 let _dragShopId=null;
 function shopDragStart(e,id){
   _dragShopId=id;
-  e.currentTarget.classList.add('dragging');
+  e.currentTarget.closest('.lrow').classList.add('dragging');
   e.dataTransfer.effectAllowed='move';
 }
 function shopDragOver(e,id){
@@ -1230,7 +1295,7 @@ function shopDrop(e,targetId){
   // write new orders
   const updates={};
   reordered.forEach((s,i)=>{updates[`${ROOT}/shops/${s.id}/order`]=i});
-  db.ref().update(updates);
+  db.ref().update(updates).catch(fbErr);
 }
 
 /* ── Touch drag for mobile ── */
@@ -1285,28 +1350,30 @@ function moveShop(id, dir){
   const updates={};
   updates[`${ROOT}/shops/${a.id}/order`]=orderB;
   updates[`${ROOT}/shops/${b.id}/order`]=orderA;
-  db.ref().update(updates);
+  db.ref().update(updates).catch(fbErr);
 }
 
 function editShopName(id,cur){
   const n=prompt('แก้ไขชื่อร้านค้า:',cur);
-  if(n&&n.trim()&&n.trim()!==cur) R.shop(id).update({name:n.trim()}).then(()=>toast('✅ แก้ไขแล้ว'));
+  if(n&&n.trim()&&n.trim()!==cur) R.shop(id).update({name:n.trim()}).then(()=>toast('✅ แก้ไขแล้ว')).catch(fbErr);
+}
+// สลับว่าร้านนี้สั่งของทางไลน์ได้ไหม — ใช้ตัดสินใจว่าจะโชว์ปุ่ม "คัดลอกข้อความสั่งของ" ที่หน้าเดินซื้อของหรือเปล่า
+function toggleShopLineOrder(id){
+  const cur=!!S.shops[id]?.lineOrder;
+  R.shop(id).update({lineOrder:!cur}).catch(fbErr);
 }
 function delShop(id){
-  showModal('ลบร้านค้า','ลบร้านค้านี้?',()=>{R.shop(id).remove().then(()=>toast('🗑️ ลบแล้ว'))});
+  showModal('ลบร้านค้า','ลบร้านค้านี้?',()=>{R.shop(id).remove().then(()=>toast('🗑️ ลบแล้ว')).catch(fbErr)});
 }
 
 function populateSelects(){
   const shops=sortedShops();
   const shopOpts=`<option value="">-- เลือก --</option>`+shops.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
-  const shopOptsBlank=`<option value="">-- ไม่ระบุ --</option>`+shops.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
   document.getElementById('prod-shop').innerHTML=shopOpts;
-  document.getElementById('bulk-shop').innerHTML=shopOptsBlank;
 
   const emps=Object.entries(S.employees).sort((a,b)=>a[1].name?.localeCompare(b[1].name||'','th'));
   const empOpts=`<option value="">-- ไม่ระบุ --</option>`+emps.map(([id,e])=>`<option value="${id}">${esc(e.name)}</option>`).join('');
   document.getElementById('prod-emp').innerHTML=empOpts;
-  document.getElementById('bulk-emp').innerHTML=empOpts;
   // อัพเดท dropdown ร้านค้าของ quick-edit ด้วย
   const sqShop=document.getElementById('sq-shop');
   if(sqShop) sqShop.innerHTML=`<option value="">— ไม่ระบุร้านค้า —</option>`+shops.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
@@ -1327,29 +1394,86 @@ function addProduct(){
     .then(()=>{
       document.getElementById('prod-name').value='';
       document.getElementById('prod-unit').value='';
+      closeProdSuggestBox();
       toast('✅ เพิ่มสินค้าแล้ว');
-    });
+    }).catch(fbErr);
 }
 document.getElementById('prod-name').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addProduct()}});
 
-function bulkAddProducts(){
-  const text=document.getElementById('prod-bulk').value.trim();
-  if(!text){toast('กรุณากรอกรายการ');return}
-  const empId=document.getElementById('bulk-emp').value;
-  const shopId=document.getElementById('bulk-shop').value;
-  const shopName=shopId?S.shops[shopId]?.name||'':'';
-  const lines=text.split('\n').map(l=>l.trim()).filter(l=>l&&!l.startsWith('#'));
-  if(!lines.length){toast('ไม่มีรายการที่นำเข้าได้');return}
-  const existingNames=Object.values(S.products).map(p=>p.name?.toLowerCase());
-  const toAdd=lines.filter(l=>!existingNames.includes(l.toLowerCase()));
-  if(!toAdd.length){toast('สินค้าทั้งหมดมีอยู่แล้ว');return}
-  const ops=toAdd.map(name=>R.products().push({name,unit:'',employeeId:empId,shopId,shopName,createdAt:Date.now()}));
-  Promise.all(ops).then(()=>toast(`✅ นำเข้า ${toAdd.length} รายการแล้ว`));
+// เตือนล่วงหน้าตอนพิมพ์ชื่อสินค้าใหม่ ถ้ามีสินค้าชื่อใกล้เคียงอยู่แล้ว จะได้ไม่เผลอเพิ่มซ้ำ
+function prodNameCheckDup(){
+  const raw=document.getElementById('prod-name').value.trim();
+  const q=raw.toLowerCase();
+  const box=document.getElementById('prodname-suggest');
+  if(!q){closeProdSuggestBox();box.classList.remove('has-dup');return}
+  const matches=Object.entries(S.products).filter(([,p])=>p.name?.toLowerCase().includes(q));
+  if(!matches.length){closeProdSuggestBox();box.classList.remove('has-dup');return}
+  // เรียงให้ตัวที่ตรงกันมากที่สุดขึ้นก่อน: ชื่อตรงเป๊ะ > ขึ้นต้นด้วยคำที่พิมพ์ > แค่มีคำนี้อยู่ในชื่อ
+  const rank=name=>{
+    const n=name.toLowerCase();
+    if(n===q) return 0;
+    if(n.startsWith(q)) return 1;
+    return 2;
+  };
+  const results=matches.sort((a,b)=>{
+    const r=rank(a[1].name)-rank(b[1].name);
+    return r!==0?r:(a[1].name||'').localeCompare(b[1].name||'','th');
+  }).slice(0,8);
+  const hi=name=>{
+    const idx=name.toLowerCase().indexOf(q);
+    if(idx===-1) return esc(name);
+    return esc(name.slice(0,idx))+'<mark>'+esc(name.slice(idx,idx+q.length))+'</mark>'+esc(name.slice(idx+q.length));
+  };
+  box.innerHTML=
+    `<div class="sug-warn-header">⚠️ ชื่อใกล้เคียงกัน ${matches.length} รายการ — แตะเพื่อแก้ไขรายการเดิม</div>`+
+    results.map(([id,p])=>`
+      <button class="sug-item" onclick="prodNameGoEdit('${id}')">
+        <div class="sug-name">${hi(p.name||'')}</div>
+        <div class="sug-meta">${p.shopName?`🏪 ${esc(p.shopName)}`:''}${p.empName?` · 👤 ${esc(p.empName)}`:''}${p.unit?` · ${esc(p.unit)}`:''}</div>
+      </button>`).join('');
+  box.classList.add('has-dup');
+  positionProdSuggestBox();
+  box.style.display='block';
+}
+// กล่องนี้อยู่ใน .card ที่มี overflow:hidden ตัดขอบ เลยต้องย้ายกล่องออกไปแปะที่ <body>
+// แล้วคำนวณตำแหน่งเองแบบ position:fixed อิงจากตำแหน่งของช่องกรอกชื่อสินค้า ไม่งั้นกล่องจะโดนตัดจนเห็นแค่หัวข้อเตือน
+function positionProdSuggestBox(){
+  const box=document.getElementById('prodname-suggest');
+  const inp=document.getElementById('prod-name');
+  if(!box||!inp) return;
+  if(box.parentElement!==document.body) document.body.appendChild(box);
+  box.classList.add('portal-fixed');
+  const r=inp.getBoundingClientRect();
+  box.style.left=r.left+'px';
+  box.style.top=(r.bottom+4)+'px';
+  box.style.width=r.width+'px';
+}
+function closeProdSuggestBox(){
+  const box=document.getElementById('prodname-suggest');
+  if(box) box.style.display='none';
+}
+window.addEventListener('scroll',e=>{
+  const box=document.getElementById('prodname-suggest');
+  // ถ้าเป็นการเลื่อนอยู่ในกล่องแนะนำเอง (ดูรายการที่มีเยอะๆ) ไม่ต้องปิด — ปิดเฉพาะตอนเลื่อนหน้าเว็บจริงๆ
+  if(box&&box.contains(e.target)) return;
+  closeProdSuggestBox();
+},true);
+window.addEventListener('resize',closeProdSuggestBox);
+function prodNameGoEdit(id){
+  closeProdSuggestBox();
+  editProduct(id);
 }
 
+
 let _grp='emp';
-// track which groups are open; default all open on first render
-const _openGrps=new Set();
+// เดิม: ใช้ Set เดียวเก็บสถานะเปิด/ปิดกลุ่ม แล้วสั่ง .clear() ทุกครั้งที่สลับแท็บ (ตามพนักงาน/ตามร้านค้า)
+// ทำให้กลุ่มที่เคยยุบไว้กลับมาเปิดหมดทุกครั้งที่สลับแท็บไปมา ต้องมายุบใหม่ทุกรอบ
+// แก้แล้ว: แยกเก็บสถานะเปิด/ปิดเป็นคนละชุดต่อโหมดการจัดกลุ่ม สลับแท็บไปมาแล้วสถานะของแต่ละโหมดจะยังคงอยู่
+const _openGrpsByMode={};
+function getOpenGrps(){
+  if(!_openGrpsByMode[_grp]) _openGrpsByMode[_grp]=new Set();
+  return _openGrpsByMode[_grp];
+}
 
 function updateGrpBadges(){
   const all=Object.values(S.products);
@@ -1363,7 +1487,6 @@ function updateGrpBadges(){
 
 function setGrp(g){
   _grp=g;
-  _openGrps.clear();
   document.getElementById('grp-emp-btn').className='btn btn-xs '+(g==='emp'?'btn-green':'btn-ghost');
   document.getElementById('grp-shop-btn').className='btn btn-xs '+(g==='shop'?'btn-green':'btn-ghost');
   document.getElementById('grp-noshop-btn').className='btn btn-xs '+(g==='noshop'?'btn-orange':'btn-ghost');
@@ -1372,12 +1495,13 @@ function setGrp(g){
 }
 
 function toggleGrp(key){
-  if(_openGrps.has(key)) _openGrps.delete(key); else _openGrps.add(key);
+  const openGrps=getOpenGrps();
+  if(openGrps.has(key)) openGrps.delete(key); else openGrps.add(key);
   // toggle classes directly without full re-render
   const btn=document.getElementById(`grpbtn-${CSS.escape(key)}`);
   const body=document.getElementById(`grpbody-${CSS.escape(key)}`);
-  if(btn) btn.classList.toggle('open',_openGrps.has(key));
-  if(body) body.classList.toggle('open',_openGrps.has(key));
+  if(btn) btn.classList.toggle('open',openGrps.has(key));
+  if(body) body.classList.toggle('open',openGrps.has(key));
 }
 
 function renderProducts(){
@@ -1411,13 +1535,14 @@ function renderProducts(){
     if(noShop.length) groups.push({key:'ไม่ระบุร้านค้า',label:'ไม่ระบุร้านค้า',prods:noShop,color:'var(--ink3)'});
   }
 
-  // if search active, open all
-  if(q) groups.forEach(g=>_openGrps.add(g.key));
-  // if no state yet, open all by default
-  if(!_openGrps.size) groups.forEach(g=>_openGrps.add(g.key));
+  // ถ้ากำลังค้นหาอยู่ ให้เปิดกลุ่มที่เจอผลลัพธ์อัตโนมัติ (เห็นผลค้นหาได้เลยไม่ต้องมากดขยายเอง)
+  const openGrps=getOpenGrps();
+  if(q) groups.forEach(g=>openGrps.add(g.key));
+  // เดิม: ถ้ายังไม่เคยมีสถานะของโหมดนี้เลย จะเปิดกลุ่มทั้งหมดให้อัตโนมัติ
+  // เปลี่ยนแล้ว: ค่าเริ่มต้นให้ยุบไว้ก่อนเสมอ ผู้ใช้กดขยายเองเป็นกลุ่มๆ ไป (ไม่บังคับเปิดหมดตอนแรก)
 
   el.innerHTML=groups.map(({key,label,prods,color})=>{
-    const isOpen=_openGrps.has(key);
+    const isOpen=openGrps.has(key);
     const safeKey=key.replace(/[^a-zA-Zก-๙0-9_-]/g,'_');
     return `<div style="margin-bottom:4px">
       <button class="grp-btn ${isOpen?'open':''}" id="grpbtn-${safeKey}" onclick="toggleGrpByKey('${safeKey}','${key.replace(/'/g,'\\\'')}')" style="color:${color}">
@@ -1446,11 +1571,12 @@ function renderProducts(){
 const _keyMap={};
 function toggleGrpByKey(safeKey,origKey){
   _keyMap[safeKey]=origKey;
-  if(_openGrps.has(origKey)) _openGrps.delete(origKey); else _openGrps.add(origKey);
+  const openGrps=getOpenGrps();
+  if(openGrps.has(origKey)) openGrps.delete(origKey); else openGrps.add(origKey);
   const btn=document.getElementById(`grpbtn-${safeKey}`);
   const body=document.getElementById(`grpbody-${safeKey}`);
-  if(btn) btn.classList.toggle('open',_openGrps.has(origKey));
-  if(body) body.classList.toggle('open',_openGrps.has(origKey));
+  if(btn) btn.classList.toggle('open',openGrps.has(origKey));
+  if(body) body.classList.toggle('open',openGrps.has(origKey));
 }
 
 let _editProdId=null;
@@ -1489,7 +1615,7 @@ function saveEditProd(){
   const shopId=document.getElementById('ep-shop').value;
   const shopName=shopId?S.shops[shopId]?.name||'':'';
   R.product(_editProdId).update({name,unit,employeeId:empId,shopId,shopName})
-    .then(()=>{toast('✅ แก้ไขแล้ว');closeEditProd()});
+    .then(()=>{toast('✅ แก้ไขแล้ว');closeEditProd()}).catch(fbErr);
 }
 
 /* ── Searchable shop dropdown helpers ── */
@@ -1498,7 +1624,7 @@ function epShopRenderList(q){
   const shops=sortedShops().filter(s=>!q||s.name.toLowerCase().includes(q.toLowerCase()));
   const items=[{id:'',name:'-- ไม่ระบุ --'},...shops];
   list.innerHTML=items.map(s=>
-    `<button class="srch-drop-item" onmousedown="epShopSelect('${s.id}','${esc(s.name)}')">${esc(s.name)}</button>`
+    `<button class="srch-drop-item" onmousedown="epShopSelect('${s.id}','${escJsAttr(s.name)}')">${esc(s.name)}</button>`
   ).join('')||`<div class="srch-drop-empty">ไม่พบร้านค้า</div>`;
 }
 function epShopOpen(){
@@ -1526,37 +1652,118 @@ document.addEventListener('click',e=>{
   if(wrap&&!wrap.contains(e.target)) epShopClose();
 });
 function delProduct(id){
-  showModal('ลบสินค้า','ลบสินค้านี้?',()=>{R.product(id).remove().then(()=>toast('🗑️ ลบแล้ว'))});
+  showModal('ลบสินค้า','ลบสินค้านี้?',()=>{R.product(id).remove().then(()=>toast('🗑️ ลบแล้ว')).catch(fbErr)});
 }
 
 // ══════════════════════════════════════════════
 // SESSION / JOT
 // ══════════════════════════════════════════════
 function renderJotStart(){
-  const active=getLatestSession();
+  const active=getActiveJotSession();
   const card=document.getElementById('active-session-card');
+  const strayWarn=document.getElementById('stray-session-warn');
+  const pendingBlock=document.getElementById('pending-round-block');
+  const newRoundCard=document.getElementById('new-round-card');
+
   if(active){
     card.style.display='';
     document.getElementById('active-session-info').textContent=
       `วันที่ ${fmtDate(active[1].date)} — กำลังจดอยู่`;
     activeSessionId=active[0];
+    // เดิม: ถ้ามีรอบค้าง (uncompleted) ซ้อนกันมากกว่า 1 รอบ (เช่น จากบั๊กสร้างรอบซ้อนที่เคยเกิดก่อนหน้านี้)
+    // getActiveJotSession() จะโชว์แค่รอบล่าสุดเสมอ พอยกเลิกรอบนึง ระบบจะไปเจอรอบที่ซ้อนอยู่อีกรอบทันที
+    // ดูเหมือนกับว่า "ยกเลิกไม่สำเร็จ" ทั้งที่จริงๆ ลบสำเร็จ — เลยต้องโชว์เตือนให้เห็นและมีทางล้างทิ้งทั้งหมด
+    const openAll=Object.entries(S.sessions).filter(([,s])=>!s.completed);
+    if(openAll.length>1){
+      strayWarn.style.display='';
+      document.getElementById('stray-session-msg').textContent=
+        `⚠️ พบรอบค้างซ้อนกันอยู่ ${openAll.length} รอบ (น่าจะเป็นรอบเก่าที่หลงเหลืออยู่) — ถ้ายกเลิกแล้วรอบยังไม่หาย ลองล้างซ้อนดู`;
+    } else {
+      strayWarn.style.display='none';
+    }
   } else {
     card.style.display='none';
+    strayWarn.style.display='none';
   }
+
+  // บังคับให้จัดการรอบเก่าให้เสร็จก่อน ถ้ามีรอบที่ "จดเสร็จแล้ว" แต่ยัง "ไม่ได้กดซื้อของเสร็จแล้ว" ค้างอยู่ในหน้าสรุป/เดิน
+  // ป้องกันไม่ให้เผลอเริ่มจดรอบใหม่ทับ จนรอบเก่าตกไปมองไม่เห็นในหน้าสรุป/เดิน
+  const pending=getLatestSession();
+  if(!active && pending){
+    pendingBlock.style.display='';
+    newRoundCard.style.display='none';
+    document.getElementById('pending-round-msg').textContent=
+      `รอบวันที่ ${fmtDate(pending[1].date)} จดเสร็จแล้วแต่ยังไม่ได้กด "ซื้อของเสร็จแล้ว" — ไปที่หน้า "สรุป" หรือ "เดิน" เพื่อจัดการให้เสร็จก่อน (หรือกดลบทิ้งถ้าไม่ใช้แล้ว) ถึงจะเริ่มจดรอบใหม่ได้`;
+  } else {
+    pendingBlock.style.display='none';
+    newRoundCard.style.display='';
+  }
+
   document.getElementById('jot-start').style.display='';
   document.getElementById('jot-board').style.display='none';
   document.getElementById('jot-emp').style.display='none';
 }
 
+// พาไปหน้า "สรุป" เพื่อจัดการรอบเก่าที่ค้างอยู่ (ยังไม่ได้กด "ซื้อของเสร็จแล้ว")
+function goToPendingRound(){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tb-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('pg-summary').classList.add('on');
+  document.querySelectorAll('.tb-btn')[1].classList.add('on');
+  renderSummary();
+}
+
+function clearStrayJotSessions(){
+  const openAll=Object.entries(S.sessions).filter(([,s])=>!s.completed);
+  if(openAll.length<2) return;
+  const sorted=openAll.sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0));
+  const [keepId]=sorted[0];
+  const toRemove=sorted.slice(1).map(([id])=>id);
+  showModal('ล้างรอบค้างซ้อน',
+    `จะลบรอบค้างที่ซ้อนอยู่ ${toRemove.length} รอบทิ้ง แล้วเก็บไว้แค่รอบล่าสุดวันที่ ${fmtDate(sorted[0][1].date)}? (ข้อมูลในรอบที่ถูกลบจะหายไป)`,
+    ()=>{
+      Promise.all(toRemove.map(id=>R.session(id).remove()))
+        .then(()=>{
+          toRemove.forEach(id=>delete S.sessions[id]);
+          toast(`🧹 ล้างรอบค้างซ้อน ${toRemove.length} รอบแล้ว`);
+          renderJotStart();
+        }).catch(fbErr);
+    },'ล้างเลย','btn-red');
+}
+
 function startSession(){
   const date=document.getElementById('session-date').value;
   if(!date){toast('กรุณาเลือกวันที่');return}
-  R.sessions().push({date,completed:false,cleared:false,shoppingDone:false,createdAt:Date.now()})
-    .then(ref=>{activeSessionId=ref.key;openEmpBoard()});
+  // กันรอบซ้อน: ถ้ามีรอบที่กำลังจดค้างอยู่แล้ว ให้กลับไปที่รอบเดิมแทนที่จะสร้างใหม่ทับ
+  // เดิม: เช็คจาก S.sessions cache ในเครื่องอย่างเดียว ถ้าเปิดพร้อมกันหลายเครื่องแล้วกดปุ่มพร้อมกัน
+  // cache ของแต่ละเครื่องอาจยังไม่ทันอัปเดต ทำให้สร้างรอบซ้อนกันได้ — แก้โดยเช็คข้อมูลสดจาก Firebase ก่อนสร้างจริง
+  R.sessions().once('value').then(snap=>{
+    const all=snap.val()||{};
+    S.sessions=all;
+    const open=Object.entries(all).filter(([,s])=>!s.completed)
+      .sort((a,b)=>(b[1].createdAt||0)-(a[1].createdAt||0));
+    if(open.length){
+      activeSessionId=open[0][0];
+      openEmpBoard();
+      toast('มีรอบที่กำลังจดค้างอยู่ พากลับไปที่รอบเดิมให้แล้ว');
+      return;
+    }
+    // เช็คซ้ำจากข้อมูลสดอีกที (กันเคสหลายเครื่อง/แท็บ เผลอกดพร้อมกันจนหลุดผ่าน renderJotStart มาได้)
+    // ถ้ามีรอบที่จดเสร็จแล้วแต่ยังไม่ได้กด "ซื้อของเสร็จแล้ว" ค้างอยู่ ห้ามสร้างรอบใหม่ทับ ให้พาไปจัดการรอบเก่าก่อน
+    const pending=Object.entries(all).filter(([,s])=>s.completed&&!s.shoppingDone)
+      .sort((a,b)=>b[1].date?.localeCompare(a[1].date||'')||0);
+    if(pending.length){
+      renderJotStart();
+      toast('⚠️ มีรอบเก่าที่ยังไม่ได้ไปซื้อของค้างอยู่ ให้จัดการให้เสร็จก่อน');
+      return;
+    }
+    R.sessions().push({date,completed:false,cleared:false,shoppingDone:false,createdAt:Date.now()})
+      .then(ref=>{activeSessionId=ref.key;openEmpBoard()}).catch(fbErr);
+  }).catch(fbErr);
 }
 
 function resumeSession(){
-  const latest=getLatestSession();
+  const latest=getActiveJotSession();
   if(!latest){toast('ไม่มีรอบค้าง');return}
   activeSessionId=latest[0];openEmpBoard();
 }
@@ -1572,19 +1779,20 @@ function openEmpBoard(){
 function renderEmpGrid(){
   const sess=S.sessions[activeSessionId];
   const entries=sess?.entries||{};
-  const empList=[...Object.entries(S.employees),[NONE_ID,{name:NONE_NAME}]];
-  const done=empList.filter(([id])=>entries[id]?.saved).length;
-  const total=empList.filter(([id,])=>id===NONE_ID?prodsForEmp(NONE_ID).length>0:prodsForEmp(id).length>0).length;
-  document.getElementById('board-progress').textContent=`กรอกแล้ว ${done} / ${total} คน`;
+  const empList=[...Object.entries(S.employees),[NONE_ID,{name:NONE_NAME}]]
+    .filter(([id])=>prodsForEmp(id).length>0);
+  const done=empList.filter(([id])=>empUndecided(id,entries[id]).length===0).length;
+  const total=empList.length;
+  document.getElementById('board-progress').textContent=`เช็คครบแล้ว ${done} / ${total} คน`;
 
   document.getElementById('emp-grid').innerHTML=empList.map(([id,e])=>{
     const prods=prodsForEmp(id);
-    if(!prods.length) return '';
-    const saved=entries[id]?.saved;
-    const itemCount=Object.keys(entries[id]?.items||{}).length;
-    return `<button class="emp-tile ${saved?'done':''}" onclick="openEmpInput('${id}')">
+    const entry=entries[id];
+    const complete=empUndecided(id,entry).length===0;
+    const itemCount=Object.values(entry?.items||{}).filter(it=>!it.skipped&&parseFloat(it.qty)>0).length;
+    return `<button class="emp-tile ${complete?'done':''}" onclick="openEmpInput('${id}')">
       <div class="emp-tile-name">${esc(e.name)}</div>
-      <div class="emp-tile-sub">${saved?`✔ ${itemCount} รายการ`:`${prods.length} สินค้า`}</div>
+      <div class="emp-tile-sub">${complete?`✔ ${itemCount} รายการ`:`${prods.length} สินค้า`}</div>
     </button>`;
   }).join('');
 }
@@ -1624,8 +1832,8 @@ function moveEmpProd(empId, idx, dir) {
   const swapIdx = idx + dir;
   if (swapIdx < 0 || swapIdx >= order.length) return;
   [order[idx], order[swapIdx]] = [order[swapIdx], order[idx]];
-  const sess = S.sessions[activeSessionId];
-  renderEmpProducts(sess?.entries?.[empId]?.items || {});
+  // ใช้ค่าที่กำลังพิมพ์อยู่บนจอ (ยังไม่กดบันทึก) แทนข้อมูลเก่าจาก Firebase กันตัวเลขที่กรอกไว้หายตอนจัดเรียง
+  renderEmpProducts(collectItems());
 }
 
 let _dragProdIdx = null;
@@ -1634,7 +1842,7 @@ let _dragProdEmpId = null;
 function prodDragStart(e, empId, idx) {
   _dragProdIdx = idx;
   _dragProdEmpId = empId;
-  e.currentTarget.classList.add('dragging');
+  e.currentTarget.closest('.prod-row').classList.add('dragging');
   e.dataTransfer.effectAllowed = 'move';
 }
 function prodDragOver(e, idx) {
@@ -1656,8 +1864,8 @@ function prodDrop(e, toIdx) {
   order.splice(toIdx, 0, moved);
   _dragProdIdx = null;
   document.querySelectorAll('#emp-prod-list .prod-row').forEach(el => el.classList.remove('dragging', 'drag-over'));
-  const sess = S.sessions[activeSessionId];
-  renderEmpProducts(sess?.entries?.[_dragProdEmpId]?.items || {});
+  // ใช้ค่าที่กำลังพิมพ์อยู่บนจอ (ยังไม่กดบันทึก) แทนข้อมูลเก่าจาก Firebase กันตัวเลขที่กรอกไว้หายตอนลากจัดเรียง
+  renderEmpProducts(collectItems());
 }
 
 function initProdTouchDrag(empId) {
@@ -1695,8 +1903,8 @@ function initProdTouchDrag(empId) {
         const order = getEmpProdOrder(empId);
         const [moved] = order.splice(touchIdx, 1);
         order.splice(toIdx, 0, moved);
-        const sess = S.sessions[activeSessionId];
-        renderEmpProducts(sess?.entries?.[empId]?.items || {});
+        // ใช้ค่าที่กำลังพิมพ์อยู่บนจอ (ยังไม่กดบันทึก) แทนข้อมูลเก่าจาก Firebase กันตัวเลขที่กรอกไว้หายตอนลากจัดเรียง
+        renderEmpProducts(collectItems());
       }
       document.querySelectorAll('#emp-prod-list .prod-row').forEach(r => r.classList.remove('dragging', 'drag-over'));
       clone?.remove(); clone = null; touchIdx = null;
@@ -1726,13 +1934,11 @@ function renderEmpProducts(savedItems){
     const nameClass=isSkipped?'skipped':hasVal?'bought':'';
     const isFirst = idx === 0, isLast = idx === prods.length - 1;
     return `<div class="prod-row" id="pr-${id}" style="flex-wrap:wrap"
-        draggable="${!isSearching}"
-        ondragstart="prodDragStart(event,'${currentEmpId}',${idx})"
         ondragover="prodDragOver(event,${idx})"
         ondragleave="prodDragLeave(event)"
         ondragend="prodDragEnd(event)"
         ondrop="prodDrop(event,${idx})">
-      ${!isSearching ? `<span class="drag-handle" title="ลากเพื่อเรียง" style="align-self:center">⠿</span>` : ''}
+      ${!isSearching ? `<span class="drag-handle" title="ลากเพื่อเรียง" style="align-self:center" draggable="true" ondragstart="prodDragStart(event,'${currentEmpId}',${idx})">⠿</span>` : ''}
       <div class="prod-row-info" style="min-width:0;flex:1">
         <div class="prod-row-name ${nameClass}" id="pn-${id}">${esc(p.name)}</div>
         <div class="prod-row-shop">${p.shopName?`🏪 ${esc(p.shopName)}`:''}</div>
@@ -1767,9 +1973,9 @@ function renderEmpProducts(savedItems){
 }
 
 function filterEmpProducts(){
-  const sess=S.sessions[activeSessionId];
-  const savedItems=sess?.entries?.[currentEmpId]?.items||{};
-  renderEmpProducts(savedItems);
+  // ใช้ค่าที่กำลังพิมพ์อยู่บนจอ (ยังไม่กดบันทึก) แทนข้อมูลเก่าจาก Firebase
+  // กันตัวเลข/หมายเหตุที่กรอกไว้หายไปทุกครั้งที่พิมพ์ค้นหา
+  renderEmpProducts(collectItems());
 }
 
 function qtyInput(id,el){
@@ -1783,6 +1989,7 @@ function qtyInput(id,el){
   if(skipBtn){skipBtn.classList.remove('is-skipped');skipBtn.dataset.skipped='0';}
   const nameEl=document.getElementById('pn-'+id);
   if(nameEl) nameEl.className='prod-row-name'+(hasVal?' bought':'');
+  scheduleAutosave(id);
 }
 
 function qtyChange(id,delta){
@@ -1804,9 +2011,10 @@ function noteInput(id,el){
   const hasNote=el.value.trim()!=='';
   const btn=document.getElementById('notebtn-'+id);
   if(btn) btn.classList.toggle('has-note',hasNote);
+  scheduleAutosave(id);
 }
 
-// toggle ปุ่มไม่ซื้อในแถว (ยังไม่ save — save เมื่อกดบันทึก)
+// toggle ปุ่มไม่ซื้อในแถว — บันทึกอัตโนมัติทันที (เป็นการแตะครั้งเดียว ไม่ต้อง debounce)
 function toggleSkipItem(id){
   const skipBtn=document.getElementById('skipbtn-'+id);
   const nameEl=document.getElementById('pn-'+id);
@@ -1828,6 +2036,52 @@ function toggleSkipItem(id){
   }
   if(minusBtn) minusBtn.disabled=isNowSkipped;
   if(plusBtn) plusBtn.disabled=isNowSkipped;
+  clearTimeout(_autosaveTimers[id]);
+  autosaveItem(id, currentEmpId, activeSessionId);
+}
+
+// ══ AUTO-SAVE (กันลืมกดบันทึก) ══
+// snapshot empId/sessionId ตอน "ตั้งเวลา" ไม่ใช่ตอน "ยิงจริง" กันเขียนผิดคนถ้าสลับพนักงานเร็วๆ ภายใน debounce
+const _autosaveTimers={};
+function scheduleAutosave(id){
+  const empId=currentEmpId, sessionId=activeSessionId;
+  clearTimeout(_autosaveTimers[id]);
+  _autosaveTimers[id]=setTimeout(()=>autosaveItem(id,empId,sessionId),500);
+}
+function autosaveItem(id,empId,sessionId){
+  empId=empId||currentEmpId; sessionId=sessionId||activeSessionId;
+  if(!sessionId||!empId) return;
+  const p=S.products[id]; if(!p) return;
+  const inp=document.getElementById('qty-'+id);
+  if(!inp) return; // แถวนี้ไม่อยู่บนจอแล้ว ไม่มีอะไรให้เซฟจากการยิงนี้
+  const noteEl=document.getElementById('note-'+id);
+  const skipBtn=document.getElementById('skipbtn-'+id);
+  const isSkipped=skipBtn?.classList.contains('is-skipped')||false;
+  const qty=parseFloat(inp.value);
+  const note=noteEl?.value.trim()||'';
+  const ref=R.session(sessionId).child(`entries/${empId}/items/${id}`);
+  if(isSkipped){
+    ref.set({name:p.name,unit:p.unit||'',qty:0,shopId:p.shopId||'',shopName:p.shopName||'',note,skipped:true}).catch(fbErr);
+  } else if(!isNaN(qty)&&qty>0){
+    ref.set({name:p.name,unit:p.unit||'',qty,shopId:p.shopId||'',shopName:p.shopName||'',note}).catch(fbErr);
+  } else if(note){
+    // เดิม: ถ้ายังไม่ใส่จำนวน จะ ref.remove() ทิ้งทั้งก้อนทันที รวมโน้ตที่พิมพ์ไว้ก่อนหน้าด้วย
+    // แก้แล้ว: มีโน้ตแล้วแต่ยังไม่ใส่จำนวน ให้เก็บโน้ตไว้ก่อน (qty:0 ยังนับว่า "ยังไม่ตัดสินใจ" เหมือนเดิม
+    // เพราะ empUndecided() เช็คแค่ qty>0 หรือ skipped เท่านั้น) ไม่ให้โน้ตหายไปเฉยๆ
+    ref.set({name:p.name,unit:p.unit||'',qty:0,shopId:p.shopId||'',shopName:p.shopName||'',note}).catch(fbErr);
+  } else {
+    ref.remove().catch(fbErr); // ไม่มีทั้งจำนวนและโน้ต → ถือว่ายังไม่ตัดสินใจจริงๆ เอาออกจากที่เคยบันทึกไว้
+  }
+}
+
+// เช็คว่าพนักงานคนนี้ยังมีสินค้าตัวไหน "ยังไม่ตัดสินใจ" อยู่ไหม (ไม่มีจำนวน และไม่ได้กด "ไม่เอา")
+function empUndecided(empId, entry){
+  if(entry?.skipped) return []; // กด "ไม่ซื้อวันนี้" ทั้งคนแล้ว ถือว่าครบ
+  const itemsMap=entry?.items||{};
+  return prodsForEmp(empId).filter(([id])=>{
+    const it=itemsMap[id];
+    return !(it && (it.skipped || (parseFloat(it.qty)>0)));
+  });
 }
 
 function collectItems(){
@@ -1837,6 +2091,11 @@ function collectItems(){
   const items={};
   prods.forEach(([id,p])=>{
     const inp=document.getElementById('qty-'+id);
+    // แถวนี้ไม่ได้แสดงอยู่ตอนนี้ (เช่น ถูกซ่อนด้วยช่องค้นหา) — เก็บค่าที่เคยบันทึก/กรอกไว้ล่าสุดไว้ก่อน ห้ามทำหาย
+    if(!inp){
+      if(oldItems[id]) items[id]=oldItems[id];
+      return;
+    }
     const noteEl=document.getElementById('note-'+id);
     const skipBtn=document.getElementById('skipbtn-'+id);
     const isSkipped=skipBtn?.classList.contains('is-skipped')||false;
@@ -1860,41 +2119,90 @@ function collectItems(){
   return items;
 }
 
+// ปุ่มล่าง "✔ เสร็จแล้ว → กลับ" — ข้อมูลถูกเซฟอัตโนมัติไปเรื่อยๆ แล้ว ปุ่มนี้แค่ผ่านด่านเช็คครบก่อนกลับ
 function saveEmployee(){
-  const items=collectItems();
-  R.session(activeSessionId).child(`entries/${currentEmpId}`).set({items,saved:true,savedAt:Date.now()})
-    .then(()=>{toast('✅ บันทึกแล้ว');backToBoard()});
+  backToBoard();
 }
 
 function skipEmployee(){
-  R.session(activeSessionId).child(`entries/${currentEmpId}`).set({items:{},saved:true,skipped:true,savedAt:Date.now()})
-    .then(()=>{toast('⏭ ข้ามแล้ว');backToBoard()});
+  showModal('ไม่ซื้อวันนี้',
+    'คนนี้ไม่ซื้ออะไรเลยในรอบนี้ใช่ไหม? (ถ้าเคยกรอกจำนวนบางรายการไว้แล้ว จะถูกล้างทั้งหมด)',
+    ()=>{
+      R.session(activeSessionId).child(`entries/${currentEmpId}`).set({items:{},skipped:true,savedAt:Date.now()})
+        .then(()=>{
+          const sess=S.sessions[activeSessionId];
+          if(sess){ sess.entries=sess.entries||{}; sess.entries[currentEmpId]={items:{},skipped:true}; }
+          toast('⏭ ข้ามแล้ว');
+          document.getElementById('jot-emp').style.display='none';
+          openEmpBoard();
+        }).catch(fbErr);
+    },'ไม่ซื้อเลย','btn-orange');
 }
 
+// บังคับเช็คให้ครบก่อนกลับ: ทุกรายการต้องมีจำนวน หรือกด 🚫 "ไม่เอา" แล้วเท่านั้น
 function backToBoard(){
+  const liveItems=collectItems();
+  const undecided=empUndecided(currentEmpId,{items:liveItems});
+  if(undecided.length){
+    toast(`⚠️ เหลืออีก ${undecided.length} รายการที่ยังไม่ระบุ — กรอกจำนวน หรือกด 🚫 "ไม่เอา" ให้ครบก่อนนะ`,3000);
+    focusUndecidedItem(undecided[0][0]);
+    return;
+  }
+  // sync ค่าล่าสุดเข้า cache ในเครื่องทันที กันบอร์ดโชว์ "ยังไม่ครบ" วูบก่อนข้อมูลจาก Firebase ตามมาทัน
+  const sess=S.sessions[activeSessionId];
+  if(sess){ sess.entries=sess.entries||{}; sess.entries[currentEmpId]={...(sess.entries[currentEmpId]||{}),items:liveItems}; }
   document.getElementById('jot-emp').style.display='none';
   openEmpBoard();
 }
 
+function focusUndecidedItem(id){
+  const filterInp=document.getElementById('emp-filter');
+  if(filterInp && filterInp.value){ filterInp.value=''; renderEmpProducts(collectItems()); }
+  const row=document.getElementById('pr-'+id);
+  if(row){
+    row.scrollIntoView({behavior:'smooth',block:'center'});
+    row.classList.add('flash-warn');
+    setTimeout(()=>row.classList.remove('flash-warn'),1600);
+  }
+}
+
 function finishSession(){
-  R.session(activeSessionId).update({completed:true,completedAt:Date.now()}).then(()=>{
-    toast('✅ เสร็จสิ้น!');
-    // go to summary
-    document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
-    document.querySelectorAll('.tb-btn').forEach(b=>b.classList.remove('on'));
-    document.getElementById('pg-summary').classList.add('on');
-    document.querySelectorAll('.tb-btn')[1].classList.add('on');
-    renderSummary();
-  });
+  const sess=S.sessions[activeSessionId];
+  const entries=sess?.entries||{};
+  const relevantEmp=[...Object.entries(S.employees),[NONE_ID,{name:NONE_NAME}]].filter(([id])=>prodsForEmp(id).length>0);
+  const incomplete=relevantEmp.filter(([id])=>empUndecided(id,entries[id]).length>0);
+
+  const doFinish=()=>{
+    R.session(activeSessionId).update({completed:true,completedAt:Date.now()}).then(()=>{
+      toast('✅ เสร็จสิ้น!');
+      // go to summary
+      document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+      document.querySelectorAll('.tb-btn').forEach(b=>b.classList.remove('on'));
+      document.getElementById('pg-summary').classList.add('on');
+      document.querySelectorAll('.tb-btn')[1].classList.add('on');
+      renderSummary();
+    }).catch(fbErr);
+  };
+
+  if(incomplete.length){
+    const names=incomplete.map(([,e])=>e.name).join(', ');
+    showModal('ยังเช็คไม่ครบทุกคน',
+      `ยังมี ${incomplete.length} คนที่ยังเช็คไม่ครบทุกรายการ (${names}) ต้องการไปดูสรุปเลยไหม?`,
+      doFinish,'ไปสรุปเลย','btn-orange');
+    return;
+  }
+  doFinish();
 }
 
 function cancelBoard(){
   showModal('ยกเลิกรอบนี้','ยกเลิกรอบการจดของนี้? (ข้อมูลที่กรอกไปจะหายไป)',()=>{
-    R.session(activeSessionId).remove().then(()=>{
+    const sid=activeSessionId;
+    R.session(sid).remove().then(()=>{
+      delete S.sessions[sid];
       activeSessionId=null;
       toast('🗑️ ยกเลิกรอบแล้ว');
       renderJotStart();
-    });
+    }).catch(fbErr);
   });
 }
 
@@ -1939,14 +2247,21 @@ function qaConfirm(){
   const empId=p.employeeId||NONE_ID;
   R.session(activeSessionId).child(`entries/${empId}/items/${p.id}`)
     .set({name:p.name,unit:p.unit||'',qty,shopId:p.shopId||'',shopName:p.shopName||'',note})
-    .then(()=>{toast(`✅ เพิ่ม ${p.name} แล้ว`);qaCancel();renderQaList()});
+    .then(()=>{toast(`✅ เพิ่ม ${p.name} แล้ว`);qaCancel();renderQaList()}).catch(fbErr);
 }
 function renderQaList(){
   const sess=S.sessions[activeSessionId];if(!sess)return;
   const el=document.getElementById('qa-list');if(!el)return;
   const items=[];
   Object.entries(sess.entries||{}).forEach(([empId,entry])=>{
-    Object.entries(entry.items||{}).forEach(([pid,item])=>{items.push({pid,empId,...item})});
+    Object.entries(entry.items||{}).forEach(([pid,item])=>{
+      // เดิม: โชว์ทุกรายการที่มีใน entries ไม่ว่าจะ skipped หรือ qty=0 ก็ตาม
+      // ทำให้ของที่กด "ไม่เอา" (skip) หรือมีแค่โน้ตแต่ยังไม่ใส่จำนวน โผล่มาเป็น "0 หน่วย" รกหน้าจอ
+      // แก้แล้ว: โชว์เฉพาะของที่มีจำนวนจริง (qty>0) และไม่ได้ถูก skip เท่านั้น ถือเป็นของที่ "เพิ่มแล้วจริง"
+      if(item.skipped) return;
+      if(!(parseFloat(item.qty)>0)) return;
+      items.push({pid,empId,...item});
+    });
   });
   if(!items.length){el.innerHTML='';return}
   items.sort((a,b)=>(a.name||'').localeCompare(b.name||'','th'));
@@ -1963,7 +2278,7 @@ function renderQaList(){
 }
 function qaRemove(empId,pid){
   R.session(activeSessionId).child(`entries/${empId}/items/${pid}`).remove()
-    .then(()=>{toast('ลบแล้ว');renderQaList()});
+    .then(()=>{toast('ลบแล้ว');renderQaList()}).catch(fbErr);
 }
 
 // ── QUICK ADD / EDIT in summary ──
@@ -1984,7 +2299,7 @@ function sqSearch(){
   const ql=q.toLowerCase();
   const results=Object.entries(S.products).filter(([,p])=>p.name?.toLowerCase().includes(ql)).slice(0,10);
   // สร้าง option "เพิ่มใหม่" เสมอ
-  const newOpt=`<button class="sug-item" onclick="sqOpenForm(null,'${q.replace(/'/g,"\'")}')">
+  const newOpt=`<button class="sug-item" onclick="sqOpenForm(null,'${escJsAttr(q)}')">
     <div class="sug-name">➕ เพิ่ม "<strong>${esc(q)}</strong>" ใหม่</div>
     <div class="sug-meta">สินค้าที่ไม่มีในรายการสินค้า</div>
   </button>`;
@@ -2120,7 +2435,7 @@ function sqConfirm(){
     const {empId,pid}=sqEditMode;
     R.session(sid).child(`entries/${empId}/items/${pid}`)
       .update({name,unit,qty,shopId,shopName,note,skipped:false})
-      .then(()=>{toast(`✅ แก้ไข ${name} แล้ว`);sqCancel();renderSummary()});
+      .then(()=>{toast(`✅ แก้ไข ${name} แล้ว`);sqCancel();renderSummary()}).catch(fbErr);
   } else {
     // เพิ่มใหม่
     const p=sqSelected;
@@ -2128,13 +2443,29 @@ function sqConfirm(){
     const empId=(p?.employeeId)||NONE_ID;
     R.session(sid).child(`entries/${empId}/items/${itemKey}`)
       .set({name,unit,qty,shopId,shopName,note,skipped:false})
-      .then(()=>{toast(`✅ เพิ่ม ${name} แล้ว`);sqCancel();renderSummary()});
+      .then(()=>{toast(`✅ เพิ่ม ${name} แล้ว`);sqCancel();renderSummary()}).catch(fbErr);
   }
 }
 
 // ══════════════════════════════════════════════
 // SUMMARY
 // ══════════════════════════════════════════════
+// เดิม: การติ๊กในหน้าสรุป (tapSumItem) แค่ toggle CSS class เฉยๆ ไม่เคยถูกบันทึกจริง
+// พอ sessions listener ยิง renderSummary() ใหม่ (ซึ่งเกิดได้ทุกครั้งที่มีของถูกเพิ่ม/ลบ/แก้ แม้จากอีกเครื่อง)
+// ของที่ติ๊กไว้จะหายหมดทันที — แก้โดยบันทึกลง localStorage เหมือนหน้า "เดินซื้อของ"
+const SUM_STORAGE_KEY = 'sumTicked_v1';
+function loadSumStore(){
+  try{ return JSON.parse(localStorage.getItem(SUM_STORAGE_KEY)||'{}'); }catch(e){ return {}; }
+}
+function saveSumStore(obj){
+  try{ localStorage.setItem(SUM_STORAGE_KEY, JSON.stringify(obj)); }catch(e){}
+}
+const sumStore = loadSumStore(); // { [sessionId]: { [ikey]: true } }
+function getSumTicked(sid){
+  if(!sumStore[sid]) sumStore[sid] = {};
+  return sumStore[sid];
+}
+
 function renderSummary(){
   const latest=getLatestSession();
   const qaCard=document.getElementById('sum-qa-card');
@@ -2146,6 +2477,7 @@ function renderSummary(){
     return;
   }
   const [sid,sess]=latest;
+  const sumTicked=getSumTicked(sid);
   const allItems=[];
   Object.values(sess.entries||{}).forEach(entry=>{
     Object.values(entry.items||{}).forEach(item=>allItems.push(item));
@@ -2158,12 +2490,13 @@ function renderSummary(){
   sortedShops().forEach(s=>byShop[s.id]={name:s.name,items:[]});
   byShop['__none']={name:'ไม่ระบุร้านค้า',items:[]};
 
-  Object.values(sess.entries||{}).forEach(entry=>{
-    Object.values(entry.items||{}).forEach(item=>{
+  Object.entries(sess.entries||{}).forEach(([empId,entry])=>{
+    Object.entries(entry.items||{}).forEach(([pid,item])=>{
       if(item.skipped) return; // ซ่อนสินค้าที่กด "ไม่ซื้อ"
+      if(!(parseFloat(item.qty)>0)) return; // ซ่อนของที่ยังไม่มีจำนวนจริง (กันไว้เผื่อหลุดเข้ามา)
       const key=item.shopId||'__none';
       if(!byShop[key]) byShop[key]={name:item.shopName||'ไม่ระบุ',items:[]};
-      byShop[key].items.push(item);
+      byShop[key].items.push({...item,_ikey:`${empId}-${pid}`});
     });
   });
 
@@ -2174,20 +2507,25 @@ function renderSummary(){
     if(!g||!g.items.length) return;
     shopNum++;
     const blockId=`shop-block-${key}`;
-    html+=`<div class="shop-block" id="${blockId}">
+    const sorted=g.items.sort((a,b)=>(a.name||'').localeCompare(b.name||'','th'));
+    const total=sorted.length;
+    const doneCnt=sorted.filter(item=>sumTicked[item._ikey]).length;
+    html+=`<div class="shop-block${doneCnt===total&&total>0?' all-done':''}" id="${blockId}">
       <div class="shop-hdr">
         <span class="shop-num">${shopNum}</span>
         <div class="shop-hdr-name">🏪 ${esc(g.name)}</div>
-        <div class="shop-hdr-count" id="prog-${key}">0/${g.items.length}</div>
+        <div class="shop-hdr-count" id="prog-${key}">${doneCnt}/${total}</div>
       </div>
-      ${g.items.sort((a,b)=>(a.name||'').localeCompare(b.name||'','th')).map((item,idx)=>`
-        <div class="sum-item" id="si-${key}-${idx}" onclick="tapSumItem('${key}',${idx},'${blockId}')" data-taps="0" data-last="0">
+      ${sorted.map((item)=>{
+        const ticked=!!sumTicked[item._ikey];
+        return `<div class="sum-item${ticked?' ticked':''}" id="si-${key}-${item._ikey}" onclick="tapSumItem('${sid}','${key}','${item._ikey}','${blockId}',${total})" data-last="0">
           <div class="sum-item-name">
             ${esc(item.name)}
             ${item.note?`<div class="sum-item-note">💬 ${esc(item.note)}</div>`:''}
           </div>
           <div class="sum-qty">${item.qty} ${esc(item.unit||'')}</div>
-        </div>`).join('')}
+        </div>`;
+      }).join('')}
     </div>`;
   });
 
@@ -2258,27 +2596,32 @@ function renderSqList(){
 
 function sqDeleteItem(sid,empId,pid){
   R.session(sid).child(`entries/${empId}/items/${pid}`).remove()
-    .then(()=>{toast('🗑️ ลบแล้ว');renderSummary()});
+    .then(()=>{toast('🗑️ ลบแล้ว');renderSummary()}).catch(fbErr);
 }
 
 // ── DOUBLE-TAP TO TICK in summary ──
-function tapSumItem(shopKey, idx, blockId){
-  const el=document.getElementById(`si-${shopKey}-${idx}`);
+// เดิม: toggle แค่ CSS class เฉยๆ ไม่เคยเซฟจริง โดนล้างทุกครั้งที่ renderSummary() ทำงานใหม่
+// แก้แล้ว: เซฟลง localStorage ผูกกับ sessionId + ikey เหมือนหน้า "เดินซื้อของ"
+function tapSumItem(sid, shopKey, ikey, blockId, total){
+  const el=document.getElementById(`si-${shopKey}-${ikey}`);
   if(!el) return;
   const now=Date.now();
   const last=parseInt(el.dataset.last||'0');
   el.dataset.last=now;
   if(now-last<400){
     // double-tap: toggle ticked
-    el.classList.toggle('ticked');
-    updateShopProgress(shopKey, blockId);
+    const sumTicked=getSumTicked(sid);
+    sumTicked[ikey]=!sumTicked[ikey];
+    saveSumStore(sumStore);
+    el.classList.toggle('ticked', sumTicked[ikey]);
+    updateShopProgress(shopKey, blockId, total);
   }
 }
-function updateShopProgress(shopKey, blockId){
+function updateShopProgress(shopKey, blockId, total){
   const block=document.getElementById(blockId);
   if(!block) return;
   const items=block.querySelectorAll('.sum-item');
-  const total=items.length;
+  total = total ?? items.length;
   const done=[...items].filter(i=>i.classList.contains('ticked')).length;
   const prog=document.getElementById(`prog-${shopKey}`);
   if(prog) prog.textContent=`${done}/${total}`;
@@ -2291,8 +2634,10 @@ function markDone(){
   if(!latest){toast('ไม่มีรายการ');return}
   showModal('ซื้อของเสร็จแล้ว?',`ยืนยันว่าซื้อของวันที่ ${fmtDate(latest[1].date)} เสร็จแล้ว? รายการนี้จะย้ายไปประวัติ`,()=>{
     R.session(latest[0]).update({shoppingDone:true,shoppingDoneAt:Date.now()}).then(()=>{
+      if(typeof walkStore!=='undefined'){delete walkStore[latest[0]];saveWalkStore(walkStore);}
+      if(typeof sumStore!=='undefined'){delete sumStore[latest[0]];saveSumStore(sumStore);}
       toast('✅ บันทึกเสร็จแล้ว');renderSummary();
-    });
+    }).catch(fbErr);
   },'ยืนยัน','btn-green');
 }
 
@@ -2357,14 +2702,33 @@ function buildSummaryHTML(sess){
 
 function reopenSession(sid){
   const sess=S.sessions[sid];
+  // เดิม: หน้า "สรุป"/"เดินซื้อของ" จะโชว์แค่รอบที่วันที่ล่าสุดเท่านั้น (getLatestSession())
+  // ถ้ามีรอบอื่นที่ยังเปิดค้างอยู่แล้ว (completed แต่ยังไม่ shoppingDone) การเปิดคืนรอบนี้จะไม่โผล่ที่หน้าสรุปเลย
+  // แล้วก็หลุดจากหน้า "ประวัติ" ไปด้วย (เพราะ shoppingDone=false) กลายเป็นข้อมูลที่มองไม่เห็น — กันไว้ก่อนเปิดคืน
+  const otherOpen=Object.entries(S.sessions).find(([id,s])=>id!==sid && s.completed && !s.shoppingDone);
+  if(otherOpen){
+    showModal('เปิดคืนตอนนี้ไม่ได้',
+      `มีรอบวันที่ ${fmtDate(otherOpen[1].date)} เปิดค้างอยู่แล้ว (ยังไม่ได้กด "ซื้อของเสร็จแล้ว") ต้องจัดการรอบนั้นให้เสร็จหรือลบก่อน ไม่งั้นรอบที่เปิดคืนจะไม่โผล่ที่หน้าสรุป`,
+      ()=>{},'เข้าใจแล้ว','btn-ghost');
+    return;
+  }
   showModal('เปิดกลับมาแก้ไข',`ย้ายรายการวันที่ ${fmtDate(sess?.date)} กลับมาแก้ไขอีกครั้ง?`,()=>{
     R.session(sid).update({shoppingDone:false,shoppingDoneAt:null}).then(()=>{
       toast('🔓 เปิดกลับมาแล้ว — ดูที่หน้า "สรุป"');closeHistDetail();
-    });
+    }).catch(fbErr);
   },'เปิดกลับมา','btn-orange');
 }
 function dupSession(sid){
   const sess=S.sessions[sid];
+  // กันเหตุผลเดียวกับ reopenSession(): ถ้ามีรอบอื่นค้างอยู่ในหน้าสรุป/เดินแล้ว (completed แต่ยังไม่ shoppingDone)
+  // ห้ามสร้างรอบใหม่ทับ ไม่งั้นรอบที่เพิ่งทำซ้ำจะไปบังรอบเก่าจนมองไม่เห็นในหน้าสรุป
+  const otherOpen=Object.entries(S.sessions).find(([id,s])=>id!==sid && s.completed && !s.shoppingDone);
+  if(otherOpen){
+    showModal('ทำซ้ำตอนนี้ไม่ได้',
+      `มีรอบวันที่ ${fmtDate(otherOpen[1].date)} เปิดค้างอยู่แล้ว (ยังไม่ได้กด "ซื้อของเสร็จแล้ว") ต้องจัดการรอบนั้นให้เสร็จหรือลบก่อน ไม่งั้นรอบใหม่จะไปบังรอบเก่าจนหายจากหน้าสรุป`,
+      ()=>{},'เข้าใจแล้ว','btn-ghost');
+    return;
+  }
   showModal('ทำซ้ำเป็นรอบใหม่',`คัดลอกรายการวันที่ ${fmtDate(sess?.date)} มาเป็นรอบใหม่?`,()=>{
     R.sessions().push({date:today(),completed:false,cleared:false,shoppingDone:false,createdAt:Date.now(),entries:sess.entries||{}})
       .then(ref=>{
@@ -2374,13 +2738,17 @@ function dupSession(sid){
         document.getElementById('pg-jot').classList.add('on');
         document.querySelectorAll('.tb-btn')[0].classList.add('on');
         openEmpBoard();
-      });
+      }).catch(fbErr);
   },'ทำซ้ำ','btn-green');
 }
 function deleteSession(sid){
   const sess=S.sessions[sid];
   showModal('ลบประวัติ',`ลบประวัติวันที่ ${fmtDate(sess?.date)}? ไม่สามารถย้อนกลับได้`,()=>{
-    R.session(sid).remove().then(()=>{toast('🗑️ ลบแล้ว');closeHistDetail()});
+    R.session(sid).remove().then(()=>{
+      if(typeof walkStore!=='undefined'){delete walkStore[sid];saveWalkStore(walkStore);}
+      if(typeof sumStore!=='undefined'){delete sumStore[sid];saveSumStore(sumStore);}
+      toast('🗑️ ลบแล้ว');closeHistDetail();
+    }).catch(fbErr);
   });
 }
 
@@ -2388,66 +2756,104 @@ function deleteSession(sid){
 // WALK PAGE (หน้าเดินซื้อของ)
 // ══════════════════════════════════════════════
 // walkTicked: บันทึกใน localStorage → ปิดแล้วเปิดใหม่ข้อมูลไม่หาย
-const WALK_STORAGE_KEY = 'walkTicked_v1';
-function loadWalkTicked(){
+// เก็บทุกรอบไว้ในก้อนเดียว key: sessionId → { "empId-pid": true }
+// ผูกกับ sessionId + ID สินค้าจริง (ไม่ใช่ index) กัน "ติ๊กเพี้ยน" ข้ามรอบ หรือเมื่อรายการมีการเปลี่ยนลำดับ/เพิ่มของกลางทาง
+const WALK_STORAGE_KEY = 'walkTicked_v2';
+function loadWalkStore(){
   try{ return JSON.parse(localStorage.getItem(WALK_STORAGE_KEY)||'{}'); }catch(e){ return {}; }
 }
-function saveWalkTicked(obj){
+function saveWalkStore(obj){
   try{ localStorage.setItem(WALK_STORAGE_KEY, JSON.stringify(obj)); }catch(e){}
 }
-const walkTicked = loadWalkTicked(); // key: shopKey-idx → boolean
+const walkStore = loadWalkStore(); // { [sessionId]: { [ikey]: true } }
+function getWalkTicked(sid){
+  if(!walkStore[sid]) walkStore[sid] = {};
+  return walkStore[sid];
+}
+
+// จัดกลุ่มรายการของรอบล่าสุดตามร้านค้า — ใช้ร่วมกันทั้งหน้า "เดิน", ปุ่มคัดลอกข้อความสั่งของ, และปุ่ม "ซื้อครบทั้งร้าน"
+function getWalkGroups(){
+  const latest = getLatestSession();
+  if(!latest) return null;
+  const [sid,sess] = latest;
+  const byShop = {};
+  sortedShops().forEach(s => byShop[s.id] = {name: s.name, lineOrder: !!s.lineOrder, items: []});
+  byShop['__none'] = {name: 'ไม่ระบุร้านค้า', lineOrder: false, items: []};
+
+  Object.entries(sess.entries||{}).forEach(([empId,entry]) => {
+    Object.entries(entry.items||{}).forEach(([pid,item]) => {
+      if(item.skipped) return;
+      if(!(parseFloat(item.qty)>0)) return; // ซ่อนของที่ยังไม่มีจำนวนจริง (กันไว้เผื่อหลุดเข้ามา)
+      const key = item.shopId || '__none';
+      if(!byShop[key]) byShop[key] = {name: item.shopName||'ไม่ระบุ', lineOrder:false, items:[]};
+      byShop[key].items.push({...item, _ikey:`${empId}-${pid}`});
+    });
+  });
+
+  const shopOrder = [...sortedShops().map(s=>s.id), '__none'];
+  return {sid, sess, byShop, shopOrder};
+}
 
 function renderWalk(){
-  const latest = getLatestSession();
   const content = document.getElementById('walk-content');
   const banner = document.getElementById('walk-done-banner');
+  const g = getWalkGroups();
 
-  if(!latest){
+  if(!g){
     content.innerHTML = `<div class="walk-empty"><div class="walk-empty-icon">🛒</div>ยังไม่มีรายการ<br>ไปจดของที่หน้า "จด" ก่อนนะ</div>`;
     banner.classList.add('hide');
     return;
   }
 
-  const [,sess] = latest;
-  const byShop = {};
-  sortedShops().forEach(s => byShop[s.id] = {name: s.name, items: []});
-  byShop['__none'] = {name: 'ไม่ระบุร้านค้า', items: []};
+  const {sid, byShop, shopOrder} = g;
+  const walkTicked = getWalkTicked(sid);
 
-  Object.values(sess.entries||{}).forEach(entry => {
-    Object.values(entry.items||{}).forEach(item => {
-      if(item.skipped) return;
-      const key = item.shopId || '__none';
-      if(!byShop[key]) byShop[key] = {name: item.shopName||'ไม่ระบุ', items:[]};
-      byShop[key].items.push(item);
-    });
+  // เดิม: walkTicked เก็บ key ของสินค้าที่เคยติ๊กไว้ ถ้าสินค้านั้นถูกลบ/แก้จำนวนออกจากรายการไปทีหลัง
+  // (เช่น กลับไปแก้ที่หน้า "สรุป") key เก่าจะยังค้างอยู่ใน localStorage ทำให้ตัวนับ "ซื้อครบแล้ว" รวมของที่ไม่มีอยู่จริงด้วย
+  // แบนเนอร์ "ซื้อครบทุกรายการแล้ว!" เลยอาจขึ้นผิดตอนโหลดหน้าครั้งแรก ทั้งที่ของยังไม่ครบจริง
+  // แก้แล้ว: ล้าง key ที่ไม่ตรงกับสินค้าที่ยังมีอยู่จริงตอนนี้ทิ้งทุกครั้งที่ render
+  const currentKeys = new Set();
+  shopOrder.forEach(key => {
+    const shopG = byShop[key];
+    if(shopG) shopG.items.forEach(item => currentKeys.add(item._ikey));
   });
+  let prunedStale = false;
+  Object.keys(walkTicked).forEach(k => {
+    if(!currentKeys.has(k)){ delete walkTicked[k]; prunedStale = true; }
+  });
+  if(prunedStale) saveWalkStore(walkStore);
 
   let html = '';
   let shopNum = 0;
-  const shopOrder = [...sortedShops().map(s=>s.id), '__none'];
 
   shopOrder.forEach(key => {
-    const g = byShop[key];
-    if(!g || !g.items.length) return;
+    const shopG = byShop[key];
+    if(!shopG || !shopG.items.length) return;
     shopNum++;
     const blockId = `wb-${key}`;
-    const sorted = g.items.sort((a,b)=>(a.name||'').localeCompare(b.name||'','th'));
+    const sorted = shopG.items.sort((a,b)=>(a.name||'').localeCompare(b.name||'','th'));
     const total = sorted.length;
-    const doneCnt = sorted.filter((_,i) => walkTicked[`${key}-${i}`]).length;
+    const doneCnt = sorted.filter(item => walkTicked[item._ikey]).length;
     const progPct = total ? Math.round(doneCnt/total*100) : 0;
     const allDone = doneCnt === total && total > 0;
+
+    const actionsHtml = [
+      shopG.lineOrder?`<button class="walk-hdr-icon-btn" id="wcp-${key}" title="แตะสองครั้งเพื่อคัดลอกข้อความสั่งของ" data-last="0" onclick="walkHdrDblTap(this,()=>copyShopOrderText('${key}',this))">📋</button>`:'',
+      !allDone?`<button class="walk-hdr-icon-btn" id="wdn-${key}" title="แตะสองครั้งเพื่อยืนยันว่าซื้อครบทั้งร้าน" data-last="0" onclick="walkHdrDblTap(this,()=>walkMarkShopDone('${sid}','${key}'))">✅</button>`:''
+    ].join('');
 
     html += `<div class="walk-shop-block${allDone?' all-done':''}" id="${blockId}">
       <div class="walk-shop-hdr">
         <span class="walk-shop-num">${shopNum}</span>
-        <div class="walk-shop-name">🏪 ${esc(g.name)}</div>
+        <div class="walk-shop-name">🏪 ${esc(shopG.name)}</div>
+        ${actionsHtml?`<div class="walk-shop-hdr-acts">${actionsHtml}</div>`:''}
         <div class="walk-shop-prog" id="wprog-${key}">${doneCnt}/${total}</div>
       </div>
       <div class="walk-prog-bar"><div class="walk-prog-fill" id="wpf-${key}" style="width:${progPct}%"></div></div>
-      ${sorted.map((item,idx) => {
-        const ticked = !!walkTicked[`${key}-${idx}`];
-        return `<div class="walk-item${ticked?' ticked':''}" id="wi-${key}-${idx}"
-          onclick="walkTap('${key}',${idx},'${blockId}',${total})"
+      ${sorted.map((item) => {
+        const ticked = !!walkTicked[item._ikey];
+        return `<div class="walk-item${ticked?' ticked':''}" id="wi-${key}-${item._ikey}"
+          onclick="walkTap('${sid}','${key}','${item._ikey}','${blockId}',${total})"
           data-last="0">
           <div class="walk-check">${ticked?'✓':''}</div>
           <div class="walk-item-name">
@@ -2469,14 +2875,101 @@ function renderWalk(){
   content.innerHTML = html;
 
   // check all done
-  const totalItems = shopOrder.reduce((s,key)=>{const g=byShop[key];return s+(g?g.items.length:0)},0);
+  const totalItems = shopOrder.reduce((s,key)=>{const g2=byShop[key];return s+(g2?g2.items.length:0)},0);
   const doneItems = Object.values(walkTicked).filter(Boolean).length;
   if(doneItems >= totalItems && totalItems > 0) banner.classList.remove('hide');
   else banner.classList.add('hide');
 }
 
-function walkTap(shopKey, idx, blockId, total){
-  const el = document.getElementById(`wi-${shopKey}-${idx}`);
+// ── สั่งของทางไลน์: สร้างข้อความสรุปของที่ต้องซื้อจากร้านนั้น แล้วคัดลอกไปวางในแชทไลน์ได้เลย ──
+function buildShopOrderText(shopKey){
+  const g = getWalkGroups();
+  if(!g) return '';
+  const shopG = g.byShop[shopKey];
+  if(!shopG || !shopG.items.length) return '';
+  const sorted = [...shopG.items].sort((a,b)=>(a.name||'').localeCompare(b.name||'','th'));
+  let text = `ร้าน ${shopG.name}\n\n`;
+  sorted.forEach((item,i)=>{
+    text += `${i+1}. ${item.name} - ${item.qty}${item.unit?' '+item.unit:''}\n`;
+    if(item.note) text += `   (${item.note})\n`;
+  });
+  return text.trim();
+}
+
+function copyShopOrderText(shopKey,btnEl){
+  const text = buildShopOrderText(shopKey);
+  if(!text){toast('ไม่มีรายการของร้านนี้');return}
+  copyTextToClipboard(text).then(()=>{
+    toast('📋 คัดลอกข้อความแล้ว ไปวางในแชทไลน์ร้านค้าได้เลย');
+    // เปลี่ยนสีปุ่มชั่วคราวให้เห็นชัดว่าคัดลอกสำเร็จแล้ว
+    if(btnEl){
+      const origText = btnEl.dataset.origText || btnEl.textContent;
+      btnEl.dataset.origText = origText;
+      btnEl.textContent = '☑️';
+      btnEl.classList.add('copied');
+      clearTimeout(btnEl._copiedTimer);
+      btnEl._copiedTimer = setTimeout(()=>{
+        btnEl.classList.remove('copied');
+        btnEl.textContent = origText;
+      },2000);
+    }
+  }).catch(()=>{
+    toast('❌ คัดลอกไม่สำเร็จ ลองอีกครั้ง');
+  });
+}
+
+function copyTextToClipboard(text){
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    return navigator.clipboard.writeText(text);
+  }
+  // fallback สำหรับกรณี clipboard API ใช้ไม่ได้ (เช่น เปิดไฟล์ตรงๆ ผ่าน file:// บางเบราว์เซอร์)
+  return new Promise((resolve,reject)=>{
+    try{
+      const ta=document.createElement('textarea');
+      ta.value=text;
+      ta.style.position='fixed';ta.style.opacity='0';ta.style.left='-9999px';
+      document.body.appendChild(ta);
+      ta.focus();ta.select();
+      const ok=document.execCommand('copy');
+      document.body.removeChild(ta);
+      ok?resolve():reject();
+    }catch(e){reject(e)}
+  });
+}
+
+// ── ซื้อครบทั้งร้านในทีเดียว — เผื่อร้านที่สั่งไว้แล้ว ไปถึงแค่จ่ายเงินรับของ ไม่ต้องมาติ๊กทีละรายการ ──
+// แตะสองครั้งถือเป็นการยืนยันอยู่แล้ว (walkHdrDblTap) เลยไม่ต้องเด้ง modal ถามซ้ำอีกชั้น
+function walkMarkShopDone(sid, shopKey){
+  const g = getWalkGroups();
+  if(!g) return;
+  const shopG = g.byShop[shopKey];
+  if(!shopG || !shopG.items.length) return;
+  const walkTicked = getWalkTicked(sid);
+  shopG.items.forEach(item => { walkTicked[item._ikey] = true; });
+  saveWalkStore(walkStore);
+  renderWalk();
+  toast(`✅ เช็คครบร้าน "${shopG.name}" แล้ว`);
+}
+
+// ปุ่มไอคอนบนหัวร้าน (คัดลอกข้อความ / ซื้อครบทั้งร้าน) ต้องแตะสองครั้งกันมือพลาด เหมือนติ๊กรายการสินค้า
+function walkHdrDblTap(el, cb){
+  const now = Date.now();
+  const last = parseInt(el.dataset.last||'0');
+  el.dataset.last = now;
+  if(now - last < 450){
+    el.dataset.last = '0';
+    el.classList.remove('armed');
+    cb();
+  } else {
+    el.classList.add('armed');
+    toast('แตะอีกครั้งเพื่อยืนยัน');
+    clearTimeout(el._armTimer);
+    el._armTimer = setTimeout(()=>el.classList.remove('armed'), 450);
+  }
+}
+
+function walkTap(sid, shopKey, ikey, blockId, total){
+  const el = document.getElementById(`wi-${shopKey}-${ikey}`);
   if(!el) return;
   const now = Date.now();
   const last = parseInt(el.dataset.last||'0');
@@ -2484,24 +2977,24 @@ function walkTap(shopKey, idx, blockId, total){
 
   if(now - last < 450){
     // double-tap: toggle
-    const k = `${shopKey}-${idx}`;
-    walkTicked[k] = !walkTicked[k];
-    saveWalkTicked(walkTicked);
-    const ticked = walkTicked[k];
+    const walkTicked = getWalkTicked(sid);
+    walkTicked[ikey] = !walkTicked[ikey];
+    saveWalkStore(walkStore);
+    const ticked = walkTicked[ikey];
 
     el.classList.toggle('ticked', ticked);
     el.querySelector('.walk-check').textContent = ticked ? '✓' : '';
 
-    // update progress
-    let doneCnt = 0;
-    for(let i=0;i<total;i++) if(walkTicked[`${shopKey}-${i}`]) doneCnt++;
-    const pct = Math.round(doneCnt/total*100);
+    // update progress — นับเฉพาะรายการที่แสดงอยู่ในกลุ่มร้านนี้จริง ๆ
+    const block = document.getElementById(blockId);
+    const itemsInBlock = block ? block.querySelectorAll('.walk-item') : [];
+    const doneCnt = [...itemsInBlock].filter(i=>i.classList.contains('ticked')).length;
+    const pct = total ? Math.round(doneCnt/total*100) : 0;
     const progEl = document.getElementById(`wprog-${shopKey}`);
     const fillEl = document.getElementById(`wpf-${shopKey}`);
     if(progEl) progEl.textContent = `${doneCnt}/${total}`;
     if(fillEl) fillEl.style.width = pct+'%';
 
-    const block = document.getElementById(blockId);
     if(block) block.classList.toggle('all-done', doneCnt===total && total>0);
 
     // check global all done
@@ -2515,8 +3008,11 @@ function walkTap(shopKey, idx, blockId, total){
 
 function resetWalkTicked(){
   showModal('ล้างการเช็ค','ล้างรายการที่เช็คไว้ทั้งหมด เริ่มใหม่ตั้งแต่ต้น?',()=>{
-    for(const k in walkTicked) delete walkTicked[k];
-    saveWalkTicked(walkTicked);
+    const latest = getLatestSession();
+    if(latest){
+      walkStore[latest[0]] = {};
+      saveWalkStore(walkStore);
+    }
     renderWalk();
     toast('✅ ล้างการเช็คแล้ว เริ่มใหม่ได้เลย');
   },'ล้างเลย','btn-orange');
@@ -2548,9 +3044,10 @@ document.documentElement.style.setProperty('--walk-fs', WALK_FS_MAP[currentFsKey
 
 // ══ CLOSE SUGGEST ON OUTSIDE CLICK ══
 document.addEventListener('click',e=>{
-  ['qa-suggest','sq-suggest'].forEach(id=>{
-    const box=document.getElementById(id);
-    const inp=document.getElementById(id==='qa-suggest'?'qa-search':'sq-search');
+  const suggestPairs={'qa-suggest':'qa-search','sq-suggest':'sq-search','prodname-suggest':'prod-name'};
+  Object.entries(suggestPairs).forEach(([boxId,inpId])=>{
+    const box=document.getElementById(boxId);
+    const inp=document.getElementById(inpId);
     if(box&&inp&&!inp.contains(e.target)&&!box.contains(e.target)) box.style.display='none';
   });
 });
@@ -2572,8 +3069,18 @@ R.sessions().on('value',snap=>{
     if(viewingSessionId) openHistDetail(viewingSessionId); else renderHistList();
   }
   if(document.getElementById('pg-jot').classList.contains('on')){
-    renderJotStart();
-    if(document.getElementById('jot-board').style.display!=='none'){renderEmpGrid();renderQaList()}
+    // เดิม: เรียก renderJotStart() ทุกครั้งที่ sessions อัปเดต (ซึ่งเกิดทุกครั้งที่ autosave ทำงาน)
+    // ทำให้หน้าเด้งกลับไป "จด" หน้าแรกเสมอ ไม่ว่าจะกำลังอยู่หน้าบอร์ดพนักงาน หรือหน้ากรอกของอยู่ก็ตาม
+    // แก้ใหม่: เช็คก่อนว่าผู้ใช้กำลังอยู่หน้าไหน แล้วรีเฟรชเฉพาะหน้านั้น ไม่สลับหน้าออกไปเอง
+    const empVisible = document.getElementById('jot-emp').style.display!=='none';
+    const boardVisible = document.getElementById('jot-board').style.display!=='none';
+    if(empVisible){
+      // กำลังกรอกของให้พนักงานคนนี้อยู่ — ปล่อยให้กรอกต่อ ไม่ต้อง re-render ทับ input ที่พิมพ์ค้างอยู่
+    } else if(boardVisible){
+      renderEmpGrid();renderQaList();
+    } else {
+      renderJotStart();
+    }
   }
   if(document.getElementById('pg-walk').classList.contains('on')) renderWalk();
 });
