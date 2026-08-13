@@ -143,32 +143,6 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
 .btn-blue.copied{background:#1B6B3A}
 .btn.armed{box-shadow:0 0 0 3px rgba(255,255,255,.55) inset,0 0 0 2px rgba(0,0,0,.15);filter:brightness(1.08)}
 
-/* ─── STOCK / คงเหลือ tab ─── */
-.stock-qty-ctrl{display:flex;align-items:center;gap:6px;flex-shrink:0}
-.stock-step-btn{
-  width:30px;height:30px;flex-shrink:0;border-radius:8px;
-  border:1.5px solid var(--border);background:var(--surface);
-  font-size:1.05rem;font-weight:700;color:var(--ink2);cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  -webkit-tap-highlight-color:transparent;
-}
-.stock-step-btn:active{background:var(--brand-light);border-color:var(--brand);color:var(--brand)}
-.stock-qty-inp{
-  width:58px;text-align:center;padding:7px 4px;
-  border:1.5px solid var(--border);border-radius:8px;
-  font-size:.95rem;font-weight:700;color:var(--ink);
-  font-family:'Noto Sans Thai',sans-serif;-webkit-appearance:none;appearance:none;
-}
-.stock-qty-inp:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-light)}
-.stock-order-col{display:flex;flex-direction:column;margin-right:8px;flex-shrink:0}
-.stock-order-btn{
-  width:22px;height:18px;border:none;background:transparent;
-  color:var(--ink4);font-size:.65rem;cursor:pointer;line-height:1;
-  display:flex;align-items:center;justify-content:center;
-  -webkit-tap-highlight-color:transparent;
-}
-.stock-order-btn:disabled{visibility:hidden}
-.stock-order-btn:active{color:var(--brand)}
 .btn-ghost:active{background:var(--bg)}
 .btn-flat{background:var(--bg);color:var(--ink2);border:none}
 
@@ -560,6 +534,10 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
   transition:color .2s,opacity .2s;
 }
 .walk-item-note{font-size:.8rem;color:var(--ink3);margin-top:3px;font-weight:400}
+.walk-item-pickup{
+  font-size:.78rem;color:var(--orange);margin-top:3px;font-weight:700;
+  display:flex;align-items:center;gap:4px;
+}
 .walk-item-qty{
   font-size:var(--walk-fs);font-weight:800;color:var(--brand);
   white-space:nowrap;flex-shrink:0;
@@ -635,10 +613,6 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
   <button class="tb-btn" onclick="goPage('walk',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
     เดิน
-  </button>
-  <button class="tb-btn" onclick="goPage('stock',this)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 8L12 3 3 8v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5"/><line x1="12" y1="13" x2="12" y2="21"/></svg>
-    คงเหลือ
   </button>
   <button class="tb-btn" onclick="goPage('history',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -837,7 +811,8 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
 
 <!-- ════════ PAGE: เดิน (Shopping Walk) ════════ -->
 <section class="pg" id="pg-walk">
-  <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+  <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:10px">
+    <button class="btn btn-ghost btn-sm" id="pov-open-btn" onclick="openPickupOverrideModal()" style="font-size:.78rem;color:var(--ink3)">📦 ฝากร้านวันนี้</button>
     <button class="btn btn-ghost btn-sm" onclick="resetWalkTicked()" style="font-size:.78rem;color:var(--ink3)">🔄 ล้างการเช็คทั้งหมด</button>
   </div>
   <div id="walk-done-banner" class="walk-done-banner hide">
@@ -850,44 +825,6 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
   </div>
   <div id="walk-content">
     <div class="walk-empty"><div class="walk-empty-icon">🛒</div>ยังไม่มีรายการ<br>ไปจดของที่หน้า "จด" ก่อนนะ</div>
-  </div>
-</section>
-
-<!-- ════════ PAGE: คงเหลือ (แจ้งแม่) ════════ -->
-<section class="pg" id="pg-stock">
-  <div class="card" style="margin-top:0">
-    <div class="card-body">
-      <div class="bold">📦 ของเหลือแจ้งแม่</div>
-      <div class="text-sm mt2" style="color:var(--ink3);line-height:1.5">กรอกจำนวนที่เหลือวันนี้ของแต่ละอย่าง แล้วกดคัดลอกส่งไลน์ให้แม่คำนวณของที่ต้องซื้อ</div>
-      <div class="confirm-btns" style="margin-top:12px">
-        <button class="btn btn-ghost btn-sm" onclick="resetStockQtyConfirm()">🔄 เริ่มวันใหม่</button>
-        <button class="btn btn-blue btn-sm" style="flex:1" id="stock-copy-btn" data-last="0" onclick="dblTapConfirm(this,()=>copyStockText(this))">📋 คัดลอกข้อความ</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-hdr">📋 รายการของเหลือวันนี้</div>
-    <div class="card-body">
-      <div id="stock-list"></div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-hdr">
-      <span>⚙️</span>
-      <span style="flex:1;font-size:.95rem">เพิ่ม / แก้ไขรายการที่ติดตาม</span>
-      <span class="chip chip-gray">ตั้งค่าได้เอง</span>
-    </div>
-    <div class="card-body">
-      <div class="row2 fg">
-        <input type="text" id="stock-name-input" class="inp" placeholder="ชื่อรายการ เช่น ปลานิลดิบ" maxlength="60" />
-        <input type="text" id="stock-unit-input" class="inp" placeholder="หน่วย (ไม่บังคับ)" maxlength="20" />
-      </div>
-      <button class="btn btn-green btn-full" onclick="addStockItem()">+ เพิ่มรายการ</button>
-      <hr class="divider">
-      <div id="stock-manage-list" class="mt3"></div>
-    </div>
   </div>
 </section>
 
@@ -998,6 +935,9 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
         <div class="text-sm" style="color:var(--ink3);margin-top:10px;line-height:1.5">
           💡 แตะป้าย <b>💬 สั่งทางไลน์ / 🚶 ต้องไปเอง</b> ที่ร้านค้าแต่ละร้านเพื่อสลับได้ — ร้านที่ตั้งเป็น "สั่งทางไลน์" จะมีปุ่มคัดลอกข้อความสั่งของโผล่ที่หน้า "เดิน" ให้ก๊อปไปวางแชทได้เลย
         </div>
+        <div class="text-sm" style="color:var(--ink3);margin-top:6px;line-height:1.5">
+          📦 ถ้าร้านไหนเอาของมาฝากไว้ที่อีกร้านเป็นประจำ (เช่น พี่หมีฝากหมูไว้ที่ป้าวัล) ตั้งค่า <b>"ของร้านนี้ไปฝากไว้รับที่"</b> ได้เลย — หน้า "เดิน" จะรวมของร้านนั้นไปโชว์ที่ร้านปลายทางให้อัตโนมัติ พร้อมโน้ตเตือนให้เช็คกับร้านปลายทาง กันเดินไปร้านต้นทางเก้อ
+        </div>
         <hr class="divider">
         <input type="text" id="shop-search" class="inp inp-sm" placeholder="🔍 ค้นหา..." oninput="renderShops()" />
         <div id="shop-list" class="mt3"></div>
@@ -1105,6 +1045,18 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
   </div>
 </div>
 
+<!-- ════ MODAL: ฝากร้านวันนี้ (ตั้งค่าเฉพาะรอบนี้) ════ -->
+<div class="overlay" id="pov-modal-wrap">
+  <div class="modal">
+    <h3 style="margin-bottom:6px">📦 ฝากร้านวันนี้</h3>
+    <p style="margin-bottom:14px">บางร้านอาจไม่ได้ฝากของไว้ที่เดิมทุกวัน — ปรับเฉพาะรอบนี้ได้ที่นี่ โดยไม่ไปแก้ค่าเริ่มต้นที่ตั้งค่าไว้</p>
+    <div id="pov-list" style="display:flex;flex-direction:column;gap:12px;max-height:55vh;overflow-y:auto"></div>
+    <div class="modal-btns" style="margin-top:18px">
+      <button class="btn btn-green btn-full" onclick="closePickupOverrideModal()">เสร็จแล้ว</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 <script>
 // ══════════════════════════════════════════════
@@ -1131,13 +1083,10 @@ const R = {
   product:(id)=>db.ref(`${ROOT}/products/${id}`),
   sessions:()=>db.ref(`${ROOT}/sessions`),
   session:(id)=>db.ref(`${ROOT}/sessions/${id}`),
-  stockItems:()=>db.ref(`${ROOT}/stockItems`),
-  stockItem:(id)=>db.ref(`${ROOT}/stockItems/${id}`),
-  stockMeta:()=>db.ref(`${ROOT}/stockMeta`),
 };
 
 // ══ STATE ══
-const S = {employees:{},shops:{},products:{},sessions:{},stockItems:{},stockMeta:{}};
+const S = {employees:{},shops:{},products:{},sessions:{}};
 let activeSessionId = null;
 let currentEmpId = null;
 let viewingSessionId = null;
@@ -1176,6 +1125,46 @@ function toast(msg,ms=2200){
 function sortedShops(){
   return Object.entries(S.shops).map(([id,s])=>({id,...s})).sort((a,b)=>(a.order||0)-(b.order||0));
 }
+// บางร้านของจะถูกฝากไปวางไว้ที่อีกร้านเป็นประจำ (ตั้งค่าไว้ที่ "ตั้งค่า > ร้านค้า")
+// ฟังก์ชันนี้ไล่ตามลิงก์ "ฝากไว้ที่ร้าน" จนสุดทาง เพื่อหาว่าจริง ๆ แล้วต้องไปเดินรับของที่ร้านไหน
+function resolveShopId(shopId){
+  if(!shopId) return shopId;
+  let cur=shopId;
+  const seen=new Set();
+  while(S.shops[cur]?.pickupAtShopId){
+    if(seen.has(cur)) break; // กันลิงก์ฝากกันวนเป็นวงกลม (ตั้งค่าผิดพลาด) ไม่ให้ลูปไม่รู้จบ
+    seen.add(cur);
+    const next=S.shops[cur].pickupAtShopId;
+    if(!S.shops[next]) break; // ร้านปลายทางถูกลบไปแล้ว หยุดที่ร้านล่าสุดที่ยังมีอยู่จริง
+    cur=next;
+  }
+  return cur;
+}
+// ของบางร้านไม่ได้ฝากไว้ที่เดิมทุกวัน — รอบไหนไม่ตรงกับค่าเริ่มต้น ใช้ sessions/{sid}/pickupOverrides/{shopId}
+// override เฉพาะรอบนั้นได้ โดยไม่ไปแก้ค่าเริ่มต้นถาวรที่ตั้งค่า > ร้านค้า
+// ค่า override: shopId อื่น = วันนี้ไปฝากที่ร้านนั้นแทน, '__self' = วันนี้ไม่ฝาก รับที่ร้านนี้เลย
+function resolveShopIdForSession(shopId, sess){
+  if(!shopId) return shopId;
+  let cur=shopId;
+  const seen=new Set();
+  const overrides=sess?.pickupOverrides||{};
+  while(true){
+    if(seen.has(cur)) break; // กันลิงก์วนเป็นวงกลม
+    seen.add(cur);
+    const ov=overrides[cur];
+    if(ov!==undefined && ov!==null && ov!==''){
+      if(ov==='__self') break; // ตั้งไว้ว่ารอบนี้ไม่ฝาก หยุดที่ร้านนี้เลย
+      if(!S.shops[ov]) break; // ร้านที่เลือกไว้ถูกลบไปแล้ว
+      cur=ov;
+      continue;
+    }
+    const def=S.shops[cur]?.pickupAtShopId;
+    if(!def) break;
+    if(!S.shops[def]) break; // ร้านปลายทางถูกลบไปแล้ว หยุดที่ร้านล่าสุดที่ยังมีอยู่จริง
+    cur=def;
+  }
+  return cur;
+}
 function isUnassigned(p){return !p.employeeId||!S.employees[p.employeeId]}
 function prodsForEmp(empId){
   return Object.entries(S.products)
@@ -1205,7 +1194,6 @@ function goPage(name,btn){
   if(name==='history') renderHistList();
   if(name==='jot') renderJotStart();
   if(name==='walk') renderWalk();
-  if(name==='stock'){checkStockAutoReset();renderStock();}
   if(name==='setup'){closeSetupSub();updateSetupCounts();syncFsBtns();}
 }
 
@@ -1317,6 +1305,9 @@ function renderShops(){
   el.innerHTML=list.map((s)=>{
     const realIdx=all.findIndex(x=>x.id===s.id);
     const isFirst=realIdx===0, isLast=realIdx===all.length-1;
+    // ตัวเลือกร้านที่จะให้ "ฝากของไว้" — ตัดร้านตัวเองออก กันเลือกฝากไว้ที่ตัวเอง
+    const pickupOptions=all.filter(x=>x.id!==s.id).map(x=>
+      `<option value="${x.id}" ${s.pickupAtShopId===x.id?'selected':''}>${esc(x.name)}</option>`).join('');
     return `<div class="lrow" id="shoprow-${s.id}" 
       ondragover="shopDragOver(event,'${s.id}')"
       ondrop="shopDrop(event,'${s.id}')" ondragend="shopDragEnd(event)" ondragleave="shopDragLeave(event)">
@@ -1329,6 +1320,15 @@ function renderShops(){
             onclick="toggleShopLineOrder('${s.id}')" title="สั่งของร้านนี้ทางไลน์ได้ไหม">
             ${s.lineOrder?'💬 สั่งทางไลน์':'🚶 ต้องไปเอง'}
           </button>
+        </div>
+        <div style="margin-top:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span style="font-size:.72rem;color:var(--ink3)">📦 ของร้านนี้ไปฝากไว้รับที่:</span>
+          <select class="inp inp-sm" style="width:auto;padding:5px 8px;font-size:.78rem"
+            onchange="setShopPickupAt('${s.id}', this.value)"
+            title="ถ้าร้านนี้เอาของมาฝากไว้ที่ร้านอื่นเป็นประจำ (เช่น พี่หมีฝากหมูไว้ที่ป้าวัล) ตั้งไว้ตรงนี้ หน้า 'เดิน' จะรวมของร้านนี้ไปโชว์ที่ร้านปลายทางให้อัตโนมัติ">
+            <option value="">— ไม่ฝาก (ไปรับเองที่ร้านนี้) —</option>
+            ${pickupOptions}
+          </select>
         </div>
       </div>
       <div class="lrow-acts">
@@ -1448,173 +1448,16 @@ function toggleShopLineOrder(id){
   const cur=!!S.shops[id]?.lineOrder;
   R.shop(id).update({lineOrder:!cur}).catch(fbErr);
 }
+// ตั้งค่า "ร้านที่ของจะถูกเอาไปฝากไว้" — เช่น ของจากร้านพี่หมีเอาไปฝากไว้ที่ร้านป้าวัลเป็นประจำ
+// ตั้งไว้ครั้งเดียวที่นี่ หน้า "เดิน" จะเอาของร้านนี้ไปรวมเช็คที่ร้านปลายทางให้อัตโนมัติทุกรอบ
+// กันลืม/กันเดินไปร้านต้นทางโดยไม่จำเป็น (ของไปอยู่ที่ร้านปลายทางแล้ว)
+function setShopPickupAt(id, targetShopId){
+  R.shop(id).update({pickupAtShopId: targetShopId || null}).then(()=>{
+    toast(targetShopId ? '📦 ตั้งค่าฝากร้านแล้ว' : '✅ ยกเลิกการฝากร้านแล้ว');
+  }).catch(fbErr);
+}
 function delShop(id){
   showModal('ลบร้านค้า','ลบร้านค้านี้?',()=>{R.shop(id).remove().then(()=>toast('🗑️ ลบแล้ว')).catch(fbErr)});
-}
-
-// ══════════════════════════════════════════════
-// TAB: คงเหลือ (แจ้งแม่) — รายการของเหลือที่ต้องรายงานทุกวันให้แม่คำนวณของที่ต้องซื้อ
-// ผู้ใช้ตั้งค่ารายการที่ติดตามเองได้ทั้งหมด (เพิ่ม/แก้ไข/ลบ/จัดลำดับ) ไม่ต้องแก้โค้ด
-// ══════════════════════════════════════════════
-function sortedStockItems(){
-  return Object.entries(S.stockItems||{}).sort((a,b)=>(a[1].order??0)-(b[1].order??0));
-}
-
-function addStockItem(){
-  const nameInp=document.getElementById('stock-name-input');
-  const unitInp=document.getElementById('stock-unit-input');
-  const name=nameInp.value.trim();
-  if(!name){toast('กรุณากรอกชื่อรายการ');return}
-  const unit=unitInp.value.trim();
-  const order=Object.keys(S.stockItems||{}).length;
-  R.stockItems().push({name,unit,qty:'',order,createdAt:Date.now()})
-    .then(()=>{nameInp.value='';unitInp.value='';toast('✅ เพิ่มรายการแล้ว');nameInp.focus();})
-    .catch(fbErr);
-}
-document.getElementById('stock-name-input').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addStockItem()}});
-
-function renderStock(){
-  const list=sortedStockItems();
-  const listEl=document.getElementById('stock-list');
-  const mgEl=document.getElementById('stock-manage-list');
-  if(!list.length){
-    listEl.innerHTML='<div class="empty"><div class="empty-icon">📦</div>ยังไม่มีรายการที่ติดตาม<br>เพิ่มรายการที่ต้องแจ้งแม่ด้านล่างได้เลย</div>';
-    mgEl.innerHTML='';
-    return;
-  }
-  listEl.innerHTML=list.map(([id,it])=>`
-    <div class="lrow" style="align-items:center">
-      <div class="lrow-name">${esc(it.name)}${it.unit?` <span style="color:var(--ink3);font-weight:400;font-size:.85rem">(${esc(it.unit)})</span>`:''}</div>
-      <div class="stock-qty-ctrl">
-        <button class="stock-step-btn" onclick="stockStep('${id}',-1)">−</button>
-        <input type="text" class="stock-qty-inp" value="${esc(it.qty||'')}" placeholder="-" onchange="updateStockQty('${id}',this.value)" />
-        <button class="stock-step-btn" onclick="stockStep('${id}',1)">+</button>
-      </div>
-    </div>`).join('');
-
-  mgEl.innerHTML=list.map(([id,it],i)=>`
-    <div class="lrow">
-      <div class="stock-order-col">
-        <button class="stock-order-btn" ${i===0?'disabled':''} onclick="moveStockItem('${id}',-1)">▲</button>
-        <button class="stock-order-btn" ${i===list.length-1?'disabled':''} onclick="moveStockItem('${id}',1)">▼</button>
-      </div>
-      <div class="lrow-name">${esc(it.name)}${it.unit?`<div class="lrow-sub">หน่วย: ${esc(it.unit)}</div>`:''}</div>
-      <div class="lrow-acts">
-        <button class="btn btn-ghost btn-xs" onclick="editStockItem('${id}','${escJsAttr(it.name)}','${escJsAttr(it.unit||'')}')">✏️</button>
-        <button class="btn btn-red btn-xs" onclick="delStockItem('${id}')">🗑️</button>
-      </div>
-    </div>`).join('');
-}
-
-// ปุ่ม +/- ปรับทีละ 1 — สะดวกกว่าต้องเปิดคีย์บอร์ดพิมพ์ทุกครั้งตอนนับของหน้าร้าน
-function stockStep(id,delta){
-  const it=S.stockItems?.[id]; if(!it) return;
-  let n=parseFloat(it.qty);
-  if(isNaN(n)) n=0;
-  n=Math.max(0,n+delta);
-  R.stockItem(id).update({qty:String(n)}).catch(fbErr);
-}
-
-function updateStockQty(id,val){
-  R.stockItem(id).update({qty:(val||'').trim()}).catch(fbErr);
-}
-
-function editStockItem(id,curName,curUnit){
-  const n=prompt('ชื่อรายการ:',curName);
-  if(n===null) return;
-  const name=n.trim();
-  if(!name){toast('ชื่อรายการห้ามว่าง');return}
-  const u=prompt('หน่วย (เว้นว่างได้):',curUnit);
-  const unit=(u===null?curUnit:u.trim());
-  R.stockItem(id).update({name,unit}).then(()=>toast('✅ แก้ไขแล้ว')).catch(fbErr);
-}
-
-function delStockItem(id){
-  showModal('ลบรายการ','ลบรายการนี้ออกจากการติดตาม? (จะไม่แจ้งแม่รายการนี้อีก)',()=>{
-    R.stockItem(id).remove().then(()=>toast('🗑️ ลบแล้ว')).catch(fbErr);
-  });
-}
-
-function moveStockItem(id,dir){
-  const list=sortedStockItems();
-  const idx=list.findIndex(([iid])=>iid===id);
-  const swapIdx=idx+dir;
-  if(swapIdx<0||swapIdx>=list.length) return;
-  const [id1,it1]=list[idx];
-  const [id2,it2]=list[swapIdx];
-  const o1=it1.order??idx, o2=it2.order??swapIdx;
-  const updates={};
-  updates[`${ROOT}/stockItems/${id1}/order`]=o2;
-  updates[`${ROOT}/stockItems/${id2}/order`]=o1;
-  db.ref().update(updates).catch(fbErr);
-}
-
-// เดิมต้องไล่ลบค่าทีละรายการทุกเช้าเพื่อเริ่มนับของเหลือวันใหม่ — ปุ่มนี้ล้างค่าจำนวนทั้งหมดในทีเดียว
-// โดยไม่ลบรายการที่ตั้งค่าไว้ (ชื่อ/หน่วย ยังอยู่ครบ แค่จำนวนถูกล้าง)
-function resetStockQtyConfirm(){
-  const list=sortedStockItems();
-  if(!list.length){toast('ยังไม่มีรายการ');return}
-  showModal('เริ่มวันใหม่?','ล้างจำนวนที่กรอกไว้ทั้งหมด เพื่อเริ่มนับของเหลือใหม่วันนี้? (รายการที่ตั้งค่าไว้จะไม่หายไป)',()=>{
-    const updates={};
-    list.forEach(([id])=>{updates[`${ROOT}/stockItems/${id}/qty`]='';});
-    updates[`${ROOT}/stockMeta/lastResetDate`]=today();
-    db.ref().update(updates).then(()=>toast('🔄 ล้างค่าแล้ว พร้อมเริ่มนับวันใหม่')).catch(fbErr);
-  },'ล้างค่า','btn-orange');
-}
-
-// ── ล้างค่าอัตโนมัติเมื่อขึ้นวันใหม่ ──
-// เดิมต้องกด "เริ่มวันใหม่" เองทุกเช้า ถ้าลืมกด ตัวเลขของเมื่อวานจะค้างอยู่ ทำให้ส่งข้อมูลผิดวันให้แม่โดยไม่รู้ตัว
-// แก้โดยจำวันที่ล้างค่าล่าสุดไว้ใน Firebase (ใช้ร่วมกันทุกเครื่อง กันแต่ละคนเห็นวันไม่ตรงกัน)
-// พอเปิดแอปแล้ววันที่ปัจจุบันไม่ตรงกับวันที่บันทึกไว้ ระบบจะล้างจำนวนให้อัตโนมัติทันที (ชื่อรายการที่ตั้งไว้ไม่หาย)
-// เช็คทั้งตอนสลับมาแท็บนี้ และตอนสลับกลับมาที่หน้าจอ (visibilitychange) เผื่อเปิดแอปค้างไว้ข้ามคืน
-let _stockItemsLoaded=false, _stockMetaLoaded=false;
-function checkStockAutoReset(){
-  if(!_stockItemsLoaded||!_stockMetaLoaded) return; // รอให้โหลดข้อมูลทั้งสองส่วนจาก Firebase มาครบก่อน กันเข้าใจผิดว่ายังไม่เคยรีเซ็ตทั้งที่ข้อมูลยังไม่มา
-  const t=today();
-  if(S.stockMeta?.lastResetDate===t) return; // รีเซ็ตของวันนี้ไปแล้ว ไม่ต้องทำซ้ำ
-  const list=sortedStockItems();
-  const updates={};
-  list.forEach(([id])=>{updates[`${ROOT}/stockItems/${id}/qty`]='';});
-  updates[`${ROOT}/stockMeta/lastResetDate`]=t;
-  db.ref().update(updates).catch(fbErr);
-}
-
-// เดิมข้อความคัดลอกจะเอาทุกรายการไปหมด แม้รายการที่ยังไม่ได้กรอกจำนวนวันนี้ (โผล่มาเป็นแค่ชื่อลอย ๆ ไม่มีตัวเลข)
-// ทำให้แม่งงว่าอันไหนคือของที่ต้องคิด อันไหนคือยังไม่ได้เช็ค — แก้โดยคัดลอกเฉพาะรายการที่กรอกจำนวนไว้แล้วเท่านั้น
-// และตัดเลขลำดับหน้าออกตามที่ขอ เหลือแค่ชื่อ + จำนวนต่อบรรทัด อ่านง่ายกว่า
-function buildStockText(){
-  const list=sortedStockItems().filter(([,it])=>{
-    const q=(it.qty!==undefined&&it.qty!==null)?String(it.qty).trim():'';
-    return q!=='';
-  });
-  if(!list.length) return '';
-  let body='';
-  list.forEach(([,it])=>{
-    const q=String(it.qty).trim();
-    body+=`${it.name} - ${q}${it.unit?' '+it.unit:''}\n`;
-  });
-  return `📦 ของเหลือแจ้งแม่ · ${fmtDate(today())}\n\n${body}`.trim();
-}
-
-function copyStockText(btnEl){
-  const text=buildStockText();
-  if(!text){toast('ยังไม่มีรายการ');return}
-  copyTextToClipboard(text).then(()=>{
-    toast('📋 คัดลอกข้อความแล้ว ส่งให้แม่ได้เลย');
-    if(btnEl){
-      const origHtml=btnEl.dataset.origHtml||btnEl.innerHTML;
-      btnEl.dataset.origHtml=origHtml;
-      btnEl.innerHTML='☑️ คัดลอกแล้ว';
-      btnEl.classList.add('copied');
-      clearTimeout(btnEl._copiedTimer);
-      btnEl._copiedTimer=setTimeout(()=>{
-        btnEl.classList.remove('copied');
-        btnEl.innerHTML=origHtml;
-      },2000);
-    }
-  }).catch(()=>{
-    toast('❌ คัดลอกไม่สำเร็จ ลองอีกครั้ง');
-  });
 }
 
 function populateSelects(){
@@ -1686,30 +1529,47 @@ function prodNameCheckDup(){
   positionProdSuggestBox();
   box.style.display='block';
 }
-// กล่องนี้อยู่ใน .card ที่มี overflow:hidden ตัดขอบ เลยต้องย้ายกล่องออกไปแปะที่ <body>
-// แล้วคำนวณตำแหน่งเองแบบ position:fixed อิงจากตำแหน่งของช่องกรอกชื่อสินค้า ไม่งั้นกล่องจะโดนตัดจนเห็นแค่หัวข้อเตือน
-function positionProdSuggestBox(){
-  const box=document.getElementById('prodname-suggest');
-  const inp=document.getElementById('prod-name');
+// กล่องแนะนำ (suggest-box) หลายกล่องในเว็บนี้ (qa-suggest, sq-suggest, prodname-suggest) อยู่ใน .card
+// ที่มี overflow:hidden ตัดขอบ ถ้าปล่อยให้เป็น position:absolute ปกติ กล่องจะโดนการ์ดตัดจนเห็นแค่บางส่วน
+// หรือถูกการ์ด/ปุ่มที่อยู่ถัดไปในหน้าทับซ้อน กดเลือกรายการแนะนำไม่ได้จริง (ปัญหาที่ผู้ใช้เจอตอน "เพิ่มด่วน" หน้าจด)
+// แก้โดยย้ายกล่องออกไปแปะที่ <body> แล้วคำนวณตำแหน่งเองแบบ position:fixed อิงจากตำแหน่งของช่อง input จริง ๆ
+// ใช้ฟังก์ชันกลางนี้ร่วมกันได้กับทุกกล่องแนะนำในเว็บ
+const _suggestBoxHomes=new WeakMap(); // จำ parent เดิมของกล่อง เผื่อย้ายกลับ (ตอนนี้ไม่จำเป็นต้องย้ายกลับ แต่กันไว้เผื่ออนาคต)
+function positionSuggestBox(boxId,inputId){
+  const box=document.getElementById(boxId);
+  const inp=document.getElementById(inputId);
   if(!box||!inp) return;
-  if(box.parentElement!==document.body) document.body.appendChild(box);
+  if(box.parentElement!==document.body){
+    _suggestBoxHomes.set(box,box.parentElement);
+    document.body.appendChild(box);
+  }
   box.classList.add('portal-fixed');
   const r=inp.getBoundingClientRect();
   box.style.left=r.left+'px';
   box.style.top=(r.bottom+4)+'px';
   box.style.width=r.width+'px';
 }
-function closeProdSuggestBox(){
-  const box=document.getElementById('prodname-suggest');
+function closeSuggestBoxById(boxId){
+  const box=document.getElementById(boxId);
   if(box) box.style.display='none';
 }
+// รายชื่อคู่ (กล่องแนะนำ, ช่อง input) ที่ต้องคอยจัดตำแหน่งใหม่เวลาเลื่อนหน้าจอ/ปรับขนาดจอ
+const SUGGEST_BOX_PAIRS=[['prodname-suggest','prod-name'],['qa-suggest','qa-search'],['sq-suggest','sq-search']];
 window.addEventListener('scroll',e=>{
-  const box=document.getElementById('prodname-suggest');
-  // ถ้าเป็นการเลื่อนอยู่ในกล่องแนะนำเอง (ดูรายการที่มีเยอะๆ) ไม่ต้องปิด — ปิดเฉพาะตอนเลื่อนหน้าเว็บจริงๆ
-  if(box&&box.contains(e.target)) return;
-  closeProdSuggestBox();
+  SUGGEST_BOX_PAIRS.forEach(([boxId])=>{
+    const box=document.getElementById(boxId);
+    if(!box||box.style.display==='none') return;
+    // ถ้าเป็นการเลื่อนอยู่ในกล่องแนะนำเอง (ดูรายการที่มีเยอะๆ) ไม่ต้องปิด — ปิดเฉพาะตอนเลื่อนหน้าเว็บจริงๆ
+    if(box.contains(e.target)) return;
+    closeSuggestBoxById(boxId);
+  });
 },true);
-window.addEventListener('resize',closeProdSuggestBox);
+window.addEventListener('resize',()=>{
+  SUGGEST_BOX_PAIRS.forEach(([boxId])=>closeSuggestBoxById(boxId));
+});
+// เดิมเป็นชื่อเฉพาะของ prodname-suggest — คงไว้เป็น wrapper กันโค้ดอื่นที่เรียกชื่อเดิมพัง
+function positionProdSuggestBox(){positionSuggestBox('prodname-suggest','prod-name')}
+function closeProdSuggestBox(){closeSuggestBoxById('prodname-suggest')}
 function prodNameGoEdit(id){
   closeProdSuggestBox();
   editProduct(id);
@@ -1881,7 +1741,9 @@ function epShopRenderList(q){
 function epShopOpen(){
   epShopRenderList(document.getElementById('ep-shop-search').value);
   document.getElementById('ep-shop-list').classList.add('open');
-  document.getElementById('ep-shop-search').classList.add('open-state');
+  const inp=document.getElementById('ep-shop-search');
+  inp.classList.add('open-state');
+  inp.select();
 }
 function epShopFilter(){
   epShopRenderList(document.getElementById('ep-shop-search').value);
@@ -2466,6 +2328,7 @@ function qaSearch(){
   const results=Object.entries(S.products).filter(([,p])=>p.name?.toLowerCase().includes(q)).slice(0,10);
   if(!results.length){
     box.innerHTML=`<div class="sug-empty">ไม่พบสินค้า</div>`;
+    positionSuggestBox('qa-suggest','qa-search');
     box.style.display='block';return;
   }
   box.innerHTML=results.map(([id,p])=>
@@ -2473,22 +2336,23 @@ function qaSearch(){
       <div class="sug-name">${esc(p.name)}</div>
       <div class="sug-meta">${p.shopName?`🏪 ${esc(p.shopName)}`:''}${p.unit?` · ${esc(p.unit)}`:''}</div>
     </button>`).join('');
+  positionSuggestBox('qa-suggest','qa-search');
   box.style.display='block';
 }
 function qaSelect(id){
   const p=S.products[id];if(!p)return;
   qaSelected={id,...p};
-  document.getElementById('qa-suggest').style.display='none';
+  closeSuggestBoxById('qa-suggest');
   document.getElementById('qa-search').value=p.name;
   document.getElementById('qa-confirm-name').textContent=p.name;
   document.getElementById('qa-confirm-shop').textContent=p.shopName?`🏪 ${p.shopName}`:'';
   document.getElementById('qa-unit').textContent=p.unit||'';
   document.getElementById('qa-qty').value='';
   document.getElementById('qa-note').value='';
-  document.getElementById('qa-confirm').style.display='';
+  document.getElementById('qa-confirm').style.display='block';
   document.getElementById('qa-qty').focus();
 }
-function qaCancel(){qaSelected=null;document.getElementById('qa-confirm').style.display='none';document.getElementById('qa-search').value=''}
+function qaCancel(){qaSelected=null;closeSuggestBoxById('qa-suggest');document.getElementById('qa-confirm').style.display='none';document.getElementById('qa-search').value=''}
 function qaConfirm(){
   if(!qaSelected)return;
   const qty=parseFloat(document.getElementById('qa-qty').value);
@@ -2555,18 +2419,21 @@ function sqSearch(){
     <div class="sug-meta">สินค้าที่ไม่มีในรายการสินค้า</div>
   </button>`;
   if(!results.length){
-    box.innerHTML=newOpt;box.style.display='block';return;
+    box.innerHTML=newOpt;
+    positionSuggestBox('sq-suggest','sq-search');
+    box.style.display='block';return;
   }
   box.innerHTML=results.map(([id,p])=>
     `<button class="sug-item" onclick="sqOpenForm('${id}')">
       <div class="sug-name">${esc(p.name)}</div>
       <div class="sug-meta">${p.shopName?`🏪 ${esc(p.shopName)}`:''}${p.unit?` · ${esc(p.unit)}`:''}</div>
     </button>`).join('')+newOpt;
+  positionSuggestBox('sq-suggest','sq-search');
   box.style.display='block';
 }
 
 function sqOpenForm(productId, customName){
-  document.getElementById('sq-suggest').style.display='none';
+  closeSuggestBoxById('sq-suggest');
   sqEditMode=null;
   sqPopulateShop();
 
@@ -3024,6 +2891,8 @@ function getWalkTicked(sid){
 }
 
 // จัดกลุ่มรายการของรอบล่าสุดตามร้านค้า — ใช้ร่วมกันทั้งหน้า "เดิน", ปุ่มคัดลอกข้อความสั่งของ, และปุ่ม "ซื้อครบทั้งร้าน"
+// ของบางร้านตั้งค่า "ฝากไว้ที่ร้านอื่น" ไว้ (ตั้งค่า > ร้านค้า) เลยต้องเอาไปรวมกลุ่มกับร้านปลายทางจริง ๆ
+// ที่ต้องเดินไปรับ ไม่ใช่กลุ่มร้านที่สั่ง กันเดินไปร้านต้นทางที่ของไม่ได้อยู่ที่นั่นแล้ว
 function getWalkGroups(){
   const latest = getLatestSession();
   if(!latest) return null;
@@ -3036,9 +2905,10 @@ function getWalkGroups(){
     Object.entries(entry.items||{}).forEach(([pid,item]) => {
       if(item.skipped) return;
       if(!(parseFloat(item.qty)>0)) return; // ซ่อนของที่ยังไม่มีจำนวนจริง (กันไว้เผื่อหลุดเข้ามา)
-      const key = item.shopId || '__none';
+      const origKey = item.shopId || '__none';
+      const key = origKey==='__none' ? origKey : resolveShopIdForSession(origKey, sess);
       if(!byShop[key]) byShop[key] = {name: item.shopName||'ไม่ระบุ', lineOrder:false, items:[]};
-      byShop[key].items.push({...item, _ikey:`${empId}-${pid}`});
+      byShop[key].items.push({...item, _ikey:`${empId}-${pid}`, _origShopId: origKey, _origShopName: item.shopName||''});
     });
   });
 
@@ -3104,12 +2974,14 @@ function renderWalk(){
       <div class="walk-prog-bar"><div class="walk-prog-fill" id="wpf-${key}" style="width:${progPct}%"></div></div>
       ${sorted.map((item) => {
         const ticked = !!walkTicked[item._ikey];
+        const isPickup = item._origShopId && item._origShopId!==key; // ของนี้ฝากมาจากร้านอื่น ไม่ใช่ของร้านนี้เอง
         return `<div class="walk-item${ticked?' ticked':''}" id="wi-${key}-${item._ikey}"
           onclick="walkTap('${sid}','${key}','${item._ikey}','${blockId}',${total})"
           data-last="0">
           <div class="walk-check">${ticked?'✓':''}</div>
           <div class="walk-item-name">
             ${esc(item.name)}
+            ${isPickup ? `<div class="walk-item-pickup">📦 ฝากมาจากร้าน ${esc(item._origShopName||'')} — เช็คกับร้านนี้ว่าเอามาส่งหรือยัง</div>` : ''}
             ${item.note ? `<div class="walk-item-note">💬 ${esc(item.note)}</div>` : ''}
           </div>
           <div class="walk-item-qty">${item.qty} ${esc(item.unit||'')}</div>
@@ -3149,6 +3021,7 @@ function buildFullSummaryText(){
     body+=`\n🏪 ${shopG.name}\n`;
     sorted.forEach((item)=>{
       body+=`🛒 ${item.name} - ${item.qty}${item.unit?' '+item.unit:''}\n`;
+      if(item._origShopId && item._origShopId!==key) body+=`   📦 (ฝากมาจากร้าน ${item._origShopName||''})\n`;
       if(item.note) body+=`   💬 ${item.note}\n`;
     });
   });
@@ -3190,7 +3063,11 @@ function buildShopOrderText(shopKey){
   if(!g) return '';
   const shopG = g.byShop[shopKey];
   if(!shopG || !shopG.items.length) return '';
-  const sorted = [...shopG.items].sort((a,b)=>(a.name||'').localeCompare(b.name||'','th'));
+  // ตัดของที่ "ฝากมาจากร้านอื่น" ออก เพราะไม่ใช่ของร้านนี้จริง ๆ (แค่เป็นจุดฝากรับของแทน)
+  // ถ้าใส่ไปในข้อความสั่งของ จะกลายเป็นสั่งของผิดร้านไป
+  const ownItems = shopG.items.filter(it => !it._origShopId || it._origShopId===shopKey);
+  if(!ownItems.length) return '';
+  const sorted = [...ownItems].sort((a,b)=>(a.name||'').localeCompare(b.name||'','th'));
   let text = `${shopLabel(shopG.name)}\n\n`;
   sorted.forEach((item)=>{
     text += `🛒 ${item.name} - ${item.qty}${item.unit?' '+item.unit:''}\n`;
@@ -3256,7 +3133,7 @@ function walkMarkShopDone(sid, shopKey){
 
 // ปุ่มไอคอนบนหัวร้าน (คัดลอกข้อความ / ซื้อครบทั้งร้าน) ต้องแตะสองครั้งกันมือพลาด เหมือนติ๊กรายการสินค้า
 // ใช้กันมือลั่นคัดลอก/ยืนยันอะไรผิดโดยไม่ตั้งใจ — ต้องแตะสองครั้งติดกันภายใน 450ms ถึงจะทำงานจริง
-// ใช้ร่วมกันได้กับปุ่มไหนก็ได้ในเว็บนี้ (เดิมใช้เฉพาะปุ่มหัวร้านหน้า "เดิน" ตอนนี้ขยายไปใช้กับปุ่มคัดลอกข้อความหน้า "สรุป"/"คงเหลือ" ด้วย เพื่อให้พฤติกรรม "กดสองที" เหมือนกันทั้งเว็บ)
+// ใช้ร่วมกันได้กับปุ่มไหนก็ได้ในเว็บนี้ (เดิมใช้เฉพาะปุ่มหัวร้านหน้า "เดิน" ตอนนี้ขยายไปใช้กับปุ่มคัดลอกข้อความหน้า "สรุป" ด้วย เพื่อให้พฤติกรรม "กดสองที" เหมือนกันทั้งเว็บ)
 function dblTapConfirm(el, cb){
   const now = Date.now();
   const last = parseInt(el.dataset.last||'0');
@@ -3324,6 +3201,129 @@ function resetWalkTicked(){
   },'ล้างเลย','btn-orange');
 }
 
+// ══ ฝากร้านวันนี้ (override เฉพาะรอบนี้) ══
+// เดิม: "ของร้านนี้ไปฝากไว้รับที่" เป็นค่าเริ่มต้นถาวรที่ ตั้งค่า > ร้านค้า ใช้ทุกรอบเหมือนกันหมด
+// แต่ในความเป็นจริงร้านหนึ่งอาจฝากของไว้คนละที่กันในแต่ละวัน (บางวันฝากที่ป้าวัล บางวันฝากร้านอื่น บางวันไม่ฝากเลย)
+// เลยเพิ่มการตั้งค่าเฉพาะ "รอบนี้" แยกต่างหาก เก็บไว้ที่ sessions/{sid}/pickupOverrides/{shopId}
+// โดยไม่ไปยุ่งกับค่าเริ่มต้นถาวร กดตั้งใหม่ได้ทุกรอบ ไม่ต้องเข้าไปแก้ที่ตั้งค่าซ้ำไปซ้ำมา
+let _povSid=null;
+// รวบรวมร้าน "ต้นทาง" ที่มีของอยู่ในรอบล่าสุดจริง ๆ (ไม่ใช่ร้านปลายทางที่ resolve แล้ว)
+// เพื่อเอามาให้เลือกว่าวันนี้ร้านไหนจะฝากของไปไว้ที่ไหนเป็นพิเศษ
+function getSessionOriginShops(sess){
+  const map=new Map();
+  Object.values(sess.entries||{}).forEach(entry=>{
+    Object.values(entry.items||{}).forEach(item=>{
+      if(item.skipped) return;
+      if(!(parseFloat(item.qty)>0)) return;
+      if(item.shopId && S.shops[item.shopId]) map.set(item.shopId, S.shops[item.shopId].name);
+    });
+  });
+  return [...map.entries()].map(([id,name])=>({id,name})).sort((a,b)=>a.name.localeCompare(b.name,'th'));
+}
+// ป้ายชื่อที่โชว์ในช่องค้นหา ตามค่าที่เลือกไว้ตอนนี้ (ว่าง=ค่าเริ่มต้น, __self=ไม่ฝากวันนี้, หรือชื่อร้านที่เลือก)
+function povLabelFor(shopId,ov){
+  if(!ov){
+    const def=S.shops[shopId]?.pickupAtShopId;
+    return def && S.shops[def] ? `ใช้ค่าเริ่มต้น (${S.shops[def].name})` : 'ใช้ค่าเริ่มต้น (ไม่ฝาก)';
+  }
+  if(ov==='__self') return 'วันนี้ไม่ฝาก — รับที่ร้านนี้เลย';
+  return S.shops[ov]?.name || '';
+}
+// ร้านค้าเยอะ เลยทำเป็นช่องพิมพ์ค้นหา+กรองแทน dropdown ยาว ๆ (เหมือนช่องเลือกร้านค้าตอนแก้ไขสินค้า)
+function povOptionList(shopId){
+  const defTarget=S.shops[shopId]?.pickupAtShopId;
+  const defLabel = defTarget && S.shops[defTarget] ? `ใช้ค่าเริ่มต้น (${S.shops[defTarget].name})` : 'ใช้ค่าเริ่มต้น (ไม่ฝาก)';
+  const special=[{id:'',name:defLabel},{id:'__self',name:'วันนี้ไม่ฝาก — รับที่ร้านนี้เลย'}];
+  const shopItems=sortedShops().filter(s=>s.id!==shopId).map(s=>({id:s.id,name:s.name}));
+  return [...special,...shopItems];
+}
+function povRenderList(shopId,q){
+  const list=document.getElementById(`pov-drop-${shopId}`);
+  if(!list) return;
+  const items=povOptionList(shopId).filter(it=>!q||it.name.toLowerCase().includes(q.toLowerCase()));
+  list.innerHTML=items.map(it=>
+    `<button class="srch-drop-item" onmousedown="povSelect('${shopId}','${escJsAttr(it.id)}','${escJsAttr(it.name)}')">${esc(it.name)}</button>`
+  ).join('')||`<div class="srch-drop-empty">ไม่พบร้านค้า</div>`;
+}
+function povOpen(shopId){
+  const inp=document.getElementById(`pov-search-${shopId}`);
+  povRenderList(shopId, inp.value);
+  document.getElementById(`pov-drop-${shopId}`).classList.add('open');
+  inp.classList.add('open-state');
+  inp.select(); // เลือกข้อความเดิมทั้งหมดไว้ให้ พอเริ่มพิมพ์จะทับของเดิมได้เลย ไม่ต้องลบเองก่อน
+}
+function povFilter(shopId){
+  povRenderList(shopId, document.getElementById(`pov-search-${shopId}`).value);
+  document.getElementById(`pov-drop-${shopId}`).classList.add('open');
+  document.getElementById(`pov-search-${shopId}`).classList.add('open-state');
+}
+function povClose(shopId){
+  const list=document.getElementById(`pov-drop-${shopId}`);
+  const inp=document.getElementById(`pov-search-${shopId}`);
+  if(list) list.classList.remove('open');
+  if(inp) inp.classList.remove('open-state');
+}
+function povSelect(shopId,value,name){
+  document.getElementById(`pov-search-${shopId}`).value=name;
+  povClose(shopId);
+  setPickupOverride(shopId,value);
+}
+document.addEventListener('click',e=>{
+  document.querySelectorAll('[id^="pov-wrap-"]').forEach(wrap=>{
+    if(!wrap.contains(e.target)) povClose(wrap.id.replace('pov-wrap-',''));
+  });
+});
+function openPickupOverrideModal(){
+  const latest=getLatestSession();
+  if(!latest){toast('ยังไม่มีรายการของรอบนี้');return}
+  const [sid,sess]=latest;
+  _povSid=sid;
+  const origins=getSessionOriginShops(sess);
+  const wrap=document.getElementById('pov-list');
+  if(!origins.length){
+    wrap.innerHTML='<div class="empty"><div class="empty-icon">🏪</div>รอบนี้ยังไม่มีของที่ระบุร้านค้าไว้</div>';
+  }else{
+    const overrides=sess.pickupOverrides||{};
+    wrap.innerHTML=origins.map(o=>{
+      const defTarget=S.shops[o.id]?.pickupAtShopId;
+      const defLabel=(defTarget && S.shops[defTarget]) ? `ปกติฝากที่ "${esc(S.shops[defTarget].name)}"` : 'ปกติไม่ฝาก (รับที่ร้านนี้)';
+      const curOv=overrides[o.id]||'';
+      const curLabel = povLabelFor(o.id, curOv);
+      return `<div style="border:1px solid var(--border);border-radius:var(--rs);padding:12px">
+        <div style="font-weight:700;margin-bottom:2px">🏪 ${esc(o.name)}</div>
+        <div style="font-size:.72rem;color:var(--ink3);margin-bottom:8px">${defLabel}</div>
+        <label class="lbl" style="font-size:.72rem">วันนี้ของร้านนี้ไปฝากที่ไหน?</label>
+        <div class="srch-drop-wrap" id="pov-wrap-${o.id}">
+          <input type="text" class="inp srch-drop-input" id="pov-search-${o.id}" autocomplete="off"
+            placeholder="🔍 พิมพ์ค้นหาร้านค้า..." value="${escJsAttr(curLabel)}"
+            oninput="povFilter('${o.id}')" onfocus="povOpen('${o.id}')" />
+          <div class="srch-drop-list" id="pov-drop-${o.id}"></div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('pov-modal-wrap').classList.add('on');
+}
+function setPickupOverride(shopId,value){
+  if(!_povSid) return;
+  R.session(_povSid).child(`pickupOverrides/${shopId}`).set(value||null)
+    .then(()=>{
+      toast(value? '📦 ตั้งค่ารอบนี้แล้ว' : '✅ กลับไปใช้ค่าเริ่มต้นแล้ว');
+      // sync local cache ทันทีกันหน้าเดินยังโชว์ค่าเก่าก่อน listener จะยิงกลับมา
+      const sess=S.sessions[_povSid];
+      if(sess){
+        if(!sess.pickupOverrides) sess.pickupOverrides={};
+        if(value) sess.pickupOverrides[shopId]=value; else delete sess.pickupOverrides[shopId];
+      }
+      renderWalk();
+    })
+    .catch(fbErr);
+}
+function closePickupOverrideModal(){
+  document.getElementById('pov-modal-wrap').classList.remove('on');
+  _povSid=null;
+}
+
 // ══════════════════════════════════════════════
 // FONT SIZE SETTING
 // ══════════════════════════════════════════════
@@ -3368,22 +3368,6 @@ document.getElementById('edit-prod-modal').addEventListener('click',e=>{
 R.employees().on('value',snap=>{S.employees=snap.val()||{};renderEmployees();renderProducts();populateSelects();updateSetupCounts()});
 R.shops().on('value',snap=>{S.shops=snap.val()||{};renderShops();renderProducts();populateSelects();updateSetupCounts()});
 R.products().on('value',snap=>{S.products=snap.val()||{};renderProducts();updateSetupCounts()});
-R.stockItems().on('value',snap=>{
-  S.stockItems=snap.val()||{};
-  _stockItemsLoaded=true;
-  checkStockAutoReset();
-  if(document.getElementById('pg-stock').classList.contains('on')) renderStock();
-});
-R.stockMeta().on('value',snap=>{
-  S.stockMeta=snap.val()||{};
-  _stockMetaLoaded=true;
-  checkStockAutoReset();
-  if(document.getElementById('pg-stock').classList.contains('on')) renderStock();
-});
-// เผื่อเปิดแอปทิ้งไว้ข้ามคืนโดยไม่ได้ปิดแท็บ — พอสลับกลับมาหน้าจอ เช็คอีกทีว่าข้ามวันแล้วหรือยัง
-document.addEventListener('visibilitychange',()=>{
-  if(!document.hidden) checkStockAutoReset();
-});
 R.sessions().on('value',snap=>{
   S.sessions=snap.val()||{};
   if(document.getElementById('pg-summary').classList.contains('on')) renderSummary();
