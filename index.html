@@ -517,7 +517,6 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
   transition:background .12s;
   gap:14px;
 }
-.walk-item:last-child{border-bottom:none;border-radius:0 0 var(--r) var(--r)}
 .walk-item:active{background:var(--brand-light)}
 .walk-item.ticked{background:#F3FAF5}
 .walk-item.ticked .walk-item-name{text-decoration:line-through;color:var(--ink4);opacity:.5}
@@ -542,6 +541,42 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
   font-size:var(--walk-fs);font-weight:800;color:var(--brand);
   white-space:nowrap;flex-shrink:0;
 }
+
+/* ─── ปัดซ้ายเพื่อแก้ไข/ลบ (แทนการแตะ 3 ครั้งแบบเดิม ที่ไปชนกับการซูมของ iPhone) ───
+   .walk-row = กรอบนอกที่ซ่อนปุ่มไว้ด้านหลัง, .walk-item ด้านในเลื่อนซ้ายด้วย transform */
+.walk-row{
+  position:relative;
+  overflow:hidden;
+  background:var(--red);      /* สีที่โผล่เวลาปัดเลยปุ่ม ให้ดูต่อเนื่องกับปุ่มลบ */
+}
+.walk-row:last-child{border-radius:0 0 var(--r) var(--r)}
+.walk-row:last-child .walk-item{border-bottom:none}
+.walk-swipe-acts{
+  position:absolute;top:0;right:0;bottom:0;
+  display:flex;align-items:stretch;
+}
+.walk-swipe-btn{
+  width:76px;border:none;padding:0;margin:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  font-size:1.3rem;font-weight:700;color:#fff;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.walk-swipe-btn span{font-size:.72rem;font-weight:700}
+.walk-swipe-btn.edit{background:var(--orange)}
+.walk-swipe-btn.del{background:var(--red)}
+.walk-swipe-btn:active{filter:brightness(.9)}
+/* touch-action:pan-y = ปล่อยให้เลื่อนหน้าจอขึ้นลงได้ตามปกติ แต่การปัดซ้าย-ขวาเป็นของเราเอง */
+.walk-row .walk-item{
+  position:relative;z-index:1;
+  touch-action:pan-y;
+  will-change:transform;
+}
+/* ใบ้ให้รู้ว่าปัดได้: ขีดจาง ๆ ที่ขอบขวาของแถว */
+.walk-row .walk-item::after{
+  content:'';position:absolute;right:0;top:50%;transform:translateY(-50%);
+  width:3px;height:26px;border-radius:2px;background:var(--border);opacity:.7;
+}
+.walk-row.sw-open .walk-item::after{opacity:0}
 
 /* progress bar bawah shop */
 .walk-prog-bar{height:4px;background:var(--border)}
@@ -815,6 +850,10 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
     <button class="btn btn-ghost btn-sm" id="pov-open-btn" onclick="openPickupOverrideModal()" style="font-size:.78rem;color:var(--ink3)">📦 ฝากร้านวันนี้</button>
     <button class="btn btn-ghost btn-sm" onclick="resetWalkTicked()" style="font-size:.78rem;color:var(--ink3)">🔄 ล้างการเช็คทั้งหมด</button>
   </div>
+  <!-- คำใบ้วิธีใช้ ให้คนที่เพิ่งเปลี่ยนจากแบบ "แตะ 3 ครั้ง" รู้ว่าตอนนี้ใช้การปัดแทน -->
+  <div style="font-size:.76rem;color:var(--ink3);text-align:center;margin-bottom:10px;line-height:1.6">
+    แตะ 2 ครั้ง = ติ๊กว่าซื้อแล้ว · <b>ปัดรายการไปทางซ้าย</b> = ✏️ แก้ไข / 🗑️ ลบ
+  </div>
   <div id="walk-done-banner" class="walk-done-banner hide">
     <div class="walk-done-banner-icon">🎉</div>
     <div style="flex:1">
@@ -1045,7 +1084,7 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
   </div>
 </div>
 
-<!-- ════ MODAL: แก้ไขรายการ (หน้าเดิน) — แตะ 3 ครั้งที่รายการเพื่อเปิด ════ -->
+<!-- ════ MODAL: แก้ไขรายการ (หน้าเดิน) — ปัดรายการไปทางซ้าย แล้วกด ✏️ เพื่อเปิด ════ -->
 <div class="overlay" id="walk-edit-modal">
   <div class="modal">
     <h3 style="margin-bottom:4px">✏️ แก้ไขรายการ</h3>
@@ -2725,7 +2764,6 @@ function renderSqList(){
       <div class="lrow-name" style="font-size:.88rem;${it.skipped?'text-decoration:line-through;color:var(--red)':''}">
         ${esc(it.name)}
         ${it.note?`<div class="sum-item-note">💬 ${esc(it.note)}</div>`:''}
-        <div class="lrow-sub">${it.shopName?`🏪 ${esc(it.shopName)}`:''}</div>
       </div>
       <div style="color:${it.skipped?'var(--red)':'var(--brand)'};font-weight:700;font-size:.9rem;flex-shrink:0;margin-right:8px">
         ${it.skipped?'🚫':`${it.qty} ${esc(it.unit||'')}`}
@@ -2736,7 +2774,33 @@ function renderSqList(){
       </div>
     </div>`;
 
-  el.innerHTML=filtered.sort((a,b)=>(a.name||'').localeCompare(b.name||'','th')).map(renderRow).join('');
+  // เดิม: เรียงตามชื่อสินค้า ก-ฮ ล้วน ๆ ทำให้ของร้านเดียวกันกระจายอยู่คนละที่ ไล่ดูยาก
+  // แก้แล้ว: เรียงตามลำดับร้านค้าที่ตั้งไว้ใน "ตั้งค่า > ร้านค้า" ก่อน (ลำดับเดียวกับหน้าเดิน)
+  // แล้วค่อยเรียงตามชื่อสินค้าภายในร้านเดียวกัน — ร้านที่ไม่ได้ระบุไว้ไปอยู่ท้ายสุด
+  const shopRank = {};
+  sortedShops().forEach((s,i)=>{ shopRank[s.id] = i; });
+  const rankOf = (it)=>{
+    const id = it.shopId;
+    return (id && shopRank[id]!=null) ? shopRank[id] : 9999;
+  };
+  const sortedList = [...filtered].sort((a,b)=>{
+    const ra = rankOf(a), rb = rankOf(b);
+    if(ra !== rb) return ra - rb;
+    return (a.name||'').localeCompare(b.name||'','th');
+  });
+
+  // แทรกหัวข้อชื่อร้านคั่นทุกครั้งที่เปลี่ยนร้าน จะได้รู้ว่ากำลังดูของร้านไหนอยู่
+  let lastShopKey = null;
+  el.innerHTML = sortedList.map(it=>{
+    const key = it.shopId || '__none';
+    let head = '';
+    if(key !== lastShopKey){
+      lastShopKey = key;
+      const nm = (it.shopId && S.shops[it.shopId]?.name) || it.shopName || 'ไม่ระบุร้านค้า';
+      head = `<div style="display:flex;align-items:center;gap:6px;margin:14px 0 2px;padding-bottom:5px;border-bottom:1.5px solid var(--border);font-size:.8rem;font-weight:800;color:var(--brand)">🏪 ${esc(nm)}</div>`;
+    }
+    return head + renderRow(it);
+  }).join('');
 }
 
 function sqDeleteItem(sid,empId,pid){
@@ -2986,7 +3050,7 @@ function renderWalk(){
     const allDone = doneCnt === total && total > 0;
 
     const actionsHtml = [
-      shopG.lineOrder?`<button class="walk-hdr-icon-btn" id="wcp-${key}" title="แตะสองครั้งเพื่อคัดลอกข้อความสั่งของ" data-last="0" onclick="walkHdrDblTap(this,()=>copyShopOrderText('${key}',this))">📋</button>`:'',
+      shopG.lineOrder?`<button class="walk-hdr-icon-btn" id="wcp-${key}" title="แตะสองครั้งเพื่อคัดลอกข้อความสั่งของ (คอมเมนต์จะไม่ติดไปด้วย)" data-last="0" onclick="walkHdrDblTap(this,()=>copyShopOrderText('${key}',this))">📋</button>`:'',
       !allDone?`<button class="walk-hdr-icon-btn" id="wdn-${key}" title="แตะสองครั้งเพื่อยืนยันว่าซื้อครบทั้งร้าน" data-last="0" onclick="walkHdrDblTap(this,()=>walkMarkShopDone('${sid}','${key}'))">✅</button>`:''
     ].join('');
 
@@ -3001,17 +3065,24 @@ function renderWalk(){
       ${sorted.map((item) => {
         const ticked = !!walkTicked[item._ikey];
         const isPickup = item._origShopId && item._origShopId!==key; // ของนี้ฝากมาจากร้านอื่น ไม่ใช่ของร้านนี้เอง
-        return `<div class="walk-item${ticked?' ticked':''}" id="wi-${key}-${item._ikey}"
-          onclick="walkItemTap('${sid}','${key}','${item._ikey}','${blockId}',${total},'${item._empId}','${item._pid}')"
-          title="แตะ 2 ครั้ง = ติ๊กว่าซื้อแล้ว · แตะ 3 ครั้ง = แก้ไขจำนวน/คอมเมนต์"
-          data-last="0" data-streak="0">
-          <div class="walk-check">${ticked?'✓':''}</div>
-          <div class="walk-item-name">
-            ${esc(item.name)}
-            ${isPickup ? `<div class="walk-item-pickup">📦 ฝากมาจากร้าน ${esc(item._origShopName||'')} — เช็คกับร้านนี้ว่าเอามาส่งหรือยัง</div>` : ''}
-            ${item.note ? `<div class="walk-item-note">💬 ${esc(item.note)}</div>` : ''}
+        // ห่อด้วย .walk-row เพื่อซ่อนปุ่ม "แก้ไข / ลบ" ไว้ด้านหลัง แล้วปัดนิ้วไปทางซ้ายเพื่อเรียกออกมา
+        return `<div class="walk-row" id="wr-${key}-${item._ikey}" data-x="0">
+          <div class="walk-swipe-acts">
+            <button class="walk-swipe-btn edit" onclick="swipeEditItem('${sid}','${item._empId}','${item._pid}','${key}','${item._ikey}')">✏️<span>แก้ไข</span></button>
+            <button class="walk-swipe-btn del" onclick="swipeDeleteItem('${sid}','${item._empId}','${item._pid}','${item._ikey}','${escJsAttr(item.name)}')">🗑️<span>ลบ</span></button>
           </div>
-          <div class="walk-item-qty">${item.qty} ${esc(item.unit||'')}</div>
+          <div class="walk-item${ticked?' ticked':''}" id="wi-${key}-${item._ikey}"
+            onclick="walkItemTap('${sid}','${key}','${item._ikey}','${blockId}',${total},'${item._empId}','${item._pid}')"
+            title="แตะ 2 ครั้ง = ติ๊กว่าซื้อแล้ว · ปัดไปทางซ้าย = แก้ไข/ลบ"
+            data-last="0">
+            <div class="walk-check">${ticked?'✓':''}</div>
+            <div class="walk-item-name">
+              ${esc(item.name)}
+              ${isPickup ? `<div class="walk-item-pickup">📦 ฝากมาจากร้าน ${esc(item._origShopName||'')} — เช็คกับร้านนี้ว่าเอามาส่งหรือยัง</div>` : ''}
+              ${item.note ? `<div class="walk-item-note">💬 ${esc(item.note)}</div>` : ''}
+            </div>
+            <div class="walk-item-qty">${item.qty} ${esc(item.unit||'')}</div>
+          </div>
         </div>`;
       }).join('')}
     </div>`;
@@ -3024,6 +3095,7 @@ function renderWalk(){
   }
 
   content.innerHTML = html;
+  _swOpenRow = null; // แถวที่เคยปัดค้างไว้ถูกวาดใหม่หมดแล้ว ล้างสถานะกันค้าง
 
   // check all done
   const totalItems = shopOrder.reduce((s,key)=>{const g2=byShop[key];return s+(g2?g2.items.length:0)},0);
@@ -3096,9 +3168,10 @@ function buildShopOrderText(shopKey){
   if(!ownItems.length) return '';
   const sorted = [...ownItems].sort((a,b)=>(a.name||'').localeCompare(b.name||'','th'));
   let text = `${shopLabel(shopG.name)}\n\n`;
+  // ไม่ใส่คอมเมนต์ (note) ลงในข้อความสั่งของ — คอมเมนต์เป็นโน้ตเตือนตัวเอง เช่น "เหลือ2" "เอา2กล่อง"
+  // ถ้าติดไปด้วยร้านค้าจะงงว่าตกลงจะเอาเท่าไหร่กันแน่
   sorted.forEach((item)=>{
     text += `🛒 ${item.name} - ${item.qty}${item.unit?' '+item.unit:''}\n`;
-    if(item.note) text += `   (${item.note})\n`;
   });
   return text.trim();
 }
@@ -3107,7 +3180,7 @@ function copyShopOrderText(shopKey,btnEl){
   const text = buildShopOrderText(shopKey);
   if(!text){toast('ไม่มีรายการของร้านนี้');return}
   copyTextToClipboard(text).then(()=>{
-    toast('📋 คัดลอกข้อความแล้ว ไปวางในแชทไลน์ร้านค้าได้เลย');
+    toast('📋 คัดลอกข้อความแล้ว ไปวางในแชทไลน์ร้านค้าได้เลย (คอมเมนต์ไม่ติดไปด้วย)');
     // เปลี่ยนสีปุ่มชั่วคราวให้เห็นชัดว่าคัดลอกสำเร็จแล้ว
     if(btnEl){
       const origText = btnEl.dataset.origText || btnEl.textContent;
@@ -3209,37 +3282,134 @@ function walkDoToggle(el, sid, ikey, shopKey, blockId, total){
 }
 
 // แตะ 2 ครั้งติดกัน = ติ๊ก/ยกเลิกติ๊กรายการ (พฤติกรรมเดิม เร็วเหมือนเดิม ไม่ต้องรอ)
-// แตะ 3 ครั้งติดกัน (ต่อจากครั้งที่ 2 ทันที) = เปิดหน้าต่างแก้ไขจำนวน/หน่วย/คอมเมนต์ของรายการนั้น
-// วิธีทำ: พอถึงแตะครั้งที่ 2 จะติ๊กไปก่อนตามปกติ (ไวเหมือนเดิม) แล้วตั้งตัวจับเวลาไว้สั้น ๆ
-// ถ้ามีแตะครั้งที่ 3 ตามมาทัน จะ "ย้อนติ๊กกลับ" ให้เหมือนไม่มีอะไรเกิดขึ้น แล้วเปิดหน้าต่างแก้ไขแทน
+// เดิม: แตะ 3 ครั้ง = เปิดหน้าต่างแก้ไข — แต่บน iPhone การแตะรัว 3 ครั้งไปชนกับท่าซูมของระบบ
+// แก้แล้ว: เปลี่ยนเป็น "ปัดนิ้วไปทางซ้าย" ที่แถวรายการ แล้วเลือก ✏️ แก้ไข หรือ 🗑️ ลบ (ดูฟังก์ชัน swipe* ด้านล่าง)
 function walkItemTap(sid, shopKey, ikey, blockId, total, empId, pid){
   const el = document.getElementById(`wi-${shopKey}-${ikey}`);
   if(!el) return;
+
+  const row = el.parentElement;
+  if(row && row.classList.contains('walk-row')){
+    // เพิ่งปัดนิ้วจบไปหมาด ๆ — ไม่นับเป็นการแตะ กัน "ปัดแล้วติ๊กไปด้วย"
+    if(row._swJustDragged && Date.now() - row._swJustDragged < 400){ el.dataset.last = '0'; return; }
+    // ถ้าปุ่มแก้ไข/ลบเปิดค้างอยู่ แตะที่แถวคือ "ปิดปุ่ม" ไม่ใช่ติ๊ก
+    if(row.classList.contains('sw-open')){ swCloseRow(row); el.dataset.last = '0'; return; }
+  }
+
   const now = Date.now();
   const last = parseInt(el.dataset.last||'0');
-  el.dataset.last = now;
-
   if(now - last < 450){
-    const streak = (parseInt(el.dataset.streak||'1')) + 1;
-    el.dataset.streak = streak;
-
-    if(streak === 2){
-      walkDoToggle(el, sid, ikey, shopKey, blockId, total);
-      clearTimeout(el._streakResetTimer);
-      el._streakResetTimer = setTimeout(()=>{ el.dataset.streak='0'; }, 450);
-    } else if(streak >= 3){
-      clearTimeout(el._streakResetTimer);
-      walkDoToggle(el, sid, ikey, shopKey, blockId, total); // ย้อนกลับติ๊กที่เพิ่งทำไปตอนแตะครั้งที่ 2
-      el.dataset.streak = '0';
-      el.dataset.last = '0';
-      openWalkItemEditor(sid, empId, pid, shopKey, ikey);
-    }
+    el.dataset.last = '0';
+    walkDoToggle(el, sid, ikey, shopKey, blockId, total);
   } else {
-    el.dataset.streak = '1';
+    el.dataset.last = now;
   }
 }
 
-// ══ แก้ไขรายการจากหน้า "เดิน" โดยตรง (แตะ 3 ครั้งที่รายการ) ══
+// ══════════════════════════════════════════════
+// ปัดไปทางซ้าย = แก้ไข / ลบ รายการ (หน้า "เดิน")
+// ══════════════════════════════════════════════
+// ทำงานด้วย Pointer Events ตัวเดียวจบ ใช้ได้ทั้งนิ้ว (มือถือ) และเมาส์ (คอม)
+// จับทิศทางก่อน: ถ้าลากขึ้นลงมากกว่า = ปล่อยให้เลื่อนหน้าจอตามปกติ, ถ้าลากซ้ายขวามากกว่า = เปิดปุ่ม
+const SWIPE_ACT_W = 152;   // ความกว้างรวมของปุ่ม ✏️ + 🗑️ ที่ซ่อนอยู่ด้านหลัง (76px × 2)
+let _swOpenRow = null;     // เปิดค้างได้ทีละแถวเท่านั้น
+let _swDrag = null;        // สถานะการลากที่กำลังทำอยู่
+
+function swSetX(row, x, animate){
+  const item = row.querySelector('.walk-item');
+  if(!item) return;
+  item.style.transition = animate ? 'transform .18s ease' : 'none';
+  item.style.transform = `translateX(${x}px)`;
+  row.dataset.x = x;
+}
+function swOpenRow(row){
+  if(_swOpenRow && _swOpenRow !== row) swCloseRow(_swOpenRow);
+  swSetX(row, -SWIPE_ACT_W, true);
+  row.classList.add('sw-open');
+  _swOpenRow = row;
+}
+function swCloseRow(row, animate=true){
+  if(!row) return;
+  swSetX(row, 0, animate);
+  row.classList.remove('sw-open');
+  if(_swOpenRow === row) _swOpenRow = null;
+}
+function swCloseAll(){
+  document.querySelectorAll('.walk-row.sw-open').forEach(r => swCloseRow(r));
+}
+
+document.addEventListener('pointerdown', e => {
+  const row = e.target.closest ? e.target.closest('.walk-row') : null;
+  if(!row){
+    if(_swOpenRow) swCloseAll();  // แตะที่อื่นนอกแถว = ปิดปุ่มที่เปิดค้างไว้
+    return;
+  }
+  if(e.target.closest('.walk-swipe-btn')) return;   // กดปุ่มหลังแถว ปล่อยให้ปุ่มทำงานของมันไป
+  if(e.pointerType === 'mouse' && e.button !== 0) return;
+  if(_swOpenRow && _swOpenRow !== row) swCloseRow(_swOpenRow);  // ไปแตะแถวอื่น = ปิดแถวที่เปิดค้างไว้ก่อน
+  _swDrag = {
+    row, id:e.pointerId,
+    startX:e.clientX, startY:e.clientY,
+    baseX:parseFloat(row.dataset.x||'0'),
+    axis:null, moved:false
+  };
+}, {passive:true});
+
+document.addEventListener('pointermove', e => {
+  if(!_swDrag || e.pointerId !== _swDrag.id) return;
+  const dx = e.clientX - _swDrag.startX;
+  const dy = e.clientY - _swDrag.startY;
+
+  // ยังไม่รู้ว่าจะเลื่อนแนวไหน — รอให้ขยับเกิน 6px ก่อนค่อยตัดสิน
+  if(!_swDrag.axis){
+    if(Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+    if(Math.abs(dy) > Math.abs(dx)){ _swDrag = null; return; }  // ตั้งใจเลื่อนหน้าจอ ไม่ใช่ปัด
+    _swDrag.axis = 'x';
+  }
+
+  _swDrag.moved = true;
+  let x = _swDrag.baseX + dx;
+  if(x > 0) x = x * 0.25;                                       // ปัดขวาเกินศูนย์ให้หนืด ไม่หลุดกรอบ
+  if(x < -SWIPE_ACT_W) x = -SWIPE_ACT_W + (x + SWIPE_ACT_W) * 0.25;
+  swSetX(_swDrag.row, x, false);
+}, {passive:true});
+
+function swEndDrag(){
+  if(!_swDrag) return;
+  const {row, moved} = _swDrag;
+  const x = parseFloat(row.dataset.x||'0');
+  _swDrag = null;
+  if(!moved) return;                 // แค่แตะเฉย ๆ ปล่อยให้ onclick ทำงานตามปกติ
+  row._swJustDragged = Date.now();   // ตีตราไว้ กันไม่ให้ click ที่ตามมานับเป็นการติ๊ก
+  if(x < -SWIPE_ACT_W/2) swOpenRow(row); else swCloseRow(row);
+}
+document.addEventListener('pointerup', swEndDrag, {passive:true});
+document.addEventListener('pointercancel', swEndDrag, {passive:true});
+
+// ── ปุ่มหลังแถว: ✏️ แก้ไข ──
+function swipeEditItem(sid, empId, pid, shopKey, ikey){
+  const row = document.getElementById(`wr-${shopKey}-${ikey}`);
+  if(row) swCloseRow(row);
+  openWalkItemEditor(sid, empId, pid, shopKey, ikey);
+}
+
+// ── ปุ่มหลังแถว: 🗑️ ลบ (ถามยืนยันก่อน กันลบพลาดระหว่างเดิน) ──
+function swipeDeleteItem(sid, empId, pid, ikey, name){
+  showModal('ลบรายการ', `ลบ "${name}" ออกจากรายการซื้อของรอบนี้?`, ()=>{
+    R.session(sid).child(`entries/${empId}/items/${pid}`).remove()
+      .then(()=>{
+        // ล้างสถานะติ๊กของรายการที่ลบไปด้วย ไม่งั้นตัวนับ "ซื้อครบแล้ว" จะเพี้ยน
+        const w = getWalkTicked(sid);
+        if(w[ikey]){ delete w[ikey]; saveWalkStore(walkStore); }
+        const sess = S.sessions[sid];
+        if(sess?.entries?.[empId]?.items?.[pid]) delete sess.entries[empId].items[pid];
+        toast('🗑️ ลบแล้ว');
+        renderWalk();
+      }).catch(fbErr);
+  }, 'ลบเลย', 'btn-red');
+}
+
+// ══ แก้ไขรายการจากหน้า "เดิน" โดยตรง (ปัดไปทางซ้าย → ✏️ แก้ไข) ══
 // เปลี่ยนจำนวน/หน่วย/คอมเมนต์ได้เลยระหว่างเดินซื้อของ โดยไม่ต้องย้อนกลับไปหน้า "จด"
 let _walkEditCtx = null;
 function openWalkItemEditor(sid, empId, pid, shopKey, ikey){
