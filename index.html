@@ -390,7 +390,7 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
   transition:max-height .2s ease;
   padding:0 0 0 2px;
 }
-.note-wrap.open{max-height:80px}
+.note-wrap.open{max-height:120px}
 .note-inp{
   width:100%;margin-top:8px;
   padding:8px 11px;border:1.5px solid var(--border);border-radius:var(--rs);
@@ -408,6 +408,15 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
   flex-shrink:0;
 }
 .note-btn.has-note{border-color:var(--orange);background:var(--orange-light);color:var(--orange)}
+
+/* ─── ติ๊ก "ส่งข้อความนี้ให้ร้านด้วย" ข้างช่องหมายเหตุ ─── */
+.note-toshop-row{
+  display:flex;align-items:center;gap:7px;margin-top:8px;
+  font-size:.8rem;color:var(--ink3);cursor:pointer;user-select:none;
+}
+.note-toshop-row input[type="checkbox"]{
+  width:17px;height:17px;accent-color:var(--brand);cursor:pointer;flex-shrink:0;
+}
 
 /* ─── SETUP MENU ─── */
 .setup-menu-row{
@@ -826,6 +835,10 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
         <div class="fg">
           <label class="lbl">หมายเหตุ (ไม่บังคับ)</label>
           <input type="text" id="sq-note" class="inp" placeholder="หมายเหตุ..." maxlength="100" />
+          <label class="note-toshop-row">
+            <input type="checkbox" id="sq-note-toshop" />
+            📤 ส่งข้อความนี้ให้ร้านด้วยตอนคัดลอก
+          </label>
         </div>
         <div class="confirm-btns">
           <button class="btn btn-ghost btn-sm" onclick="sqCancel()">ยกเลิก</button>
@@ -1102,6 +1115,10 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
     <div class="fg">
       <label class="lbl">คอมเมนต์</label>
       <input type="text" id="we-note" class="inp" placeholder="เช่น เหลือมัดครึ่ง..." onkeydown="if(event.key==='Enter')saveWalkEdit()" />
+      <label class="note-toshop-row">
+        <input type="checkbox" id="we-note-toshop" />
+        📤 ส่งข้อความนี้ให้ร้านด้วยตอนคัดลอก
+      </label>
     </div>
     <div class="modal-btns" style="margin-top:4px">
       <button class="btn btn-ghost" style="flex:1" onclick="closeWalkEdit()">ยกเลิก</button>
@@ -2124,6 +2141,10 @@ function renderEmpProducts(savedItems){
           <input type="text" class="note-inp" id="note-${id}"
             value="${esc(note)}" placeholder="หมายเหตุ..."
             maxlength="80" oninput="noteInput('${id}',this)" />
+          <label class="note-toshop-row">
+            <input type="checkbox" id="notetoshop-${id}" ${saved?.noteToShop?'checked':''} onchange="noteInput('${id}',document.getElementById('note-${id}'))" />
+            📤 ส่งข้อความนี้ให้ร้านด้วยตอนคัดลอก
+          </label>
         </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:2px;flex-shrink:0;align-self:center;margin-right:2px">
@@ -2237,16 +2258,17 @@ function autosaveItem(id,empId,sessionId){
   const isSkipped=skipBtn?.classList.contains('is-skipped')||false;
   const qty=parseFloat(inp.value);
   const note=noteEl?.value.trim()||'';
+  const noteToShop=note ? (document.getElementById('notetoshop-'+id)?.checked||false) : false;
   const ref=R.session(sessionId).child(`entries/${empId}/items/${id}`);
   if(isSkipped){
-    ref.set({name:p.name,unit:p.unit||'',qty:0,shopId:p.shopId||'',shopName:p.shopName||'',note,skipped:true}).catch(fbErr);
+    ref.set({name:p.name,unit:p.unit||'',qty:0,shopId:p.shopId||'',shopName:p.shopName||'',note,noteToShop,skipped:true}).catch(fbErr);
   } else if(!isNaN(qty)&&qty>0){
-    ref.set({name:p.name,unit:p.unit||'',qty,shopId:p.shopId||'',shopName:p.shopName||'',note}).catch(fbErr);
+    ref.set({name:p.name,unit:p.unit||'',qty,shopId:p.shopId||'',shopName:p.shopName||'',note,noteToShop}).catch(fbErr);
   } else if(note){
     // เดิม: ถ้ายังไม่ใส่จำนวน จะ ref.remove() ทิ้งทั้งก้อนทันที รวมโน้ตที่พิมพ์ไว้ก่อนหน้าด้วย
     // แก้แล้ว: มีโน้ตแล้วแต่ยังไม่ใส่จำนวน ให้เก็บโน้ตไว้ก่อน (qty:0 ยังนับว่า "ยังไม่ตัดสินใจ" เหมือนเดิม
     // เพราะ empUndecided() เช็คแค่ qty>0 หรือ skipped เท่านั้น) ไม่ให้โน้ตหายไปเฉยๆ
-    ref.set({name:p.name,unit:p.unit||'',qty:0,shopId:p.shopId||'',shopName:p.shopName||'',note}).catch(fbErr);
+    ref.set({name:p.name,unit:p.unit||'',qty:0,shopId:p.shopId||'',shopName:p.shopName||'',note,noteToShop}).catch(fbErr);
   } else {
     ref.remove().catch(fbErr); // ไม่มีทั้งจำนวนและโน้ต → ถือว่ายังไม่ตัดสินใจจริงๆ เอาออกจากที่เคยบันทึกไว้
   }
@@ -2278,19 +2300,23 @@ function collectItems(){
     const skipBtn=document.getElementById('skipbtn-'+id);
     const isSkipped=skipBtn?.classList.contains('is-skipped')||false;
     const qty=parseFloat(inp?.value);
+    const noteVal=noteEl?.value.trim()||'';
+    const noteToShop=noteVal ? (document.getElementById('notetoshop-'+id)?.checked||false) : (oldItems[id]?.noteToShop||false);
     if(isSkipped){
       // บันทึก skipped — ไม่มี qty
       items[id]={
         name:p.name,unit:p.unit||'',qty:0,
         shopId:p.shopId||'',shopName:p.shopName||'',
-        note:noteEl?.value.trim()||oldItems[id]?.note||'',
+        note:noteVal||oldItems[id]?.note||'',
+        noteToShop,
         skipped:true
       };
     } else if(!isNaN(qty)&&qty>0){
       items[id]={
         name:p.name,unit:p.unit||'',qty,
         shopId:p.shopId||'',shopName:p.shopName||'',
-        note:noteEl?.value.trim()||oldItems[id]?.note||''
+        note:noteVal||oldItems[id]?.note||'',
+        noteToShop
       };
     }
   });
@@ -2533,6 +2559,7 @@ function sqOpenForm(productId, customName){
       document.getElementById('sq-unit-inp').value=existing.item.unit||'';
       document.getElementById('sq-shop').value=existing.item.shopId||'';
       document.getElementById('sq-note').value=existing.item.note||'';
+      document.getElementById('sq-note-toshop').checked=!!existing.item.noteToShop;
       document.getElementById('sq-submit-btn').textContent='💾 บันทึก (มีอยู่แล้ว)';
     } else {
       // ใหม่ — ดึงค่าจาก product template
@@ -2541,6 +2568,7 @@ function sqOpenForm(productId, customName){
       document.getElementById('sq-unit-inp').value=p.unit||'';
       document.getElementById('sq-shop').value=p.shopId||'';
       document.getElementById('sq-note').value='';
+      document.getElementById('sq-note-toshop').checked=false;
       document.getElementById('sq-submit-btn').textContent='✔ เพิ่ม';
     }
   } else {
@@ -2557,6 +2585,7 @@ function sqOpenForm(productId, customName){
       document.getElementById('sq-unit-inp').value=existing.item.unit||'';
       document.getElementById('sq-shop').value=existing.item.shopId||'';
       document.getElementById('sq-note').value=existing.item.note||'';
+      document.getElementById('sq-note-toshop').checked=!!existing.item.noteToShop;
       document.getElementById('sq-submit-btn').textContent='💾 บันทึก (มีอยู่แล้ว)';
     } else {
       document.getElementById('sq-name').value=nm;
@@ -2564,6 +2593,7 @@ function sqOpenForm(productId, customName){
       document.getElementById('sq-unit-inp').value='';
       document.getElementById('sq-shop').value='';
       document.getElementById('sq-note').value='';
+      document.getElementById('sq-note-toshop').checked=false;
       document.getElementById('sq-submit-btn').textContent='✔ เพิ่ม';
     }
   }
@@ -2587,6 +2617,7 @@ function sqEditItem(empId, pid){
   document.getElementById('sq-unit-inp').value=item.unit||'';
   document.getElementById('sq-shop').value=item.shopId||'';
   document.getElementById('sq-note').value=item.note||'';
+  document.getElementById('sq-note-toshop').checked=!!item.noteToShop;
   document.getElementById('sq-submit-btn').textContent=item.skipped?'✔ ยืนยันซื้อ (เคยกด ไม่ซื้อ)':'💾 บันทึก';
   document.getElementById('sq-form').style.display='';
   document.getElementById('sq-qty').focus();
@@ -2607,6 +2638,7 @@ function sqConfirm(){
   if(isNaN(qty)||qty<=0){toast('กรุณากรอกจำนวน');return}
   const unit=document.getElementById('sq-unit-inp').value.trim();
   const note=document.getElementById('sq-note').value.trim();
+  const noteToShop=note ? document.getElementById('sq-note-toshop').checked : false;
   const shopId=document.getElementById('sq-shop').value;
   const shopName=shopId?(S.shops[shopId]?.name||''):'';
   const latest=getLatestSession();
@@ -2617,7 +2649,7 @@ function sqConfirm(){
     // แก้ไขของเดิม — ล้าง skipped เสมอเมื่อใส่จำนวนใหม่
     const {empId,pid}=sqEditMode;
     R.session(sid).child(`entries/${empId}/items/${pid}`)
-      .update({name,unit,qty,shopId,shopName,note,skipped:false})
+      .update({name,unit,qty,shopId,shopName,note,noteToShop,skipped:false})
       .then(()=>{toast(`✅ แก้ไข ${name} แล้ว`);sqCancel();renderSummary()}).catch(fbErr);
   } else {
     // เพิ่มใหม่
@@ -2625,7 +2657,7 @@ function sqConfirm(){
     const itemKey=p?.id||name.replace(/[^a-zA-Zก-๙0-9]/g,'_').slice(0,30)+'_'+Date.now();
     const empId=(p?.employeeId)||NONE_ID;
     R.session(sid).child(`entries/${empId}/items/${itemKey}`)
-      .set({name,unit,qty,shopId,shopName,note,skipped:false})
+      .set({name,unit,qty,shopId,shopName,note,noteToShop,skipped:false})
       .then(()=>{toast(`✅ เพิ่ม ${name} แล้ว`);sqCancel();renderSummary()}).catch(fbErr);
   }
 }
@@ -2704,7 +2736,7 @@ function renderSummary(){
         return `<div class="sum-item${ticked?' ticked':''}" id="si-${key}-${item._ikey}" onclick="tapSumItem('${sid}','${key}','${item._ikey}','${blockId}',${total})" data-last="0">
           <div class="sum-item-name">
             ${esc(item.name)}
-            ${item.note?`<div class="sum-item-note">💬 ${esc(item.note)}</div>`:''}
+            ${item.note?`<div class="sum-item-note">${item.noteToShop?'📤':'💬'} ${esc(item.note)}</div>`:''}
           </div>
           <div class="sum-qty">${item.qty} ${esc(item.unit||'')}</div>
         </div>`;
@@ -2763,7 +2795,7 @@ function renderSqList(){
     <div class="lrow" style="padding:10px 0;opacity:${it.skipped?.6:1}">
       <div class="lrow-name" style="font-size:.88rem;${it.skipped?'text-decoration:line-through;color:var(--red)':''}">
         ${esc(it.name)}
-        ${it.note?`<div class="sum-item-note">💬 ${esc(it.note)}</div>`:''}
+        ${it.note?`<div class="sum-item-note">${it.noteToShop?'📤':'💬'} ${esc(it.note)}</div>`:''}
       </div>
       <div style="color:${it.skipped?'var(--red)':'var(--brand)'};font-weight:700;font-size:.9rem;flex-shrink:0;margin-right:8px">
         ${it.skipped?'🚫':`${it.qty} ${esc(it.unit||'')}`}
@@ -2901,7 +2933,7 @@ function buildSummaryHTML(sess){
       <div class="shop-hdr"><div class="shop-hdr-name">🏪 ${esc(g.name)}</div><div class="shop-hdr-count">${g.items.length} รายการ</div></div>
       ${g.items.sort((a,b)=>(a.name||'').localeCompare(b.name||'','th')).map(item=>`
         <div class="sum-item">
-          <div class="sum-item-name">${esc(item.name)}${item.note?`<div class="sum-item-note">💬 ${esc(item.note)}</div>`:''}</div>
+          <div class="sum-item-name">${esc(item.name)}${item.note?`<div class="sum-item-note">${item.noteToShop?'📤':'💬'} ${esc(item.note)}</div>`:''}</div>
           <div class="sum-qty">${item.qty} ${esc(item.unit||'')}</div>
         </div>`).join('')}
     </div>`;
@@ -3079,7 +3111,7 @@ function renderWalk(){
             <div class="walk-item-name">
               ${esc(item.name)}
               ${isPickup ? `<div class="walk-item-pickup">📦 ฝากมาจากร้าน ${esc(item._origShopName||'')} — เช็คกับร้านนี้ว่าเอามาส่งหรือยัง</div>` : ''}
-              ${item.note ? `<div class="walk-item-note">💬 ${esc(item.note)}</div>` : ''}
+              ${item.note ? `<div class="walk-item-note">${item.noteToShop?'📤':'💬'} ${esc(item.note)}</div>` : ''}
             </div>
             <div class="walk-item-qty">${item.qty} ${esc(item.unit||'')}</div>
           </div>
@@ -3168,10 +3200,12 @@ function buildShopOrderText(shopKey){
   if(!ownItems.length) return '';
   const sorted = [...ownItems].sort((a,b)=>(a.name||'').localeCompare(b.name||'','th'));
   let text = `${shopLabel(shopG.name)}\n\n`;
-  // ไม่ใส่คอมเมนต์ (note) ลงในข้อความสั่งของ — คอมเมนต์เป็นโน้ตเตือนตัวเอง เช่น "เหลือ2" "เอา2กล่อง"
+  // ปกติไม่ใส่คอมเมนต์ (note) ลงในข้อความสั่งของ เพราะส่วนใหญ่เป็นโน้ตเตือนตัวเอง เช่น "เหลือ2" "เอา2กล่อง"
   // ถ้าติดไปด้วยร้านค้าจะงงว่าตกลงจะเอาเท่าไหร่กันแน่
+  // ยกเว้น: ถ้าติ๊ก "ส่งข้อความนี้ให้ร้านด้วย" (noteToShop) ไว้ แสดงว่าคอมเมนต์นั้นเป็นคำสั่งจริงที่ต้องบอกร้าน เลยใส่ไปด้วย
   sorted.forEach((item)=>{
     text += `🛒 ${item.name} - ${item.qty}${item.unit?' '+item.unit:''}\n`;
+    if(item.noteToShop && item.note) text += `   (${item.note})\n`;
   });
   return text.trim();
 }
@@ -3421,6 +3455,7 @@ function openWalkItemEditor(sid, empId, pid, shopKey, ikey){
   document.getElementById('we-qty').value = item.qty!=null?item.qty:'';
   document.getElementById('we-unit').value = item.unit||'';
   document.getElementById('we-note').value = item.note||'';
+  document.getElementById('we-note-toshop').checked = !!item.noteToShop;
   document.getElementById('walk-edit-modal').classList.add('on');
   const qtyInp = document.getElementById('we-qty');
   qtyInp.focus();
@@ -3437,7 +3472,8 @@ function saveWalkEdit(){
   if(isNaN(qty) || qty<=0){ toast('กรุณากรอกจำนวนให้ถูกต้อง'); return; }
   const unit = document.getElementById('we-unit').value.trim();
   const note = document.getElementById('we-note').value.trim();
-  R.session(sid).child(`entries/${empId}/items/${pid}`).update({qty,unit,note,skipped:false})
+  const noteToShop = note ? document.getElementById('we-note-toshop').checked : false;
+  R.session(sid).child(`entries/${empId}/items/${pid}`).update({qty,unit,note,noteToShop,skipped:false})
     .then(()=>{
       // อัปเดต cache ในเครื่องทันที ไม่ต้องรอ Firebase สะท้อนกลับมา จะได้เห็นผลไวไม่กระตุก
       const sess = S.sessions[sid];
@@ -3445,6 +3481,7 @@ function saveWalkEdit(){
         sess.entries[empId].items[pid].qty = qty;
         sess.entries[empId].items[pid].unit = unit;
         sess.entries[empId].items[pid].note = note;
+        sess.entries[empId].items[pid].noteToShop = noteToShop;
         sess.entries[empId].items[pid].skipped = false;
       }
       toast('✅ แก้ไขแล้ว');
