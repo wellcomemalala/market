@@ -3151,13 +3151,25 @@ function buildFullSummaryText(){
     totalCount+=sorted.length;
     body+=`\n🏪 ${shopG.name}\n`;
     sorted.forEach((item)=>{
-      body+=`🛒 ${item.name} - ${item.qty}${item.unit?' '+item.unit:''}\n`;
+      body+=`🛒 ${item.name} - ${fmtQtyUnitForCopy(item)}\n`;
       if(item._origShopId && item._origShopId!==key) body+=`   📦 (ฝากมาจากร้าน ${item._origShopName||''})\n`;
       if(item.note) body+=`   💬 ${item.note}\n`;
     });
   });
   if(!totalCount) return '';
   return `🛒 รายการซื้อของ · ${fmtDate(sess.date)} (${totalCount} รายการ)\n${body}`.trim();
+}
+
+// เดิม: หน่วย 0.5 กิโลกรัม เวลาคัดลอกจะออกเป็น "0.5 กิโลกรัม" ตรงๆ แต่เวลาสั่งของจริงคนมักพูดว่า "ครึ่งโล" มากกว่า
+// ฟังก์ชันนี้จึงเช็คก่อนว่าเป็นกรณี 0.5 กิโลกรัม หรือไม่ ถ้าใช่ ให้แสดงเป็น "ครึ่งโล" แทน ส่วนหน่วยอื่นๆ คงเดิมไม่เปลี่ยน
+function fmtQtyUnitForCopy(item){
+  const qty = item.qty;
+  const unit = item.unit || '';
+  const qtyNum = typeof qty === 'number' ? qty : parseFloat(qty);
+  if(unit === 'กิโลกรัม' && !isNaN(qtyNum) && qtyNum === 0.5){
+    return 'ครึ่งโล';
+  }
+  return `${qty}${unit ? ' '+unit : ''}`;
 }
 
 function copyFullSummaryText(btnEl){
@@ -3204,7 +3216,7 @@ function buildShopOrderText(shopKey){
   // ถ้าติดไปด้วยร้านค้าจะงงว่าตกลงจะเอาเท่าไหร่กันแน่
   // ยกเว้น: ถ้าติ๊ก "ส่งข้อความนี้ให้ร้านด้วย" (noteToShop) ไว้ แสดงว่าคอมเมนต์นั้นเป็นคำสั่งจริงที่ต้องบอกร้าน เลยใส่ไปด้วย
   sorted.forEach((item)=>{
-    text += `🛒 ${item.name} - ${item.qty}${item.unit?' '+item.unit:''}\n`;
+    text += `🛒 ${item.name} - ${fmtQtyUnitForCopy(item)}\n`;
     if(item.noteToShop && item.note) text += `   (${item.note})\n`;
   });
   return text.trim();
