@@ -662,6 +662,10 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
     ประวัติ
   </button>
+  <button class="tb-btn" onclick="goPage('report',this)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    รายงาน
+  </button>
   <button class="tb-btn" onclick="goPage('setup',this)">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12.22 2h-.44a2 2 0 00-2 2v.18a2 2 0 01-1 1.73l-.43.25a2 2 0 01-2 0l-.15-.08a2 2 0 00-2.73.73l-.22.38a2 2 0 00.73 2.73l.15.1a2 2 0 011 1.72v.51a2 2 0 01-1 1.74l-.15.09a2 2 0 00-.73 2.73l.22.38a2 2 0 002.73.73l.15-.08a2 2 0 012 0l.43.25a2 2 0 011 1.73V20a2 2 0 002 2h.44a2 2 0 002-2v-.18a2 2 0 011-1.73l.43-.25a2 2 0 012 0l.15.08a2 2 0 002.73-.73l.22-.39a2 2 0 00-.73-2.73l-.15-.08a2 2 0 01-1-1.74v-.5a2 2 0 011-1.74l.15-.09a2 2 0 00.73-2.73l-.22-.38a2 2 0 00-2.73-.73l-.15.08a2 2 0 01-2 0l-.43-.25a2 2 0 01-1-1.73V4a2 2 0 00-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
     ตั้งค่า
@@ -907,6 +911,21 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
   </div>
 </section>
 
+<!-- ════════ PAGE: รายงาน ════════ -->
+<section class="pg" id="pg-report">
+  <div class="card">
+    <div class="card-body">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+        <button class="btn btn-xs btn-green" id="rp-tab-week" onclick="setReportView('week')">📅 สัปดาห์</button>
+        <button class="btn btn-xs btn-ghost" id="rp-tab-prod" onclick="setReportView('prod')">🧅 รายสินค้า</button>
+        <button class="btn btn-xs btn-ghost" id="rp-tab-warn" onclick="setReportView('warn')">⚠️ ต้องดู</button>
+        <button class="btn btn-xs btn-ghost" style="margin-left:auto" onclick="exportReportCsv()" title="ดาวน์โหลดข้อมูลดิบทั้งหมดไปเปิดใน Excel">⬇️ CSV</button>
+      </div>
+    </div>
+  </div>
+  <div id="rp-content"></div>
+</section>
+
 <!-- ════════ PAGE: ตั้งค่า ════════ -->
 <section class="pg" id="pg-setup">
 
@@ -924,6 +943,11 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
         </div>
       </div>
     </div>
+    <div class="sec">ความปลอดพัย</div>
+    <div class="card">
+      <div class="card-body" id="pin-card"></div>
+    </div>
+
     <div class="sec">จัดการข้อมูล</div>
     <div class="card">
       <button class="setup-menu-row" onclick="openSetupSub('emp')">
@@ -1033,6 +1057,17 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
             </datalist>
           </div>
         </div>
+        <div class="row2">
+          <div class="fg">
+            <label class="lbl">ควรมีไว้ (par) <span style="color:var(--ink4);font-weight:400">— ไม่ใส่ก็ได้</span></label>
+            <input type="number" id="prod-par" class="inp" inputmode="decimal" min="0" step="any" placeholder="เช่น 6" />
+          </div>
+          <div class="fg">
+            <label class="lbl">ต่ำกว่านี้ค่อยซื้อ <span style="color:var(--ink4);font-weight:400">— ไม่ใส่ก็ได้</span></label>
+            <input type="number" id="prod-min" class="inp" inputmode="decimal" min="0" step="any" placeholder="เช่น 3" />
+          </div>
+        </div>
+        <div style="font-size:.78rem;color:var(--ink3);margin:-4px 0 10px">🎯 ตั้งไว้ล่วงหน้าได้เลย ตอนนี้ระบบยังไม่คิดจำนวนให้อัตโนมัติ (จะเริ่มใช้ในเฟสถัดไป)</div>
         <button class="btn btn-green btn-full" onclick="addProduct()">+ เพิ่มสินค้า</button>
       </div>
     </div>
@@ -1055,6 +1090,23 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
 </section>
 
 <!-- ════ MODAL: ยืนยัน ════ -->
+<!-- ════ MODAL: ใส่รหัสเจ้าของร้าน ════ -->
+<div class="overlay" id="pin-wrap">
+  <div class="modal">
+    <h3>🔒 หน้านี้สำหรับเจ้าของร้าน</h3>
+    <p style="margin-bottom:12px">ใส่รหัสเพื่อเข้าใช้งาน</p>
+    <input type="password" id="pin-input" class="inp" inputmode="numeric" autocomplete="off"
+           maxlength="6" placeholder="• • • •"
+           style="text-align:center;letter-spacing:.5em;font-size:1.4rem;font-weight:700"
+           onkeydown="if(event.key==='Enter'){event.preventDefault();submitPin()}" />
+    <div id="pin-err" style="min-height:20px;margin:8px 0 14px;font-size:.85rem;color:var(--red);font-weight:600"></div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" style="flex:1" onclick="closePinModal()">ยกเลิก</button>
+      <button class="btn btn-green" style="flex:1" onclick="submitPin()">ปลดล็อค</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="modal-wrap">
   <div class="modal">
     <h3 id="modal-title">ยืนยัน</h3>
@@ -1077,6 +1129,16 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
     <div class="fg">
       <label class="lbl">หน่วย</label>
       <input type="text" id="ep-unit" class="inp" list="unit-list" placeholder="กำ, กิโล..." />
+    </div>
+    <div class="row2">
+      <div class="fg">
+        <label class="lbl">ควรมีไว้ (par)</label>
+        <input type="number" id="ep-par" class="inp" inputmode="decimal" min="0" step="any" placeholder="ไม่ใส่ก็ได้" />
+      </div>
+      <div class="fg">
+        <label class="lbl">ต่ำกว่านี้ค่อยซื้อ</label>
+        <input type="number" id="ep-min" class="inp" inputmode="decimal" min="0" step="any" placeholder="ไม่ใส่ก็ได้" />
+      </div>
     </div>
     <div class="fg">
       <label class="lbl">พนักงานที่รับผิดชอบ</label>
@@ -1163,12 +1225,13 @@ const R = {
   shop:(id)=>db.ref(`${ROOT}/shops/${id}`),
   products:()=>db.ref(`${ROOT}/products`),
   product:(id)=>db.ref(`${ROOT}/products/${id}`),
+  settings:()=>db.ref(`${ROOT}/settings`),
   sessions:()=>db.ref(`${ROOT}/sessions`),
   session:(id)=>db.ref(`${ROOT}/sessions/${id}`),
 };
 
 // ══ STATE ══
-const S = {employees:{},shops:{},products:{},sessions:{}};
+const S = {employees:{},shops:{},products:{},sessions:{},settings:{}};
 let activeSessionId = null;
 let currentEmpId = null;
 let viewingSessionId = null;
@@ -1176,7 +1239,17 @@ let prodGroupBy = 'emp';
 const NONE_ID = '__none', NONE_NAME = 'ไม่ระบุพนักงาน';
 
 // ══ UTILS ══
-function esc(s){const d=document.createElement('div');d.appendChild(document.createTextNode(s||''));return d.innerHTML}
+// [FIX #3] เดิม esc() เอสเคปให้แค่ & < > (ผลพลอยจาก innerHTML ของ text node) ไม่เอสเคป " กับ '
+// จุดที่เอาค่าไปใส่ใน value="..." ของช่องหมายเหตุ ถ้าโน้ตมีเครื่องหมายฟันหนู แอตทริบิวต์จะปิดกลางทาง แถวสินค้าเพี้ยนทันที
+// แก้แล้ว: เอสเคปครบ 5 ตัว ใช้ได้ทั้งในเนื้อข้อความและในแอตทริบิวต์ (&quot; / &#39; แสดงผลเป็น " ' ตามปกติ)
+function esc(s){
+  return String(s??'')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
 // สำหรับฝังข้อความ (เช่น ชื่อพนักงาน/ร้าน/สินค้า) เข้าไปเป็นอาร์กิวเมนต์ JS string ภายใน onclick="..."
 // esc() ธรรมดาเอสเคปแค่ &,<,> ไม่เอสเคป ' — ถ้าชื่อมีเครื่องหมายคำพูดเดี่ยว จะทำให้ onclick พังทันที
 function escJsAttr(s){
@@ -1194,6 +1267,47 @@ function today(){
   const m=String(d.getMonth()+1).padStart(2,'0');
   const day=String(d.getDate()).padStart(2,'0');
   return `${y}-${m}-${day}`;
+}
+// [PHASE 1A] เลขวันในสัปดาห์ (0=อาทิตย์ ... 6=เสาร์) เก็บไว้ในทุกรอบ เพื่อทำรายงาน "วันไหนใช้เยอะ" ภายหลัง
+function dowOf(dateStr){
+  if(!dateStr) return null;
+  const d=new Date(dateStr+'T00:00:00');
+  return isNaN(d.getTime())?null:d.getDay();
+}
+// [PHASE 1A] ช่องตัวเลขที่ไม่บังคับกรอก: ว่าง/ไม่ถูกต้อง = null (ไม่ตั้งค่า) ไม่ใช่ 0
+function parseOptNum(v){
+  const t=String(v==null?'':v).trim();
+  if(!t) return null;
+  const n=parseFloat(t);
+  return (isNaN(n)||n<0)?null:n;
+}
+// [PHASE 1B] คิดจำนวนที่ต้องซื้อจากของที่เหลือ
+// กติกา: ถ้าเหลือมากกว่า "ต่ำสุด" → ยังไม่ต้องซื้อ (0)
+//        ถ้าเหลือเท่ากับ/น้อยกว่าต่ำสุด → ซื้อเติมให้ถึง par (par − เหลือ)
+//        ไม่ได้ตั้งต่ำสุดไว้ → ถือว่าเหลือน้อยกว่า par เมื่อไหร่ก็ซื้อเติม
+function calcSuggested(par,min,remain){
+  const Pv=parseOptNum(par);
+  const Mv=parseOptNum(min);
+  const Rv=(remain==null||remain==='')?null:parseFloat(remain);
+  if(Pv==null||Rv==null||isNaN(Rv)) return null;
+  const trigger=(Mv==null)?Pv:Mv;
+  if(Rv>trigger) return 0;
+  return Math.max(0, Math.round((Pv-Rv)*100)/100);
+}
+// [PHASE 1B] ข้อความใต้ช่องจด — บอกพนักงานว่าจำนวนที่ระบบคิดให้คือเท่าไหร่ (ไม่โชว์ par)
+function suggestText(sug,unit){
+  if(sug==null) return '';
+  if(sug<=0) return '→ ยังไม่ต้องซื้อ (ของยังพอ)';
+  return `→ ต้องซื้อ ${sug} ${unit||''}`;
+}
+function updateParHint(id,el){
+  const box=document.getElementById('parhint-'+id);
+  if(!box) return;
+  const p=S.products[id]||{};
+  const raw=el.value.trim();
+  const sug=raw===''?null:calcSuggested(p.par,p.min,parseFloat(raw));
+  box.textContent=suggestText(sug,p.unit);
+  box.style.color=(sug!=null&&sug>0)?'var(--red)':'var(--ink3)';
 }
 function fmtDate(d){
   if(!d) return '';
@@ -1248,6 +1362,27 @@ function resolveShopIdForSession(shopId, sess){
   return cur;
 }
 function isUnassigned(p){return !p.employeeId||!S.employees[p.employeeId]}
+// [FIX #15] เทียบชื่อแบบหลวมๆ (ตัดช่องว่าง + ไม่สนใจตัวพิมพ์เล็ก/ใหม่) กันชื่อซ้ำเพราะเว้นวรรคต่างกัน
+function normName(x){return String(x??'').trim().toLowerCase().replace(/\s+/g,'')}
+// [FIX #13] หาว่าของชิ้นนี้อยู่ใต้พนักงานคนไหนในรอบนี้อยู่ก่อน แล้วเขียนทับที่เดิม
+function resolveItemEmpId(sess,pid,p){
+  if(sess&&sess.entries){
+    for(const [eid,entry] of Object.entries(sess.entries)){
+      if(entry&&entry.items&&entry.items[pid]!=null) return eid;
+    }
+  }
+  return (p&&!isUnassigned(p))?p.employeeId:NONE_ID;
+}
+// เก็บตกค้าง: สินค้าชิ้นเดียวต้องมีได้ที่เดียวในรอบ ถ้าเจอซ้ำใต้พนักงานคนอื่น ให้ลบตัวซ้ำทิ้ง
+function pruneDupItemCopies(sessionId,keepEmpId,pid){
+  const sess=S.sessions[sessionId]; if(!sess||!sess.entries) return;
+  Object.keys(sess.entries).forEach(eid=>{
+    if(eid===keepEmpId) return;
+    if(sess.entries[eid]&&sess.entries[eid].items&&sess.entries[eid].items[pid]!=null){
+      R.session(sessionId).child(`entries/${eid}/items/${pid}`).remove().catch(()=>{});
+    }
+  });
+}
 function prodsForEmp(empId){
   return Object.entries(S.products)
     .filter(([,p])=>empId===NONE_ID?isUnassigned(p):p.employeeId===empId)
@@ -1267,7 +1402,144 @@ function getActiveJotSession(){
 }
 
 // ══ NAVIGATION ══
+// ══════════════════════════════
+// PIN LOCK — พนักงานใช้ได้เฉพาะหน้า "จด"
+// ข้อจำกัดที่ต้องรู้: รหัสเก็บในฐานข้อมูลแบบอ่านได้ กันคนที่ไม่ตั้งใจได้
+// แต่กันคนที่เปิด DevTools ไม่ได้ — ความปลอดพัยจริงต้องทำที่ Firebase Rules
+// ══════════════════════════════
+const PIN_PAGES=['summary','walk','history','report','setup'];
+const PIN_UNLOCK_KEY='pinUnlock_v1';
+const PIN_HOURS=8;
+const PIN_TAB_INDEX={jot:0,summary:1,walk:2,history:3,report:4,setup:5};
+let _pinTarget=null;
+
+function pinCfg(){ return (S.settings&&S.settings.lock)||{} }
+function pinEnabled(){ const c=pinCfg(); return !!(c.on&&c.pin) }
+function pinUnlocked(){
+  try{
+    const v=JSON.parse(localStorage.getItem(PIN_UNLOCK_KEY)||'null');
+    if(!v||v.pin!==pinCfg().pin) return false;
+    return Date.now()<Number(v.until||0);
+  }catch(e){ return false }
+}
+function pinLocked(){ return pinEnabled()&&!pinUnlocked() }
+
+function pinMarkUnlocked(){
+  try{ localStorage.setItem(PIN_UNLOCK_KEY,JSON.stringify({pin:pinCfg().pin,until:Date.now()+PIN_HOURS*3600*1000})) }catch(e){}
+}
+function pinLockNow(){
+  try{ localStorage.removeItem(PIN_UNLOCK_KEY) }catch(e){}
+  renderPinCard();
+  toast('🔒 ล็อคแล้ว');
+  const b=document.querySelectorAll('.tb-btn')[PIN_TAB_INDEX.jot];
+  if(b) goPage('jot',b);
+}
+
+// การ์ดที่เรียกจะบล็อกหน้าที่ล็อกอยู่ — คืน true = ผ่าน
+function pinAllow(name){
+  if(!PIN_PAGES.includes(name)) return true;
+  if(!pinLocked()) return true;
+  _pinTarget=name;
+  openPinModal();
+  return false;
+}
+
+function openPinModal(){
+  const w=document.getElementById('pin-wrap');
+  if(!w) return;
+  const i=document.getElementById('pin-input');
+  const e=document.getElementById('pin-err');
+  if(i) i.value='';
+  if(e) e.textContent='';
+  w.classList.add('on');
+  setTimeout(()=>{ if(i) i.focus() },80);
+}
+function closePinModal(){
+  const w=document.getElementById('pin-wrap');
+  if(w) w.classList.remove('on');
+  _pinTarget=null;
+}
+function submitPin(){
+  const i=document.getElementById('pin-input');
+  const e=document.getElementById('pin-err');
+  const v=(i?i.value:'').trim();
+  if(v!==pinCfg().pin){
+    if(e) e.textContent='✕ รหัสไม่ถูกต้อง ลองอีกครั้ง';
+    if(i){ i.value=''; i.focus() }
+    return;
+  }
+  pinMarkUnlocked();
+  const target=_pinTarget;
+  closePinModal();
+  toast('🔓 ปลดล็อคแล้ว · จำไว้ '+PIN_HOURS+' ชั่วโมง');
+  if(target){
+    const b=document.querySelectorAll('.tb-btn')[PIN_TAB_INDEX[target]];
+    if(b) goPage(target,b);
+  }
+}
+
+// ── การ์ดตั้งค่าในหน้าตั้งค่า ──
+function renderPinCard(){
+  const el=document.getElementById('pin-card');
+  if(!el) return;
+  const on=pinEnabled();
+  if(!on){
+    el.innerHTML=`<div style="font-weight:700;margin-bottom:4px">🔓 ยังไม่ได้ล็อค</div>
+      <div style="font-size:.82rem;color:var(--ink3);line-height:1.6;margin-bottom:10px">ตั้งรหัส 4–6 หลัก แล้วหน้า <b>สรุป · เดิน · ประวัติ · รายงาน · ตั้งค่า</b> จะต้องใส่รหัส<br>หน้า "จด" เข้าได้เสมอ พนักงานทำงานได้ตามปกติ</div>
+      <input type="password" id="pin-set" class="inp" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="ตั้งรหัส 4–6 หลัก" style="text-align:center;letter-spacing:.35em" />
+      <button class="btn btn-green" style="width:100%;margin-top:10px" onclick="savePin(true)">🔒 เปิดใช้งานล็อค</button>`;
+    return;
+  }
+  const until=(()=>{ try{ const v=JSON.parse(localStorage.getItem(PIN_UNLOCK_KEY)||'null'); return v?new Date(Number(v.until)):null }catch(e){ return null } })();
+  el.innerHTML=`<div style="font-weight:700;margin-bottom:4px;color:var(--brand)">🔒 ล็อคอยู่</div>
+    <div style="font-size:.82rem;color:var(--ink3);line-height:1.6;margin-bottom:10px">หน้าสรุป · เดิน · ประวัติ · รายงาน · ตั้งค่า ต้องใส่รหัส
+    ${until?`<br>เครื่องนี้ปลดล็อคอยู่ถึง <b>${until.toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})}</b>`:''}</div>
+    <input type="password" id="pin-set" class="inp" inputmode="numeric" maxlength="6" autocomplete="off" placeholder="รหัสใหม่ 4–6 หลัก" style="text-align:center;letter-spacing:.35em" />
+    <button class="btn btn-ghost" style="width:100%;margin-top:10px" onclick="savePin(false)">✏️ เปลี่ยนรหัส</button>
+    <button class="btn btn-ghost" style="width:100%;margin-top:8px" onclick="pinLockNow()">🔒 ล็อคทันที (ก่อนส่งเครื่องให้พนักงาน)</button>
+    <button class="btn btn-red" style="width:100%;margin-top:8px" onclick="disablePin()">ปิดระบบล็อค</button>`;
+}
+
+function savePin(isNew){
+  const i=document.getElementById('pin-set');
+  const v=(i?i.value:'').trim();
+  if(!/^\d{4,6}$/.test(v)){ toast('⚠️ รหัสต้องเป็นตัวเลข 4–6 หลัก'); return }
+  R.settings().child('lock').set({on:true,pin:v,updatedAt:Date.now()}).then(()=>{
+    if(!S.settings) S.settings={};
+    S.settings.lock={on:true,pin:v,updatedAt:Date.now()};
+    pinMarkUnlocked();
+    renderPinCard();
+    toast(isNew?'🔒 เปิดระบบล็อคแล้ว':'✅ เปลี่ยนรหัสแล้ว');
+  }).catch(fbErr);
+}
+
+function disablePin(){
+  showModal('ปิดระบบล็อค','ทุกหน้าจะกลับมาเข้าได้อิสระทุกเครื่อง รวมทั้งเครื่องพนักงาน ยืนยันไหม?',()=>{
+    R.settings().child('lock').set({on:false,pin:null,updatedAt:Date.now()}).then(()=>{
+      if(!S.settings) S.settings={};
+      S.settings.lock={on:false};
+      try{ localStorage.removeItem(PIN_UNLOCK_KEY) }catch(e){}
+      renderPinCard();
+      toast('🔓 ปิดระบบล็อคแล้ว');
+    }).catch(fbErr);
+  },'ปิดล็อค','btn-red');
+}
+
+// ทางกู้เมื่อเจ้าของร้านลืมรหัส: เปิดลิงก์ต่อท้ายด้วย #resetpin
+function pinCheckRescue(){
+  if(location.hash!=='#resetpin') return;
+  history.replaceState(null,'',location.pathname+location.search);
+  showModal('ล้างรหัสที่ลืม','ต้องการปิดระบบล็อคเพื่อเข้าใช้งานอีกครั้งไหม? (ตั้งรหัสใหม่ได้หลังจากนี้)',()=>{
+    R.settings().child('lock').set({on:false,pin:null,updatedAt:Date.now()}).then(()=>{
+      try{ localStorage.removeItem(PIN_UNLOCK_KEY) }catch(e){}
+      toast('🔓 ปิดระบบล็อคแล้ว ไปตั้งรหัสใหม่ที่หน้าตั้งค่า');
+      renderPinCard();
+    }).catch(fbErr);
+  },'ล้างรหัส','btn-red');
+}
+
 function goPage(name,btn){
+  if(!pinAllow(name)) return;
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.tb-btn').forEach(b=>b.classList.remove('on'));
   document.getElementById('pg-'+name).classList.add('on');
@@ -1276,7 +1548,8 @@ function goPage(name,btn){
   if(name==='history') renderHistList();
   if(name==='jot') renderJotStart();
   if(name==='walk') renderWalk();
-  if(name==='setup'){closeSetupSub();updateSetupCounts();syncFsBtns();}
+  if(name==='report') renderReport();
+  if(name==='setup'){closeSetupSub();updateSetupCounts();syncFsBtns();renderPinCard();}
 }
 
 // ══ SETUP SUB-PAGES ══
@@ -1337,7 +1610,14 @@ function addEmployee(){
   const inp=document.getElementById('emp-input');
   const name=inp.value.trim();
   if(!name){toast('กรุณากรอกชื่อพนักงาน');return}
-  R.employees().push({name,createdAt:Date.now()}).then(()=>{inp.value='';toast('✅ เพิ่มพนักงานแล้ว')}).catch(fbErr);
+  const doAdd=()=>R.employees().push({name,createdAt:Date.now()}).then(()=>{inp.value='';toast('✅ เพิ่มพนักงานแล้ว')}).catch(fbErr);
+  // [FIX #15] เตือนชื่อซ้ำเหมือนหน้าสินค้า กันพนักงานชื่อเดียวกันอยู่หลายคนแล้วงง
+  const dupEmp=Object.values(S.employees).find(e=>normName(e.name)===normName(name));
+  if(dupEmp){
+    showModal('ชื่อนี้มีอยู่แล้ว',`มีพนักงานชื่อ "${dupEmp.name}" อยู่แล้ว ถ้าเพิ่มซ้ำ อาจสับสนตอนจดของ — ยันยันว่าจะเพิ่มอีกคนไหม?`,doAdd,'เพิ่มซ้ำ','btn-orange');
+    return;
+  }
+  doAdd();
 }
 document.getElementById('emp-input').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addEmployee()}});
 
@@ -1355,12 +1635,36 @@ function renderEmployees(){
       </div>
     </div>`).join('');
 }
+// [FIX #4] เช่นเดียวกันกับชื่อร้าน: ชื่อพนักงานถูกก๊อปปี้เก็บซ้ำไว้ที่ products/{pid}/empName
+// ต้องตามอัพเดตด้วย ไม่งั้นกล่องแนะชื่อซ้ำ/หน้าสินค้าจะยังเห็นชื่อเก่า
 function editEmpName(id,cur){
   const n=prompt('แก้ไขชื่อพนักงาน:',cur);
-  if(n&&n.trim()&&n.trim()!==cur) R.employee(id).update({name:n.trim()}).then(()=>toast('✅ แก้ไขแล้ว')).catch(fbErr);
+  if(!(n&&n.trim()&&n.trim()!==cur)) return;
+  const name=n.trim();
+  const updates={};
+  updates[`${ROOT}/employees/${id}/name`]=name;
+  Object.entries(S.products).forEach(([pid,p])=>{
+    if(p.employeeId===id) updates[`${ROOT}/products/${pid}/empName`]=name;
+  });
+  db.ref().update(updates).then(()=>toast('✅ แก้ไขแล้ว')).catch(fbErr);
+}
+// [FIX #20] เตือนก่อนลบ ถ้ากำลังถูกใช้งานอยู่ (มีสินค้าผูกอยู่ / อยู่ในรอบที่ยังไม่ปิด)
+function countOpenSessionHits(fn){
+  let n=0;
+  Object.values(S.sessions||{}).forEach(sess=>{
+    if(sess.shoppingDone||sess.cleared) return;
+    Object.entries(sess.entries||{}).forEach(([empId,entry])=>{
+      Object.entries(entry.items||{}).forEach(([pid,item])=>{ if(fn(item,empId,pid)) n++ });
+    });
+  });
+  return n;
 }
 function delEmployee(id){
-  showModal('ลบพนักงาน','ลบพนักงานคนนี้? (ข้อมูลสินค้าที่เชื่อมอยู่จะยังอยู่)',()=>{
+  const prodCnt=Object.values(S.products).filter(p=>p.employeeId===id).length;
+  const openCnt=countOpenSessionHits((item,empId)=>empId===id);
+  let msg='ลบพนักงานคนนี้? (ข้อมูลสินค้าที่เชื่อมอยู่จะยังอยู่)';
+  if(prodCnt||openCnt) msg=`⚠️ พนักงานคนนี้กำลังใช้งานอยู่ — สินค้าที่ผูกไว้ ${prodCnt} รายการ · ของในรอบที่ยังไม่ปิด ${openCnt} รายการ (สินค้าจะย้ายไปกลุ่ม "ไม่ระบุพนักงาน") ยืนยันจะลบไหม?`;
+  showModal('ลบพนักงาน',msg,()=>{
     R.employee(id).remove().then(()=>toast('🗑️ ลบแล้ว')).catch(fbErr);
   });
 }
@@ -1373,7 +1677,14 @@ function addShop(){
   const name=inp.value.trim();
   if(!name){toast('กรุณากรอกชื่อร้านค้า');return}
   const order=Object.keys(S.shops).length;
-  R.shops().push({name,order,lineOrder:false,createdAt:Date.now()}).then(()=>{inp.value='';toast('✅ เพิ่มร้านค้าแล้ว')}).catch(fbErr);
+  const doAddShop=()=>R.shops().push({name,order,lineOrder:false,createdAt:Date.now()}).then(()=>{inp.value='';toast('✅ เพิ่มร้านค้าแล้ว')}).catch(fbErr);
+  // [FIX #15] เตือนชื่อร้านซ้ำ กันสินค้ากระจายอยู่หลายร้านชื่อเดียวกัน
+  const dupShop=Object.values(S.shops).find(sp=>normName(sp.name)===normName(name));
+  if(dupShop){
+    showModal('ชื่อนี้มีอยู่แล้ว',`มีร้านชื่อ "${dupShop.name}" อยู่แล้ว ถ้าเพิ่มซ้ำ สินค้าจะกระจายอยู่สองร้าน — ยันยันว่าจะเพิ่มอีกร้านไหม?`,doAddShop,'เพิ่มซ้ำ','btn-orange');
+    return;
+  }
+  doAddShop();
 }
 document.getElementById('shop-input').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addShop()}});
 
@@ -1521,9 +1832,30 @@ function moveShop(id, dir){
   db.ref().update(updates).catch(fbErr);
 }
 
+// [FIX #4] เดิม: แก้ชื่อร้านแล้วแก้แค่ที่ shops/{id}/name เท่านั้น
+// แต่ชื่อร้านถูกก๊อปปี้เก็บซ้ำไว้ที่ products/{pid}/shopName และที่รายการของทุกรอบ (sessions/.../items/{id}/shopName)
+// ทำให้หน้าสินค้า / กล่องแนะชื่อซ้ำ / ข้อความคัดลอกสั่งของ ยังโชว์ชื่อร้านเก่าค้างอยู่
+// แก้แล้ว: เขียนทุกที่ที่เกี่ยวข้องให้เสร็จในการอัพเดตครั้งเดียว (multi-path update — สำเร็จทั้งหมดหรือไม่สำเร็จทั้งหมด)
 function editShopName(id,cur){
   const n=prompt('แก้ไขชื่อร้านค้า:',cur);
-  if(n&&n.trim()&&n.trim()!==cur) R.shop(id).update({name:n.trim()}).then(()=>toast('✅ แก้ไขแล้ว')).catch(fbErr);
+  if(!(n&&n.trim()&&n.trim()!==cur)) return;
+  const name=n.trim();
+  const updates={};
+  updates[`${ROOT}/shops/${id}/name`]=name;
+  Object.entries(S.products).forEach(([pid,p])=>{
+    if(p.shopId===id) updates[`${ROOT}/products/${pid}/shopName`]=name;
+  });
+  Object.entries(S.sessions).forEach(([sid,sess])=>{
+    // [FIX #16] รอบที่ปิดแล้ว (ซื้อของเสร็จ/ยกเลิกรอบ) คือประวัติ ต้องคงชื่อร้านตอนนั้นไว้ ไม่ตามไปเปลี่ยน
+    // (นโยเดียวกันกับตอนแก้หน่วย/ร้านของสินค้า: อัปเดตเฉพาะรอบที่ยังไม่ปิด)
+    if(sess.shoppingDone||sess.cleared) return;
+    Object.entries(sess.entries||{}).forEach(([empId,entry])=>{
+      Object.entries(entry.items||{}).forEach(([itemId,item])=>{
+        if(item.shopId===id) updates[`${ROOT}/sessions/${sid}/entries/${empId}/items/${itemId}/shopName`]=name;
+      });
+    });
+  });
+  db.ref().update(updates).then(()=>toast('✅ แก้ไขแล้ว')).catch(fbErr);
 }
 // สลับว่าร้านนี้สั่งของทางไลน์ได้ไหม — ใช้ตัดสินใจว่าจะโชว์ปุ่ม "คัดลอกข้อความสั่งของ" ที่หน้าเดินซื้อของหรือเปล่า
 function toggleShopLineOrder(id){
@@ -1539,20 +1871,40 @@ function setShopPickupAt(id, targetShopId){
   }).catch(fbErr);
 }
 function delShop(id){
-  showModal('ลบร้านค้า','ลบร้านค้านี้?',()=>{R.shop(id).remove().then(()=>toast('🗑️ ลบแล้ว')).catch(fbErr)});
+  const prodCnt=Object.values(S.products).filter(p=>p.shopId===id).length;
+  const openCnt=countOpenSessionHits(item=>item.shopId===id);
+  let msg='ลบร้านค้านี้?';
+  if(prodCnt||openCnt) msg=`⚠️ ร้านนี้กำลังใช้งานอยู่ — สินค้าที่ผูกไว้ ${prodCnt} รายการ · ของในรอบที่ยังไม่ปิด ${openCnt} รายการ (จะไปอยู่กลุ่ม "ไม่ระบุร้านค้า") ยืนยันจะลบไหม?`;
+  showModal('ลบร้านค้า',msg,()=>{R.shop(id).remove().then(()=>toast('🗑️ ลบแล้ว')).catch(fbErr)});
 }
 
+// [FIX #11] เดิม: ทุกครั้งที่ข้อมูลร้าน/พนักงานอัพเดตจาก Firebase จะสร้างตัวเลือกใหม่ทั้งหมด
+// ที่ผู้ใช้เพิ่งเลือกไว้จึงเด้งกลับไปเป็น "-- เลือก --" เอง เช่นกำลังกรอกสินค้าอยู่แล้วมีคนอื่นเพิ่มร้านใหม่
+// แก้แล้ว: จำค่าที่เลือกไว้ก่อน แล้วใส่กลับหลังสร้างตัวเลือกใหม่ ถ้าตัวเลือกนั้นยังมีอยู่
 function populateSelects(){
   const shops=sortedShops();
+  const prodShop=document.getElementById('prod-shop');
+  const prodEmp=document.getElementById('prod-emp');
+  const sqShop=document.getElementById('sq-shop');
+  const keepShop=prodShop?prodShop.value:'';
+  const keepEmp=prodEmp?prodEmp.value:'';
+  const keepSq=sqShop?sqShop.value:'';
+
   const shopOpts=`<option value="">-- เลือก --</option>`+shops.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
-  document.getElementById('prod-shop').innerHTML=shopOpts;
+  if(prodShop) prodShop.innerHTML=shopOpts;
 
   const emps=Object.entries(S.employees).sort((a,b)=>a[1].name?.localeCompare(b[1].name||'','th'));
   const empOpts=`<option value="">-- ไม่ระบุ --</option>`+emps.map(([id,e])=>`<option value="${id}">${esc(e.name)}</option>`).join('');
-  document.getElementById('prod-emp').innerHTML=empOpts;
+  if(prodEmp) prodEmp.innerHTML=empOpts;
   // อัพเดท dropdown ร้านค้าของ quick-edit ด้วย
-  const sqShop=document.getElementById('sq-shop');
   if(sqShop) sqShop.innerHTML=`<option value="">— ไม่ระบุร้านค้า —</option>`+shops.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
+
+  const restore=(el,val)=>{
+    if(el && val && [...el.options].some(o=>o.value===val)) el.value=val;
+  };
+  restore(prodShop,keepShop);
+  restore(prodEmp,keepEmp);
+  restore(sqShop,keepSq);
 }
 
 // ══════════════════════════════════════════════
@@ -1564,12 +1916,16 @@ function addProduct(){
   const empId=document.getElementById('prod-emp').value;
   const shopId=document.getElementById('prod-shop').value;
   const unit=document.getElementById('prod-unit').value.trim();
+  const par=parseOptNum(document.getElementById('prod-par')?.value);
+  const min=parseOptNum(document.getElementById('prod-min')?.value);
   const empName=empId?S.employees[empId]?.name||'':NONE_NAME;
   const shopName=shopId?S.shops[shopId]?.name||'':'';
-  R.products().push({name,unit,employeeId:empId,shopId,empName,shopName,createdAt:Date.now()})
+  R.products().push({name,unit,employeeId:empId,shopId,empName,shopName,par,min,createdAt:Date.now()})
     .then(()=>{
       document.getElementById('prod-name').value='';
       document.getElementById('prod-unit').value='';
+      const _pp=document.getElementById('prod-par'); if(_pp) _pp.value='';
+      const _pm=document.getElementById('prod-min'); if(_pm) _pm.value='';
       closeProdSuggestBox();
       toast('✅ เพิ่มสินค้าแล้ว');
     }).catch(fbErr);
@@ -1687,16 +2043,11 @@ function setGrp(g){
   renderProducts();
 }
 
-function toggleGrp(key){
-  const openGrps=getOpenGrps();
-  if(openGrps.has(key)) openGrps.delete(key); else openGrps.add(key);
-  // toggle classes directly without full re-render
-  const btn=document.getElementById(`grpbtn-${CSS.escape(key)}`);
-  const body=document.getElementById(`grpbody-${CSS.escape(key)}`);
-  if(btn) btn.classList.toggle('open',openGrps.has(key));
-  if(body) body.classList.toggle('open',openGrps.has(key));
-}
+// [FIX #12] ลบ toggleGrp(key) ทิ้ง — โค้ดตายที่ไม่มีอะไรเรียกอีกแล้ว
+// อีกทั้งมันหา element จาก CSS.escape(key) ซึ่งไม่ตรงกับ id จริง หาอย่างไรก็ไม่เจอ
+// ตัวที่ใช้งานจริงคือ toggleGrpByKey() ด้านล่าง
 
+const _autoOpenGrps=new Set(); // จำกลุ่มที่ระบบเปิดให้เองตอนค้นหา
 function renderProducts(){
   updateGrpBadges();
   const q=(document.getElementById('prod-search').value||'').toLowerCase();
@@ -1729,16 +2080,26 @@ function renderProducts(){
   }
 
   // ถ้ากำลังค้นหาอยู่ ให้เปิดกลุ่มที่เจอผลลัพธ์อัตโนมัติ (เห็นผลค้นหาได้เลยไม่ต้องมากดขยายเอง)
+  // [FIX #19] เดิม: เปิดกลุ่มให้ตอนค้นหา แต่ไม่เคยปิดคืนตอนล้างค้นหา → กลุ่มค้างเปิดหมดทุกกลุ่ม
   const openGrps=getOpenGrps();
-  if(q) groups.forEach(g=>openGrps.add(g.key));
+  if(q){
+    groups.forEach(g=>{ if(!openGrps.has(g.key)){ openGrps.add(g.key); _autoOpenGrps.add(g.key) } });
+  } else if(_autoOpenGrps.size){
+    _autoOpenGrps.forEach(k=>openGrps.delete(k));
+    _autoOpenGrps.clear();
+  }
   // เดิม: ถ้ายังไม่เคยมีสถานะของโหมดนี้เลย จะเปิดกลุ่มทั้งหมดให้อัตโนมัติ
   // เปลี่ยนแล้ว: ค่าเริ่มต้นให้ยุบไว้ก่อนเสมอ ผู้ใช้กดขยายเองเป็นกลุ่มๆ ไป (ไม่บังคับเปิดหมดตอนแรก)
 
-  el.innerHTML=groups.map(({key,label,prods,color})=>{
+  // [FIX #6] เดิม: id ของหัวกลุ่ม/กล่องเนื้อหาสร้างจากชื่อกลุ่ม โดยแทนอักขระที่ใช้ไม่ได้ด้วย _
+  // ชื่อที่ต่างกันแต่กลายเป็น id เดียวกัน เช่น "ป้า วัล" กับ "ป้า-วัล" → กลายเป็น ป้า_วัล ทั้งคู่
+  // ทำให้กดขยาย/ยุบกลุ่มนี้ แล้วอีกกลุ่มขยาย/ยุบตามไปด้วย
+  // แก้แล้ว: ใช้เลขลำดับกลุ่ม (g0, g1, g2...) เป็น id ซ้ำกันไม่ได้อีก ส่วนสถานะเปิด/ปิดยังจำตามชื่อกลุ่มเหมือนเดิม
+  el.innerHTML=groups.map(({key,label,prods,color},gi)=>{
     const isOpen=openGrps.has(key);
-    const safeKey=key.replace(/[^a-zA-Zก-๙0-9_-]/g,'_');
+    const safeKey=`g${gi}`;
     return `<div style="margin-bottom:4px">
-      <button class="grp-btn ${isOpen?'open':''}" id="grpbtn-${safeKey}" onclick="toggleGrpByKey('${safeKey}','${key.replace(/'/g,'\\\'')}')" style="color:${color}">
+      <button class="grp-btn ${isOpen?'open':''}" id="grpbtn-${safeKey}" onclick="toggleGrpByKey('${safeKey}','${escJsAttr(key)}')" style="color:${color}">
         <span class="grp-btn-label">${esc(label)}</span>
         <span class="grp-btn-count">${prods.length} รายการ</span>
         <span class="grp-btn-arrow">▶</span>
@@ -1748,7 +2109,7 @@ function renderProducts(){
           <div class="lrow">
             <div class="lrow-name">
               ${esc(p.name)}
-              <div class="lrow-sub">${p.unit?`${esc(p.unit)} · `:''}${p.shopName?`🏪 ${esc(p.shopName)}`:''}</div>
+              <div class="lrow-sub">${p.unit?`${esc(p.unit)} · `:''}${p.shopName?`🏪 ${esc(p.shopName)}`:''}${p.par!=null&&p.par!==''?` · 🎯 par ${esc(String(p.par))}`:''}${p.min!=null&&p.min!==''?` · ต่ำสุด ${esc(String(p.min))}`:''}</div>
             </div>
             <div class="lrow-acts">
               <button class="btn btn-ghost btn-xs" onclick="editProduct('${id}')">✏️</button>
@@ -1760,10 +2121,9 @@ function renderProducts(){
   }).join('');
 }
 
-// Map safe key back to original for toggle
-const _keyMap={};
+// [FIX #12] เดิมมี _keyMap เก็บคู่ safeKey → ชื่อจริง แต่ไม่มีใครอ่านค่านั้นเลย — เอาออก
+// สลับเปิด/ปิด: จำสถานะด้วยชื่อกลุ่มจริง (origKey) แต่อ้าง element ด้วยเลขลำดับกลุ่ม (safeKey)
 function toggleGrpByKey(safeKey,origKey){
-  _keyMap[safeKey]=origKey;
   const openGrps=getOpenGrps();
   if(openGrps.has(origKey)) openGrps.delete(origKey); else openGrps.add(origKey);
   const btn=document.getElementById(`grpbtn-${safeKey}`);
@@ -1779,6 +2139,8 @@ function editProduct(id){
 
   document.getElementById('ep-name').value=p.name||'';
   document.getElementById('ep-unit').value=p.unit||'';
+  document.getElementById('ep-par').value=(p.par==null?'':p.par);
+  document.getElementById('ep-min').value=(p.min==null?'':p.min);
 
   const emps=Object.entries(S.employees).sort((a,b)=>a[1].name?.localeCompare(b[1].name||'','th'));
   document.getElementById('ep-emp').innerHTML=
@@ -1799,6 +2161,11 @@ function closeEditProd(){
   document.getElementById('edit-prod-modal').classList.remove('on');
   epShopClose();
 }
+// [FIX #4b] เดิม: แก้ชื่อ/หน่วย/ร้านของสินค้า แก้แค่ที่ products/{id} เท่านั้น
+// แต่เวลาจดของ แอพจะถ่ายสำเนา name/unit/shopId/shopName ลงในรอบนั้นไว้ หน้าเดิน/สรุปจึงยังเห็นค่าเก่า
+// แก้แล้ว: ตามไปอัพเดตสำเนาให้เฉพาะ "รอบที่ยังไม่ปิด" คือรอบที่ยังเดินซื้อไม่เสร็จ (!shoppingDone)
+// ซึ่งครอบคลุมทั้งรอบที่กำลังจด (!completed) และรอบที่จดเสร็จแล้วแต่ยังเดินซื้ออยู่ (completed && !shoppingDone)
+// ส่วนรอบที่ปิดแล้ว (หน้าประวัติ) คงค่าเดิมไว้เหมือนเก่า ประวัติจึงไม่เพี้ยน
 function saveEditProd(){
   if(!_editProdId)return;
   const name=document.getElementById('ep-name').value.trim();
@@ -1807,8 +2174,39 @@ function saveEditProd(){
   const empId=document.getElementById('ep-emp').value;
   const shopId=document.getElementById('ep-shop').value;
   const shopName=shopId?S.shops[shopId]?.name||'':'';
-  R.product(_editProdId).update({name,unit,employeeId:empId,shopId,shopName})
-    .then(()=>{toast('✅ แก้ไขแล้ว');closeEditProd()}).catch(fbErr);
+
+  const par=parseOptNum(document.getElementById('ep-par').value);
+  const min=parseOptNum(document.getElementById('ep-min').value);
+
+  const updates={};
+  updates[`${ROOT}/products/${_editProdId}/name`]=name;
+  updates[`${ROOT}/products/${_editProdId}/unit`]=unit;
+  updates[`${ROOT}/products/${_editProdId}/par`]=par;
+  updates[`${ROOT}/products/${_editProdId}/min`]=min;
+  updates[`${ROOT}/products/${_editProdId}/employeeId`]=empId;
+  updates[`${ROOT}/products/${_editProdId}/shopId`]=shopId;
+  updates[`${ROOT}/products/${_editProdId}/shopName`]=shopName;
+
+  let touched=0;
+  Object.entries(S.sessions).forEach(([sid,sess])=>{
+    if(sess.shoppingDone) return;            // รอบที่ปิดแล้ว → แช่แข็งเป็นประวัติ
+    if(sess.cleared) return;                 // รอบที่ถูกเคลียร์ทิ้ง → ไม่ต้องยุ่ง
+    Object.entries(sess.entries||{}).forEach(([eid,entry])=>{
+      const item=(entry.items||{})[_editProdId];
+      if(!item) return;
+      const base=`${ROOT}/sessions/${sid}/entries/${eid}/items/${_editProdId}`;
+      updates[`${base}/name`]=name;
+      updates[`${base}/unit`]=unit;
+      updates[`${base}/shopId`]=shopId;
+      updates[`${base}/shopName`]=shopName;
+      touched++;
+    });
+  });
+
+  db.ref().update(updates).then(()=>{
+    toast(touched?`✅ แก้ไขแล้ว · อัพเดตรอบที่กำลังใช้ด้วย (${touched} รายการ)`:'✅ แก้ไขแล้ว');
+    closeEditProd();
+  }).catch(fbErr);
 }
 
 /* ── Searchable shop dropdown helpers ── */
@@ -1847,7 +2245,10 @@ document.addEventListener('click',e=>{
   if(wrap&&!wrap.contains(e.target)) epShopClose();
 });
 function delProduct(id){
-  showModal('ลบสินค้า','ลบสินค้านี้?',()=>{R.product(id).remove().then(()=>toast('🗑️ ลบแล้ว')).catch(fbErr)});
+  const openCnt=countOpenSessionHits((item,empId,pid)=>pid===id);
+  let msg='ลบสินค้านี้?';
+  if(openCnt) msg=`⚠️ สินค้านี้ถูกจดไว้ในรอบที่ยังไม่ปิดอยู่ ${openCnt} รายการ — ลบแล้วของที่จดไว้ในรอบนั้นยังอยู่ แต่จะไม่มีให้จดในรอบใหม่ ยืนยันจะลบไหม?`;
+  showModal('ลบสินค้า',msg,()=>{R.product(id).remove().then(()=>toast('🗑️ ลบแล้ว')).catch(fbErr)});
 }
 
 // ══════════════════════════════════════════════
@@ -1901,6 +2302,7 @@ function renderJotStart(){
 
 // พาไปหน้า "สรุป" เพื่อจัดการรอบเก่าที่ค้างอยู่ (ยังไม่ได้กด "ซื้อของเสร็จแล้ว")
 function goToPendingRound(){
+  if(pinLocked()){ _pinTarget='summary'; openPinModal(); return }
   document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.tb-btn').forEach(b=>b.classList.remove('on'));
   document.getElementById('pg-summary').classList.add('on');
@@ -1952,7 +2354,7 @@ function startSession(){
       toast('⚠️ มีรอบเก่าที่ยังไม่ได้ไปซื้อของค้างอยู่ ให้จัดการให้เสร็จก่อน');
       return;
     }
-    R.sessions().push({date,completed:false,cleared:false,shoppingDone:false,createdAt:Date.now()})
+    R.sessions().push({date,dow:dowOf(date),completed:false,cleared:false,shoppingDone:false,createdAt:Date.now()})
       .then(ref=>{activeSessionId=ref.key;openEmpBoard()}).catch(fbErr);
   }).catch(fbErr);
 }
@@ -1984,7 +2386,7 @@ function renderEmpGrid(){
     const prods=prodsForEmp(id);
     const entry=entries[id];
     const complete=empUndecided(id,entry).length===0;
-    const itemCount=Object.values(entry?.items||{}).filter(it=>!it.skipped&&parseFloat(it.qty)>0).length;
+    const itemCount=Object.values(entry?.items||{}).filter(it=>!it.skipped&&(parseFloat(it.qty)>0||(it.remain!=null&&it.remain!==''))).length;
     return `<button class="emp-tile ${complete?'done':''}" onclick="openEmpInput('${id}')">
       <div class="emp-tile-name">${esc(e.name)}</div>
       <div class="emp-tile-sub">${complete?`✔ ${itemCount} รายการ`:`${prods.length} สินค้า`}</div>
@@ -2007,17 +2409,27 @@ function openEmpInput(empId){
 
 // ── PRODUCT ORDER per employee ──
 // key: empId → [prodId, prodId, ...]
-const _empProdOrder = {};
+// [FIX #10] เดิมเก็บลำดับไว้ในหน่วยความจำเฉยๆ รีเฟรช/ปิดแอพทีนีก็หาย ต้องลากจัดใหม่ทุกรอบ
+// แก้แล้ว: เซฟลง localStorage เหมือนลำดับร้านค้า ลำดับที่จัดเองจึงอยู่ต่อเนื่อง (เก็บต่อเครื่อง เหมือนเครื่องหมายติ๊ก)
+const EMP_ORDER_KEY = 'empProdOrder_v1';
+let _empProdOrder = (() => {
+  try { return JSON.parse(localStorage.getItem(EMP_ORDER_KEY)) || {}; } catch(e) { return {}; }
+})();
+function saveEmpProdOrder(){
+  try { localStorage.setItem(EMP_ORDER_KEY, JSON.stringify(_empProdOrder)); } catch(e) {}
+}
 
 function getEmpProdOrder(empId) {
   const base = prodsForEmp(empId).map(([id]) => id);
-  if (!_empProdOrder[empId]) {
+  if (!Array.isArray(_empProdOrder[empId])) {
     _empProdOrder[empId] = [...base];
+    saveEmpProdOrder();
   } else {
     // เพิ่ม id ใหม่ที่ยังไม่มีในลิสต์, ลบ id ที่หายไป
     const existing = new Set(_empProdOrder[empId]);
     base.forEach(id => { if (!existing.has(id)) _empProdOrder[empId].push(id); });
     _empProdOrder[empId] = _empProdOrder[empId].filter(id => base.includes(id));
+    saveEmpProdOrder();
   }
   return _empProdOrder[empId];
 }
@@ -2027,6 +2439,7 @@ function moveEmpProd(empId, idx, dir) {
   const swapIdx = idx + dir;
   if (swapIdx < 0 || swapIdx >= order.length) return;
   [order[idx], order[swapIdx]] = [order[swapIdx], order[idx]];
+  saveEmpProdOrder();
   // ใช้ค่าที่กำลังพิมพ์อยู่บนจอ (ยังไม่กดบันทึก) แทนข้อมูลเก่าจาก Firebase กันตัวเลขที่กรอกไว้หายตอนจัดเรียง
   renderEmpProducts(collectItems());
 }
@@ -2057,6 +2470,7 @@ function prodDrop(e, toIdx) {
   const order = getEmpProdOrder(_dragProdEmpId);
   const [moved] = order.splice(_dragProdIdx, 1);
   order.splice(toIdx, 0, moved);
+  saveEmpProdOrder();
   _dragProdIdx = null;
   document.querySelectorAll('#emp-prod-list .prod-row').forEach(el => el.classList.remove('dragging', 'drag-over'));
   // ใช้ค่าที่กำลังพิมพ์อยู่บนจอ (ยังไม่กดบันทึก) แทนข้อมูลเก่าจาก Firebase กันตัวเลขที่กรอกไว้หายตอนลากจัดเรียง
@@ -2098,6 +2512,7 @@ function initProdTouchDrag(empId) {
         const order = getEmpProdOrder(empId);
         const [moved] = order.splice(touchIdx, 1);
         order.splice(toIdx, 0, moved);
+        saveEmpProdOrder();
         // ใช้ค่าที่กำลังพิมพ์อยู่บนจอ (ยังไม่กดบันทึก) แทนข้อมูลเก่าจาก Firebase กันตัวเลขที่กรอกไว้หายตอนลากจัดเรียง
         renderEmpProducts(collectItems());
       }
@@ -2121,10 +2536,14 @@ function renderEmpProducts(savedItems){
 
   el.innerHTML=prods.map(([id,p], idx)=>{
     const saved=savedItems[id];
+    // [PHASE 1B] สินค้าที่ตั้ง par ไว้ → ช่องนี้ให้จด "ของที่เหลือ" แล้วระบบคิดจำนวนซื้อให้เอง
+    // สินค้าที่ไม่ได้ตั้ง par → ทำงานเหมือนเดิมทุกอย่าง (กรอกจำนวนที่จะซื้อโดยตรง)
+    const hasPar=parseOptNum(p.par)!=null;
+    const remainStr=(saved&&saved.remain!=null&&saved.remain!=='')?String(saved.remain):'';
     const qty=saved?.qty||'';
     const note=saved?.note||'';
     const isSkipped=!!(saved?.skipped);
-    const hasVal=qty!==''&&!isSkipped;
+    const hasVal=hasPar?(remainStr!==''&&!isSkipped):(qty!==''&&!isSkipped);
     const hasNote=!!note;
     const nameClass=isSkipped?'skipped':hasVal?'bought':'';
     const isFirst = idx === 0, isLast = idx === prods.length - 1;
@@ -2135,7 +2554,7 @@ function renderEmpProducts(savedItems){
         ondrop="prodDrop(event,${idx})">
       ${!isSearching ? `<span class="drag-handle" title="ลากเพื่อเรียง" style="align-self:center" draggable="true" ondragstart="prodDragStart(event,'${currentEmpId}',${idx})">⠿</span>` : ''}
       <div class="prod-row-info" style="min-width:0;flex:1">
-        <div class="prod-row-name ${nameClass}" id="pn-${id}">${esc(p.name)}</div>
+        <div class="prod-row-name ${nameClass}" id="pn-${id}">${esc(p.name)}${hasPar?` <span style="font-size:.68rem;font-weight:700;color:var(--brand);background:var(--brand-light);padding:1px 6px;border-radius:6px;white-space:nowrap">จดของที่เหลือ</span>`:''}</div>
         <div class="prod-row-shop">${p.shopName?`🏪 ${esc(p.shopName)}`:''}</div>
         <div class="note-wrap ${hasNote?'open':''}" id="notewrap-${id}">
           <input type="text" class="note-inp" id="note-${id}"
@@ -2158,7 +2577,8 @@ function renderEmpProducts(savedItems){
           onclick="toggleSkipItem('${id}')" title="ไม่ซื้อวันนี้">🚫</button>
         <button class="qty-btn" onclick="qtyChange('${id}',-0.5)" ${isSkipped?'disabled':''}>−</button>
         <input type="number" class="qty-num ${hasVal?'has-val':''}" id="qty-${id}"
-          value="${isSkipped?'':(hasVal?qty:'')}" min="0" step="0.5" placeholder="${isSkipped?'✕':'—'}"
+          data-mode="${hasPar?'remain':'qty'}"
+          value="${isSkipped?'':(hasPar?remainStr:(hasVal?qty:''))}" min="0" step="0.5" placeholder="${isSkipped?'✕':(hasPar?'เหลือ?':'—')}"
           oninput="qtyInput('${id}',this)" ${isSkipped?'disabled':''} />
         <button class="qty-btn" onclick="qtyChange('${id}',0.5)" ${isSkipped?'disabled':''}>+</button>
         <div class="qty-unit">${esc(p.unit||'')}</div>
@@ -2179,7 +2599,9 @@ function filterEmpProducts(){
 
 function qtyInput(id,el){
   const val=parseFloat(el.value);
-  const hasVal=el.value!==''&&!isNaN(val)&&val>0;
+  const isRemain=el.dataset.mode==='remain';
+  // ช่อง "เหลือเท่าไหร่" ใส่ 0 ได้ (ของหมด) ต่างจากช่องจำนวนซื้อที่ต้องมากกว่า 0
+  const hasVal=el.value!==''&&!isNaN(val)&&(isRemain?val>=0:val>0);
   el.className='qty-num'+(hasVal?' has-val':'');
   el.removeAttribute('disabled');
   el.placeholder='—';
@@ -2188,6 +2610,7 @@ function qtyInput(id,el){
   if(skipBtn){skipBtn.classList.remove('is-skipped');skipBtn.dataset.skipped='0';}
   const nameEl=document.getElementById('pn-'+id);
   if(nameEl) nameEl.className='prod-row-name'+(hasVal?' bought':'');
+  if(isRemain) updateParHint(id,el);
   scheduleAutosave(id);
 }
 
@@ -2195,7 +2618,7 @@ function qtyChange(id,delta){
   const el=document.getElementById('qty-'+id);
   const cur=parseFloat(el.value)||0;
   const next=Math.max(0,cur+delta);
-  el.value=next||'';
+  el.value=(next===0&&el.dataset.mode!=='remain')?'':next;
   qtyInput(id,el);
 }
 
@@ -2260,9 +2683,18 @@ function autosaveItem(id,empId,sessionId){
   const note=noteEl?.value.trim()||'';
   const noteToShop=note ? (document.getElementById('notetoshop-'+id)?.checked||false) : false;
   const ref=R.session(sessionId).child(`entries/${empId}/items/${id}`);
+  pruneDupItemCopies(sessionId,empId,id);
+  const isRemain=inp.dataset.mode==='remain';
   if(isSkipped){
     ref.set({name:p.name,unit:p.unit||'',qty:0,shopId:p.shopId||'',shopName:p.shopName||'',note,noteToShop,skipped:true}).catch(fbErr);
-  } else if(!isNaN(qty)&&qty>0){
+  } else if(isRemain && inp.value.trim()!=='' && !isNaN(qty) && qty>=0){
+    // [PHASE 1B] พนักงานกรอก "ของที่เหลือ" → ระบบคิดจำนวนซื้อให้ แล้วเก็บทั้งสองค่าไว้
+    const sug=calcSuggested(p.par,p.min,qty);
+    const buy=(sug==null?0:sug);
+    ref.set({name:p.name,unit:p.unit||'',qty:buy,remain:qty,suggestedQty:buy,
+      parUsed:parseOptNum(p.par),minUsed:parseOptNum(p.min),
+      shopId:p.shopId||'',shopName:p.shopName||'',note,noteToShop}).catch(fbErr);
+  } else if(!isRemain && !isNaN(qty)&&qty>0){
     ref.set({name:p.name,unit:p.unit||'',qty,shopId:p.shopId||'',shopName:p.shopName||'',note,noteToShop}).catch(fbErr);
   } else if(note){
     // เดิม: ถ้ายังไม่ใส่จำนวน จะ ref.remove() ทิ้งทั้งก้อนทันที รวมโน้ตที่พิมพ์ไว้ก่อนหน้าด้วย
@@ -2270,6 +2702,13 @@ function autosaveItem(id,empId,sessionId){
     // เพราะ empUndecided() เช็คแค่ qty>0 หรือ skipped เท่านั้น) ไม่ให้โน้ตหายไปเฉยๆ
     ref.set({name:p.name,unit:p.unit||'',qty:0,shopId:p.shopId||'',shopName:p.shopName||'',note,noteToShop}).catch(fbErr);
   } else {
+    // [FIX #18] เดิม: พิมพ์ 0 หรือติดลบ ระบบลบข้อมูลเงียบๆ แต่ตัวเลขยังค้างบนหน้าจอ คนใช้คิดว่าบันทึกแล้ว
+    // แก้แล้ว: ถ้าพิมพ์อะไรไว้แต่ใช้ไม่ได้ ให้เตือนแล้วล้างช่องให้ตรงกับข้อมูลจริง
+    if(inp.value.trim()!==''){
+      toast(isRemain?'⚠️ จำนวนที่เหลือติดลบไม่ได้ — ตัวเลขนี้ยังไม่ถูกบันทึก':'⚠️ จำนวนต้องมากกว่า 0 — ตัวเลขนี้ยังไม่ถูกบันทึก');
+      inp.value='';
+      if(isRemain) updateParHint(id,inp);
+    }
     ref.remove().catch(fbErr); // ไม่มีทั้งจำนวนและโน้ต → ถือว่ายังไม่ตัดสินใจจริงๆ เอาออกจากที่เคยบันทึกไว้
   }
 }
@@ -2280,7 +2719,7 @@ function empUndecided(empId, entry){
   const itemsMap=entry?.items||{};
   return prodsForEmp(empId).filter(([id])=>{
     const it=itemsMap[id];
-    return !(it && (it.skipped || (parseFloat(it.qty)>0)));
+    return !(it && (it.skipped || (parseFloat(it.qty)>0) || (it.remain!=null&&it.remain!=='')));
   });
 }
 
@@ -2311,9 +2750,31 @@ function collectItems(){
         noteToShop,
         skipped:true
       };
+    } else if(inp.dataset.mode==='remain' && inp.value.trim()!=='' && !isNaN(qty) && qty>=0){
+      // [PHASE 1B] โหมดจดของเหลือ — เก็บทั้งของที่เหลือและจำนวนที่ระบบคิดให้
+      const _sug=calcSuggested(p.par,p.min,qty);
+      const _buy=(_sug==null?0:_sug);
+      items[id]={
+        name:p.name,unit:p.unit||'',qty:_buy,remain:qty,suggestedQty:_buy,
+        parUsed:parseOptNum(p.par),minUsed:parseOptNum(p.min),
+        shopId:p.shopId||'',shopName:p.shopName||'',
+        note:noteVal||oldItems[id]?.note||'',
+        noteToShop
+      };
     } else if(!isNaN(qty)&&qty>0){
       items[id]={
         name:p.name,unit:p.unit||'',qty,
+        shopId:p.shopId||'',shopName:p.shopName||'',
+        note:noteVal||oldItems[id]?.note||'',
+        noteToShop
+      };
+    } else if(noteVal || oldItems[id]?.note){
+      // [FIX #2] เดิม: ของที่ "มีแต่หมายเหตุ ยังไม่ใส่จำนวน" จะหล่นหายจาก collectItems()
+      // พอพิมพ์ค้นหา / กดจัดลำดับ (ซึ่งวาดหน้าใหม่ด้วย collectItems()) หมายเหตุที่พิมพ์ไว้จะหายจากจอ
+      // ทั้งที่ autosave เซฟลง Firebase ไว้แล้ว — แก้แล้ว: เก็บไว้ด้วย qty:0
+      // (qty:0 ยังนับว่า "ยังไม่ตัดสินใจ" เหมือนเดิม เพราะ empUndecided() เช็คแค่ qty>0 หรือ skipped)
+      items[id]={
+        name:p.name,unit:p.unit||'',qty:0,
         shopId:p.shopId||'',shopName:p.shopName||'',
         note:noteVal||oldItems[id]?.note||'',
         noteToShop
@@ -2379,6 +2840,8 @@ function finishSession(){
   const doFinish=()=>{
     R.session(activeSessionId).update({completed:true,completedAt:Date.now()}).then(()=>{
       toast('✅ เสร็จสิ้น!');
+      // ถ้าล็อคอยู่ (เครื่องพนักงาน) — อยู่หน้าจดต่อ ไม่พาไปหน้าสรุป
+      if(pinLocked()) return;
       // go to summary
       document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
       document.querySelectorAll('.tb-btn').forEach(b=>b.classList.remove('on'));
@@ -2444,15 +2907,20 @@ function qaSelect(id){
   document.getElementById('qa-qty').focus();
 }
 function qaCancel(){qaSelected=null;closeSuggestBoxById('qa-suggest');document.getElementById('qa-confirm').style.display='none';document.getElementById('qa-search').value=''}
+// [FIX #8] เดิม: ใช้ .set() เขียนทับทั้งก้อน โดยไม่ใส่ noteToShop กับ skipped ลงไปด้วย
+// ผล: เคยติ๊ก "ส่งข้อความนี้ให้ร้าน" ไว้ แล้วมาเพิ่มของชิ้นเดิมซ้ำที่ช่องเพิ่มเร็ว เครื่องหมายส่งร้านหายเฉยๆ
+// แก้แล้ว: อ่านค่าเก่าของชิ้นนั้นมาเก็บไว้ก่อน แล้วเขียนครบทุกช่อง รวม skipped:false (เพิ่มเร็วคือการเปลี่ยนใจว่าจะซื้อ)
 function qaConfirm(){
   if(!qaSelected)return;
   const qty=parseFloat(document.getElementById('qa-qty').value);
   if(isNaN(qty)||qty<=0){toast('กรุณากรอกจำนวน');return}
   const note=document.getElementById('qa-note').value.trim();
   const p=qaSelected;
-  const empId=p.employeeId||NONE_ID;
+  const empId=resolveItemEmpId(S.sessions[activeSessionId],p.id,p);
+  const prev=S.sessions[activeSessionId]?.entries?.[empId]?.items?.[p.id]||{};
+  pruneDupItemCopies(activeSessionId,empId,p.id);
   R.session(activeSessionId).child(`entries/${empId}/items/${p.id}`)
-    .set({name:p.name,unit:p.unit||'',qty,shopId:p.shopId||'',shopName:p.shopName||'',note})
+    .set({name:p.name,unit:p.unit||'',qty,shopId:p.shopId||'',shopName:p.shopName||'',note,noteToShop:!!prev.noteToShop,skipped:false})
     .then(()=>{toast(`✅ เพิ่ม ${p.name} แล้ว`);qaCancel();renderQaList()}).catch(fbErr);
 }
 function renderQaList(){
@@ -2529,13 +2997,21 @@ function sqOpenForm(productId, customName){
   sqPopulateShop();
 
   // ─── ดูว่าสินค้านี้มีในรายการ session ปัจจุบันไหม ───
-  function findExisting(name, shopId){
+  // [FIX #17] เดิมจับคู่ด้วยชื่อเป๊ะๆ + ร้าน → สะกด/เว้นวรรคต่างนิดเดียวกลายเป็นของชิ้นใหม่ เกิดของซ้ำ
+  // แก้แล้ว: รู้รหัสสินค้าให้จับด้วยรหัสก่อน (ตรงทุกพนักงาน) แล้วค่อยเทียบชื่อแบบตัดช่องว่าง
+  function findExisting(name, shopId, wantPid){
     const latest=getLatestSession();if(!latest)return null;
     const [,sess]=latest;
-    for(const [empId,entry] of Object.entries(sess.entries||{})){
+    const entries=Object.entries(sess.entries||{});
+    if(wantPid){
+      for(const [empId,entry] of entries){
+        const hit=(entry.items||{})[wantPid];
+        if(hit) return {empId,pid:wantPid,item:hit};
+      }
+    }
+    for(const [empId,entry] of entries){
       for(const [pid,item] of Object.entries(entry.items||{})){
-        // จับคู่ด้วยชื่อ + ร้านค้า (ถ้ามี)
-        const sameName=item.name===name;
+        const sameName=normName(item.name)===normName(name);
         const sameShop=shopId?item.shopId===shopId:true;
         if(sameName&&sameShop) return {empId,pid,item};
       }
@@ -2549,7 +3025,7 @@ function sqOpenForm(productId, customName){
     document.getElementById('sq-search').value=p.name;
 
     // ตรวจว่ามีในรายการแล้วหรือไม่
-    const existing=findExisting(p.name, p.shopId||'');
+    const existing=findExisting(p.name, p.shopId||'', productId);
     if(existing){
       // โหมดแก้ไข — ดึงค่าเดิมมาแสดง
       sqEditMode={empId:existing.empId,pid:existing.pid};
@@ -2655,7 +3131,8 @@ function sqConfirm(){
     // เพิ่มใหม่
     const p=sqSelected;
     const itemKey=p?.id||name.replace(/[^a-zA-Zก-๙0-9]/g,'_').slice(0,30)+'_'+Date.now();
-    const empId=(p?.employeeId)||NONE_ID;
+    const empId=resolveItemEmpId(S.sessions[sid],itemKey,p);
+    pruneDupItemCopies(sid,empId,itemKey);
     R.session(sid).child(`entries/${empId}/items/${itemKey}`)
       .set({name,unit,qty,shopId,shopName,note,noteToShop,skipped:false})
       .then(()=>{toast(`✅ เพิ่ม ${name} แล้ว`);sqCancel();renderSummary()}).catch(fbErr);
@@ -2694,8 +3171,13 @@ function renderSummary(){
   const [sid,sess]=latest;
   const sumTicked=getSumTicked(sid);
   const allItems=[];
+  // [FIX #14] เดิมนับทุกกุ๊จแจใน items รวมของที่กด "ไม่ซื้อ" และของที่มีแต่โน้ต → ตัวเลขด้านบนมากกว่าของที่เห็นจริง
   Object.values(sess.entries||{}).forEach(entry=>{
-    Object.values(entry.items||{}).forEach(item=>allItems.push(item));
+    Object.values(entry.items||{}).forEach(item=>{
+      if(item.skipped) return;
+      if(!(parseFloat(item.qty)>0)) return;
+      allItems.push(item);
+    });
   });
   document.getElementById('sum-title').textContent=`สรุป · ${fmtDate(sess.date)}`;
   document.getElementById('sum-meta').textContent=`${allItems.length} รายการ`;
@@ -2715,9 +3197,24 @@ function renderSummary(){
     });
   });
 
+  // [FIX #14b] ล้าง key ที่ติ๊กไว้แต่ของชิ้นนั้นไม่มีอยู่ในรอบนี้แล้ว (ทำเหมือนหน้า "เดิน")
+  // ไม่ล้าง ตัวนับจะเกินจริง เช่นขึ้น 3/2 หรือขึ้นว่าครบทั้งที่ยังซื้อไม่ครบ
+  {
+    const curKeys=new Set();
+    Object.values(byShop).forEach(g=>g.items.forEach(it=>curKeys.add(it._ikey)));
+    let prunedSum=false;
+    Object.keys(sumTicked).forEach(k=>{ if(!curKeys.has(k)){ delete sumTicked[k]; prunedSum=true } });
+    if(prunedSum) saveSumStore(sumStore);
+  }
+
   let html='';
   let shopNum=0;
-  [...sortedShops().map(s=>s.id),'__none'].forEach(key=>{
+  // [FIX #1] เดิม: ไล่แสดงเพียง [ร้านที่มีอยู่ตอนนี้, __none]
+  // ถ้าร้านถูกลบหลังจดของไปแล้ว ของของร้านนั้นจะไม่ถูกไล่ถึงเลย — หายจากหน้าสรุปทั้งที่ข้อมูลยังอยู่
+  // แก้แล้ว: ต่อท้ายด้วยกลุ่มร้านที่ "ไม่มีอยู่ในรายชื่อร้านแล้วแต่ยังมีของค้างอยู่" ก่อน __none
+  const knownShopIds=new Set(sortedShops().map(s=>s.id));
+  const orphanKeys=Object.keys(byShop).filter(k=>k!=='__none'&&!knownShopIds.has(k));
+  [...sortedShops().map(s=>s.id),...orphanKeys,'__none'].forEach(key=>{
     const g=byShop[key];
     if(!g||!g.items.length) return;
     shopNum++;
@@ -2765,7 +3262,12 @@ function renderSqList(){
   const el=document.getElementById('sq-list');if(!el)return;
   const all=[];
   Object.entries(sess.entries||{}).forEach(([empId,entry])=>{
-    Object.entries(entry.items||{}).forEach(([pid,item])=>{all.push({pid,empId,...item})});
+    Object.entries(entry.items||{}).forEach(([pid,item])=>{
+      // [FIX #9] เดิม: เอาทุกรายการมาแสดง รวมของที่ยังไม่ใส่จำนวน (มีแต่โน้ต) → โชว์เลข 0 และทำให้ตัวเลขบนแท็บนับเกินจริง
+      // แก้แล้ว: นับ/แสดงเฉพาะของที่มีจำนวนจริง (qty>0) กับของที่กด "ไม่ซื้อ" เท่านั้น
+      if(!item.skipped && !(parseFloat(item.qty)>0)) return;
+      all.push({pid,empId,...item});
+    });
   });
   if(!all.length){el.innerHTML='';return}
   const activeItems=all.filter(it=>!it.skipped);
@@ -2849,13 +3351,14 @@ function tapSumItem(sid, shopKey, ikey, blockId, total){
   const now=Date.now();
   const last=parseInt(el.dataset.last||'0');
   el.dataset.last=now;
-  if(now-last<400){
+  if(now-last<450){
     // double-tap: toggle ticked
     const sumTicked=getSumTicked(sid);
     sumTicked[ikey]=!sumTicked[ikey];
     saveSumStore(sumStore);
     el.classList.toggle('ticked', sumTicked[ikey]);
     updateShopProgress(shopKey, blockId, total);
+    el.dataset.last='0'; // [FIX] รีเซ็ตนับเวลา กันแตะครั้งที่ 3 กลายเป็น toggle สองรอบหมุนกลับที่เดิม
   }
 }
 function updateShopProgress(shopKey, blockId, total){
@@ -2870,11 +3373,51 @@ function updateShopProgress(shopKey, blockId, total){
   else block.classList.remove('all-done');
 }
 
+// [PHASE 1A] ปูมการซื้อ (purchase log) — สร้างตอน "ปิดรอบ" เท่านั้น 1 แถวต่อ 1 สินค้า
+// ทำไมต้องแช่แข็งแยก: ชื่อสินค้า/ร้าน/พนักงาน แก้ทีหลังได้ แต่รายงานย้อนหลังต้องเห็นค่า ณ วันนั้น
+// ถ้าเปิดรอบคืนแล้วปิดใหม่ ปูมจะถูกสร้างทับด้วยข้อมูลล่าสุด
+function buildSessionLog(sess){
+  const rows=[];
+  const date=sess?.date||today();
+  const dow=(sess&&sess.dow!=null)?sess.dow:dowOf(date);
+  Object.entries(sess?.entries||{}).forEach(([eid,entry])=>{
+    if(!entry) return;
+    Object.entries(entry.items||{}).forEach(([pid,it])=>{
+      if(!it) return;
+      const p=S.products[pid]||{};
+      const num=v=>(v==null||v==='')?null:(isNaN(parseFloat(v))?null:parseFloat(v));
+      rows.push({
+        productId:pid,
+        name:it.name||p.name||'',
+        unit:it.unit||p.unit||'',
+        qty:Number(it.qty)||0,
+        remain:num(it.remain),                                  // เฟส 1B จะเริ่มมีค่าจริง
+        suggestedQty:num(it.suggestedQty),                      // เฟส 1B
+        parUsed:num(it.parUsed!=null?it.parUsed:p.par),
+        minUsed:num(it.minUsed!=null?it.minUsed:p.min),
+        shopId:it.shopId||'',
+        shopName:it.shopName||p.shopName||'',
+        employeeId:eid,
+        empName:(eid===NONE_ID?NONE_NAME:(S.employees[eid]?.name||'')),
+        note:it.note||'',
+        tags:it.tags||null,
+        skipped:!!it.skipped,
+        editedByOwner:!!it.editedByOwner
+      });
+    });
+  });
+  return {version:1,date,dow,closedAt:Date.now(),rowCount:rows.length,rows};
+}
+
 function markDone(){
   const latest=getLatestSession();
   if(!latest){toast('ไม่มีรายการ');return}
   showModal('ซื้อของเสร็จแล้ว?',`ยืนยันว่าซื้อของวันที่ ${fmtDate(latest[1].date)} เสร็จแล้ว? รายการนี้จะย้ายไปประวัติ`,()=>{
-    R.session(latest[0]).update({shoppingDone:true,shoppingDoneAt:Date.now()}).then(()=>{
+    let _log=null;
+    try{ _log=buildSessionLog(latest[1]); }catch(e){ console.error('buildSessionLog',e); }
+    const _upd={shoppingDone:true,shoppingDoneAt:Date.now()};
+    if(_log) _upd.log=_log;
+    R.session(latest[0]).update(_upd).then(()=>{
       if(typeof walkStore!=='undefined'){delete walkStore[latest[0]];saveWalkStore(walkStore);}
       if(typeof sumStore!=='undefined'){delete sumStore[latest[0]];saveSumStore(sumStore);}
       toast('✅ บันทึกเสร็จแล้ว');renderSummary();
@@ -2896,7 +3439,9 @@ function renderHistList(){
     .sort((a,b)=>b[1].date?.localeCompare(a[1].date||'')||0);
   if(!done.length){el.innerHTML='<div class="empty"><div class="empty-icon">📅</div>ยังไม่มีประวัติ</div>';return}
   el.innerHTML=done.map(([id,sess])=>{
-    const total=Object.values(sess.entries||{}).reduce((s,e)=>s+Object.keys(e.items||{}).length,0);
+    // [FIX #7] เดิมนับทุกกุ๊ญแจใน items รวมของที่กดไม่ซื้อ/จำนวน 0 → ตัวเลขเกินจริง และไม่ตรงกับจำนวนที่เห็นข้างใน
+    const total=Object.values(sess.entries||{}).reduce((s,e)=>
+      s+Object.values(e.items||{}).filter(it=>!it.skipped&&parseFloat(it.qty)>0).length,0);
     return `<div class="hist-row" onclick="openHistDetail('${id}')">
       <div style="flex:1">
         <div class="hist-date">${fmtDate(sess.date)}</div>
@@ -2917,17 +3462,346 @@ function openHistDetail(sid){
 }
 function closeHistDetail(){viewingSessionId=null;renderHistList()}
 
+// ══════════════════════════════
+// REPORT (เฟส 2) — อ่านอย่างเดียว: ดึงจากรอบที่ปิดแล้วเท่านั้น ไม่เขียนอะไรกลับเลย
+// ══════════════════════════════
+const DOW_TH=['อา.','จ.','อ.','พ.','พฤ.','ศ.','ส.'];
+const REPORT_STATE={view:'week',weekOffset:0,pid:''};
+
+function rpYmd(d){
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), dd=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${dd}`;
+}
+function rpAddDays(dateStr,n){
+  const d=new Date(dateStr+'T00:00:00'); d.setDate(d.getDate()+n); return rpYmd(d);
+}
+// สัปดาห์เริ่มวันจันทร์ (ร้านอาหารนับรอบสัปดาห์แบบนี้เป็นส่วนใหญ่)
+function rpWeekStart(dateStr){
+  const d=new Date(dateStr+'T00:00:00');
+  const back=(d.getDay()+6)%7;
+  d.setDate(d.getDate()-back);
+  return rpYmd(d);
+}
+function rpNum(n){ return Math.round((Number(n)||0)*100)/100 }
+function rpFmtShort(dateStr){
+  if(!dateStr) return '';
+  const d=new Date(dateStr+'T00:00:00');
+  if(isNaN(d.getTime())) return dateStr;
+  return d.toLocaleDateString('th-TH',{day:'numeric',month:'short'});
+}
+
+// ดึงทุกแถวการซื้อจากรอบที่ปิดแล้ว
+// รอบใหม่ → อ่านจาก sess.log (แช่แข็งตอนปิดรอบ ชื่อ/ร้านไม่เพี้ยนภายหลัง)
+// รอบเก่าก่อนมี log → ดึงจาก entries โดยตรง และติดธง legacy ไว้
+function getPurchaseRows(){
+  const out=[];
+  Object.entries(S.sessions||{}).forEach(([sid,sess])=>{
+    if(!sess||!sess.completed||!sess.shoppingDone||sess.cleared) return;
+    const date=sess.date||'';
+    const dow=(sess.dow!=null)?sess.dow:dowOf(date);
+    const logRows=sess.log&&sess.log.rows?Object.values(sess.log.rows):null;
+    if(logRows&&logRows.length){
+      logRows.forEach(r=>{ if(r) out.push(Object.assign({sessionId:sid,date:sess.log.date||date,dow:(sess.log.dow!=null?sess.log.dow:dow),legacy:false},r)) });
+      return;
+    }
+    Object.entries(sess.entries||{}).forEach(([eid,entry])=>{
+      Object.entries((entry||{}).items||{}).forEach(([pid,it])=>{
+        if(!it) return;
+        const p=S.products[pid]||{};
+        out.push({sessionId:sid,date,dow,productId:pid,
+          name:it.name||p.name||'',unit:it.unit||p.unit||'',
+          qty:Number(it.qty)||0,
+          remain:(it.remain==null?null:Number(it.remain)),
+          suggestedQty:(it.suggestedQty==null?null:Number(it.suggestedQty)),
+          parUsed:(it.parUsed==null?null:Number(it.parUsed)),
+          minUsed:(it.minUsed==null?null:Number(it.minUsed)),
+          shopId:it.shopId||'',shopName:it.shopName||'',
+          employeeId:eid,empName:(eid===NONE_ID?NONE_NAME:(S.employees[eid]?.name||'')),
+          note:it.note||'',skipped:!!it.skipped,editedByOwner:!!it.editedByOwner,
+          legacy:true});
+      });
+    });
+  });
+  out.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  return out;
+}
+
+function setReportView(v){ REPORT_STATE.view=v; if(v!=='week') REPORT_STATE.weekOffset=0; renderReport(); }
+function rpShiftWeek(n){ REPORT_STATE.weekOffset+=n; renderReport(); }
+function rpPickProd(v){ REPORT_STATE.pid=v; renderReport(); }
+
+function renderReport(){
+  const v=REPORT_STATE.view;
+  [['week','rp-tab-week'],['prod','rp-tab-prod'],['warn','rp-tab-warn']].forEach(([k,id])=>{
+    const b=document.getElementById(id);
+    if(b) b.className='btn btn-xs '+(v===k?'btn-green':'btn-ghost');
+  });
+  const el=document.getElementById('rp-content');
+  if(!el) return;
+  const rows=getPurchaseRows();
+  if(!rows.length){
+    el.innerHTML=`<div class="card"><div class="card-body"><div class="empty"><div class="empty-icon">📊</div>ยังไม่มีข้อมูล<br><span style="font-size:.85rem;color:var(--ink3)">รายงานจะเริ่มมีข้อมูลหลังจากกด "ซื้อของเสร็จแล้ว" ครั้งแรก</span></div></div></div>`;
+    return;
+  }
+  if(v==='week') el.innerHTML=rpWeekHtml(rows);
+  else if(v==='prod') el.innerHTML=rpProdHtml(rows);
+  else el.innerHTML=rpWarnHtml(rows);
+}
+
+// รวมยอดต่อสินค้า — นับเฉพาะที่ซื้อจริง (qty>0 และไม่ได้กดข้าม)
+function rpAgg(list){
+  const m={};
+  list.forEach(r=>{
+    if(r.skipped) return;
+    const q=Number(r.qty)||0;
+    if(q<=0) return;
+    const k=r.productId||('name:'+r.name);
+    if(!m[k]) m[k]={key:k,name:r.name,unit:r.unit,qty:0,times:0};
+    m[k].qty+=q; m[k].times++;
+    if(!m[k].unit&&r.unit) m[k].unit=r.unit;
+  });
+  return m;
+}
+
+function rpWeekHtml(rows){
+  const thisWeek=rpWeekStart(today());
+  const start=rpAddDays(thisWeek,-7*REPORT_STATE.weekOffset);
+  const end=rpAddDays(start,6);
+  const pStart=rpAddDays(start,-7), pEnd=rpAddDays(start,-1);
+  const inR=(d,a,b)=>!!d&&d>=a&&d<=b;
+  const cur=rows.filter(r=>inR(r.date,start,end));
+  const prv=rows.filter(r=>inR(r.date,pStart,pEnd));
+  const A=rpAgg(cur), B=rpAgg(prv);
+  const keys=Object.keys(A).sort((x,y)=>A[y].qty-A[x].qty);
+  const roundsCur=new Set(cur.map(r=>r.sessionId)).size;
+  const roundsPrv=new Set(prv.map(r=>r.sessionId)).size;
+  const skipCnt=cur.filter(r=>r.skipped||(Number(r.qty)||0)<=0).length;
+
+  const label=REPORT_STATE.weekOffset===0?'สัปดาห์นี้':(REPORT_STATE.weekOffset===1?'สัปดาห์ก่อน':`${REPORT_STATE.weekOffset} สัปดาห์ก่อน`);
+
+  let body='';
+  if(!keys.length){
+    body=`<div class="empty">สัปดาห์นี้ยังไม่มีรอบที่ปิดแล้ว</div>`;
+  } else {
+    body=`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.88rem">
+      <tr style="background:var(--bg)">
+        <th style="text-align:left;padding:7px 8px">สินค้า</th>
+        <th style="text-align:right;padding:7px 8px;white-space:nowrap">ช่วงนี้</th>
+        <th style="text-align:right;padding:7px 8px;white-space:nowrap">ก่อนหน้า</th>
+        <th style="text-align:right;padding:7px 8px;white-space:nowrap">ต่าง</th>
+      </tr>`;
+    keys.forEach(k=>{
+      const a=A[k], b=B[k];
+      const bq=b?b.qty:0;
+      let delta='<span style="color:var(--ink4)">—</span>';
+      if(bq>0){
+        const pct=Math.round((a.qty-bq)/bq*100);
+        if(pct>0) delta=`<span style="color:var(--red);font-weight:700">+${pct}%</span>`;
+        else if(pct<0) delta=`<span style="color:var(--brand);font-weight:700">${pct}%</span>`;
+        else delta='<span style="color:var(--ink3)">เท่าเดิม</span>';
+      } else {
+        delta='<span style="color:var(--orange);font-weight:700">ใหม่</span>';
+      }
+      body+=`<tr style="border-top:1px solid var(--border)">
+        <td style="padding:7px 8px">${esc(a.name)}<div style="font-size:.72rem;color:var(--ink4)">ซื้อ ${a.times} ครั้ง</div></td>
+        <td style="padding:7px 8px;text-align:right;font-weight:700;white-space:nowrap">${rpNum(a.qty)} ${esc(a.unit||'')}</td>
+        <td style="padding:7px 8px;text-align:right;color:var(--ink3);white-space:nowrap">${bq>0?rpNum(bq):'—'}</td>
+        <td style="padding:7px 8px;text-align:right;white-space:nowrap">${delta}</td>
+      </tr>`;
+    });
+    body+='</table></div>';
+  }
+
+  const gone=Object.keys(B).filter(k=>!A[k]).map(k=>B[k].name);
+
+  return `<div class="card">
+    <div class="card-body">
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="btn btn-ghost btn-xs" onclick="rpShiftWeek(1)">‹ ก่อนหน้า</button>
+        <div class="bold flex-1" style="text-align:center">${esc(label)}<div style="font-size:.75rem;color:var(--ink3);font-weight:400">${rpFmtShort(start)} – ${rpFmtShort(end)}</div></div>
+        <button class="btn btn-ghost btn-xs" onclick="rpShiftWeek(-1)" ${REPORT_STATE.weekOffset<=0?'disabled style="opacity:.35;pointer-events:none"':''}>ถัดไป ›</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body" style="display:flex;gap:8px;text-align:center">
+      <div style="flex:1"><div style="font-size:1.4rem;font-weight:800;color:var(--brand)">${roundsCur}</div><div style="font-size:.75rem;color:var(--ink3)">รอบที่ไปตลาด<br>(ก่อนหน้า ${roundsPrv})</div></div>
+      <div style="flex:1"><div style="font-size:1.4rem;font-weight:800;color:var(--brand)">${keys.length}</div><div style="font-size:.75rem;color:var(--ink3)">ชนิดสินค้า<br>ที่ซื้อ</div></div>
+      <div style="flex:1"><div style="font-size:1.4rem;font-weight:800;color:var(--ink3)">${skipCnt}</div><div style="font-size:.75rem;color:var(--ink3)">รายการที่<br>ไม่ได้ซื้อ</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr">ซื้ออะไรไปบ้าง (เรียงจากมากไปน้อย)</div>
+    <div class="card-body">${body}
+      ${gone.length?`<div style="margin-top:10px;font-size:.82rem;color:var(--ink3);background:var(--bg);padding:8px 10px;border-radius:var(--rs)">🔎 <b>สัปดาห์ก่อนซื้อ แต่สัปดาห์นี้ไม่ได้ซื้อ:</b> ${esc(gone.slice(0,12).join(', '))}${gone.length>12?' …':''}</div>`:''}
+    </div>
+  </div>`;
+}
+
+function rpProdHtml(rows){
+  const prodMap={};
+  rows.forEach(r=>{ const k=r.productId||('name:'+r.name); if(!prodMap[k]) prodMap[k]={name:r.name,rows:[]}; prodMap[k].rows.push(r); });
+  const keys=Object.keys(prodMap).sort((a,b)=>(prodMap[a].name||'').localeCompare(prodMap[b].name||'','th'));
+  let pid=REPORT_STATE.pid;
+  if(!pid||!prodMap[pid]) pid=keys[0];
+  const sel=`<select class="inp" onchange="rpPickProd(this.value)">${keys.map(k=>`<option value="${escJsAttr(k)}" ${k===pid?'selected':''}>${esc(prodMap[k].name||'—')}</option>`).join('')}</select>`;
+
+  const all=prodMap[pid].rows.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const cutoff=rpAddDays(today(),-29);
+  const last30=all.filter(r=>r.date>=cutoff);
+  const bought=last30.filter(r=>!r.skipped&&(Number(r.qty)||0)>0);
+  const totalQty=bought.reduce((s,r)=>s+(Number(r.qty)||0),0);
+  const unit=(all.find(r=>r.unit)||{}).unit||'';
+  const avg=bought.length?rpNum(totalQty/bought.length):0;
+
+  // แยกตามวันในสัปดาห์ — ดูว่าวันไหนใช้เยอะกว่าปกติ (ใช้ค่าเฉลี่ยต่อครั้ง ไม่ใช่ยอดรวม)
+  const byDow={};
+  const src90=all.filter(r=>r.date>=rpAddDays(today(),-89)&&!r.skipped&&(Number(r.qty)||0)>0);
+  src90.forEach(r=>{ const d=(r.dow==null?dowOf(r.date):r.dow); if(d==null) return; if(!byDow[d]) byDow[d]={sum:0,n:0}; byDow[d].sum+=Number(r.qty)||0; byDow[d].n++; });
+  const dowAvgs=[0,1,2,3,4,5,6].map(d=>byDow[d]?rpNum(byDow[d].sum/byDow[d].n):null);
+  const maxAvg=Math.max(...dowAvgs.map(v=>v||0),0);
+  const overallAvg=(()=>{ const v=dowAvgs.filter(x=>x!=null); return v.length?v.reduce((a,b)=>a+b,0)/v.length:0 })();
+
+  const dowHtml=`<div style="display:flex;gap:4px;align-items:flex-end;height:90px;margin-top:6px">
+    ${[1,2,3,4,5,6,0].map(d=>{
+      const v=dowAvgs[d];
+      const h=maxAvg>0&&v?Math.max(6,Math.round(v/maxAvg*70)):3;
+      const hot=v!=null&&overallAvg>0&&v>overallAvg*1.2;
+      return `<div style="flex:1;text-align:center">
+        <div style="font-size:.68rem;color:var(--ink3);height:14px">${v!=null?v:''}</div>
+        <div style="height:${h}px;background:${hot?'var(--red)':'var(--brand-mid)'};border-radius:4px 4px 0 0;opacity:${v!=null?1:.25}"></div>
+        <div style="font-size:.7rem;color:var(--ink3);margin-top:3px">${DOW_TH[d]}</div>
+      </div>`;
+    }).join('')}
+  </div>`;
+
+  const hist=all.slice(0,12).map(r=>{
+    const d=(r.dow==null?dowOf(r.date):r.dow);
+    return `<div class="lrow">
+      <div class="lrow-name" style="font-size:.86rem">${rpFmtShort(r.date)} <span style="color:var(--ink4)">(${DOW_TH[d]||'?'})</span>
+        <div class="lrow-sub">${r.remain!=null?`เหลือ ${rpNum(r.remain)}`:'<span style="color:var(--ink4)">ไม่มีข้อมูลของเหลือ</span>'}${r.shopName?` · 🏪 ${esc(r.shopName)}`:''}${r.editedByOwner?' · ✏️ แก้เอง':''}${r.note?` · 💬 ${esc(r.note)}`:''}</div>
+      </div>
+      <div style="font-weight:700;color:${r.skipped||(Number(r.qty)||0)<=0?'var(--ink4)':'var(--brand)'};white-space:nowrap">${r.skipped||(Number(r.qty)||0)<=0?'ไม่ซื้อ':`${rpNum(r.qty)} ${esc(r.unit||'')}`}</div>
+    </div>`;
+  }).join('');
+
+  return `<div class="card"><div class="card-body">${sel}</div></div>
+  <div class="card">
+    <div class="card-body" style="display:flex;gap:8px;text-align:center">
+      <div style="flex:1"><div style="font-size:1.3rem;font-weight:800;color:var(--brand)">${rpNum(totalQty)}</div><div style="font-size:.75rem;color:var(--ink3)">รวม 30 วัน (${esc(unit)})</div></div>
+      <div style="flex:1"><div style="font-size:1.3rem;font-weight:800;color:var(--brand)">${bought.length}</div><div style="font-size:.75rem;color:var(--ink3)">จำนวนครั้งที่ซื้อ</div></div>
+      <div style="flex:1"><div style="font-size:1.3rem;font-weight:800;color:var(--brand)">${avg}</div><div style="font-size:.75rem;color:var(--ink3)">เฉลี่ยต่อครั้ง</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr">ใช้เยอะวันไหน (เฉลี่ยต่อครั้ง · 90 วันล่าสุด)</div>
+    <div class="card-body">${src90.length?dowHtml:'<div class="empty">ข้อมูลยังไม่พอ</div>'}
+      <div style="font-size:.78rem;color:var(--ink3);margin-top:8px">แท่งสีแดง = วันที่ใช้มากกว่าค่าเฉลี่ยเกิน 20% — อนาคตตั้ง par แยกตามวันได้จากตรงนี้</div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-hdr">ประวัติล่าสุด</div>
+    <div class="card-body">${hist||'<div class="empty">ไม่มีข้อมูล</div>'}</div>
+  </div>`;
+}
+
+function rpWarnHtml(rows){
+  const cutoff=rpAddDays(today(),-29);
+  const last30=rows.filter(r=>r.date>=cutoff);
+  const box=(icon,title,desc,items,color)=>`<div class="card">
+    <div class="card-hdr">${icon} ${title}</div>
+    <div class="card-body">
+      <div style="font-size:.8rem;color:var(--ink3);margin-bottom:8px">${desc}</div>
+      ${items.length?items.map(t=>`<div class="lrow"><div class="lrow-name" style="font-size:.88rem">${t}</div></div>`).join(''):`<div style="font-size:.85rem;color:${color||'var(--brand)'}">✓ ไม่มีรายการที่ต้องดู</div>`}
+    </div>
+  </div>`;
+
+  // 1) ของหมดบ่อย (remain = 0)
+  const stock={};
+  last30.forEach(r=>{ if(r.remain!=null&&Number(r.remain)===0){ const k=r.name||r.productId; stock[k]=(stock[k]||0)+1 } });
+  const stockList=Object.entries(stock).filter(([,n])=>n>=2).sort((a,b)=>b[1]-a[1])
+    .map(([n,c])=>`${esc(n)} — <b style="color:var(--red)">ของหมด ${c} ครั้ง</b> ใน 30 วัน · ควรเพิ่ม par`);
+
+  // 2) เจ้าของแก้จำนวนเองบ่อย → par อาจตั้งพลาด
+  const ovr={};
+  last30.forEach(r=>{ if(r.parUsed==null) return; const k=r.name||r.productId; if(!ovr[k]) ovr[k]={n:0,e:0}; ovr[k].n++; if(r.editedByOwner) ovr[k].e++; });
+  const ovrList=Object.entries(ovr).filter(([,v])=>v.n>=3&&v.e/v.n>0.2).sort((a,b)=>(b[1].e/b[1].n)-(a[1].e/a[1].n))
+    .map(([n,v])=>`${esc(n)} — แก้เอง <b style="color:var(--orange)">${v.e}/${v.n} ครั้ง</b> · par อาจไม่ตรงความจริง`);
+
+  // 3) นานๆ ซื้อที — ซื้อน้อยกว่า 2 ครั้งใน 30 วัน
+  const times={};
+  last30.forEach(r=>{ if(r.skipped||(Number(r.qty)||0)<=0) return; const k=r.productId||('name:'+r.name); times[k]=(times[k]||0)+1 });
+  const slow=Object.entries(S.products||{}).filter(([id])=>(times[id]||0)<2)
+    .map(([id,p])=>`${esc(p.name||'')} — <b>${times[id]||0} ครั้ง</b> ใน 30 วัน`);
+
+  // 4) สินค้าที่ยังไม่ได้ตั้ง par
+  const noPar=Object.entries(S.products||{}).filter(([,p])=>parseOptNum(p.par)==null).map(([,p])=>esc(p.name||''));
+
+  // สุขภาพข้อมูล
+  const withRemain=last30.filter(r=>r.remain!=null).length;
+  const legacyCnt=last30.filter(r=>r.legacy).length;
+  const pct=last30.length?Math.round(withRemain/last30.length*100):0;
+
+  return `<div class="card">
+    <div class="card-hdr">คุณภาพข้อมูล (30 วันล่าสุด)</div>
+    <div class="card-body">
+      <div style="font-size:.88rem;line-height:1.9">
+        แถวข้อมูลทั้งหมด: <b>${last30.length}</b><br>
+        มีข้อมูล "ของที่เหลือ": <b style="color:${pct>=60?'var(--brand)':'var(--orange)'}">${pct}%</b>
+        <div style="font-size:.78rem;color:var(--ink3)">ยิ่งสูง รายงานยิ่งแม่น — เพิ่มได้ด้วยการตั้ง par ให้สินค้ามากขึ้น</div>
+        ${legacyCnt?`แถวก่อนเริ่มเก็บข้อมูลเต็ม: <b>${legacyCnt}</b><div style="font-size:.78rem;color:var(--ink3)">แถวเหล่านี้ไม่มีของที่เหลือ/par นับเฉพาะจำนวนซื้อได้</div>`:''}
+      </div>
+    </div>
+  </div>
+  ${box('🔴','ของขาดบ่อย','จดมาว่าเหลือ 0 ตั้งแต่ 2 ครั้งขึ้นไป — แปลว่า par ต่ำเกินไป เสี่ยงขายไม่ได้',stockList)}
+  ${box('🟠','par ที่น่าสงสัย','ตัวที่เจ้าของต้องเข้าไปแก้จำนวนเองเกิน 20% — ควรปรับตัวเลข par ใหม่',ovrList)}
+  ${box('⚪','นานๆ ซื้อที','ซื้อน้อยกว่า 2 ครั้งใน 30 วัน — พิจารณาว่ายังจำเป็นต้องมีในรายการไหม หรือสั่งทีเดียวเยอะๆ ดีกว่า',slow,'var(--ink3)')}
+  ${box('🎯','ยังไม่ได้ตั้ง par','สินค้าเหล่านี้พนักงานยังจดเป็นจำนวนซื้อแบบเดิม จึงไม่มีข้อมูลของเหลือให้วิเคราะห์',noPar,'var(--ink3)')}`;
+}
+
+// ส่งออกข้อมูลดิบทั้งหมดเป็น CSV (มี BOM ให้ Excel อ่านภาษาไทยไม่เพี้ยน)
+function exportReportCsv(){
+  const rows=getPurchaseRows();
+  if(!rows.length){toast('ยังไม่มีข้อมูลให้ส่งออก');return}
+  const head=['date','day_of_week','product_id','product_name','unit','qty_bought','remain','suggested_qty','par_used','min_used','shop_name','employee_name','note','skipped','edited_by_owner','session_id'];
+  const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+  const lines=[head.join(',')];
+  rows.forEach(r=>{
+    const d=(r.dow==null?dowOf(r.date):r.dow);
+    lines.push([r.date,(DOW_TH[d]||''),r.productId,r.name,r.unit,r.qty,
+      (r.remain==null?'':r.remain),(r.suggestedQty==null?'':r.suggestedQty),
+      (r.parUsed==null?'':r.parUsed),(r.minUsed==null?'':r.minUsed),
+      r.shopName,r.empName,r.note,(r.skipped?1:0),(r.editedByOwner?1:0),r.sessionId].map(q).join(','));
+  });
+  try{
+    const blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8;'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download=`market-log-${today()}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),5000);
+    toast(`⬇️ ส่งออกแล้ว ${rows.length} แถว`);
+  }catch(e){ console.error(e); toast('⚠️ ส่งออกไม่สำเร็จ'); }
+}
+
 function buildSummaryHTML(sess){
   const byShop={};
   Object.values(sess?.entries||{}).forEach(entry=>{
     Object.values(entry.items||{}).forEach(item=>{
+      // [FIX #7] เดิม: หน้าประวัติเอาของที่กด "ไม่ซื้อ" และของที่ qty=0 มาแสดงด้วย (ต่างกับหน้าสรุป)
+      // แก้แล้ว: กรองเหมือนหน้าสรุป — ประวัติคือสิ่งที่สั่งจริงเท่านั้น
+      if(item.skipped) return;
+      if(!(parseFloat(item.qty)>0)) return;
       const k=item.shopId||'__none';
       if(!byShop[k]) byShop[k]={name:item.shopName||'ไม่ระบุ',items:[]};
       byShop[k].items.push(item);
     });
   });
   let html='';
-  [...sortedShops().map(s=>s.id),'__none'].forEach(key=>{
+  // [FIX #1] หน้าประวัติก็ต้องไล่กลุ่มร้านที่ถูกลบไปแล้วด้วย ไม่งั้นประวัติเก่าจะขาดของไปเงียบๆ
+  const knownShopIds=new Set(sortedShops().map(s=>s.id));
+  const orphanKeys=Object.keys(byShop).filter(k=>k!=='__none'&&!knownShopIds.has(k));
+  [...sortedShops().map(s=>s.id),...orphanKeys,'__none'].forEach(key=>{
     const g=byShop[key];if(!g||!g.items.length)return;
     html+=`<div class="shop-block">
       <div class="shop-hdr"><div class="shop-hdr-name">🏪 ${esc(g.name)}</div><div class="shop-hdr-count">${g.items.length} รายการ</div></div>
@@ -2971,7 +3845,7 @@ function dupSession(sid){
     return;
   }
   showModal('ทำซ้ำเป็นรอบใหม่',`คัดลอกรายการวันที่ ${fmtDate(sess?.date)} มาเป็นรอบใหม่?`,()=>{
-    R.sessions().push({date:today(),completed:false,cleared:false,shoppingDone:false,createdAt:Date.now(),entries:sess.entries||{}})
+    R.sessions().push({date:today(),dow:dowOf(today()),completed:false,cleared:false,shoppingDone:false,createdAt:Date.now(),entries:sess.entries||{}})
       .then(ref=>{
         activeSessionId=ref.key;toast('📋 สร้างรอบใหม่แล้ว');closeHistDetail();
         document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
@@ -3034,7 +3908,10 @@ function getWalkGroups(){
     });
   });
 
-  const shopOrder = [...sortedShops().map(s=>s.id), '__none'];
+  // [FIX #1] รวมกลุ่มร้านที่ถูกลบไปแล้ว (แต่ยังมีของค้างอยู่ในรอบนี้) ไว้ด้วย ไม่ให้ของหายจากหน้าเดิน
+  const knownShopIds = new Set(sortedShops().map(s=>s.id));
+  const orphanKeys = Object.keys(byShop).filter(k=>k!=='__none' && !knownShopIds.has(k));
+  const shopOrder = [...sortedShops().map(s=>s.id), ...orphanKeys, '__none'];
   return {sid, sess, byShop, shopOrder};
 }
 
@@ -3111,6 +3988,7 @@ function renderWalk(){
             <div class="walk-item-name">
               ${esc(item.name)}
               ${isPickup ? `<div class="walk-item-pickup">📦 ฝากมาจากร้าน ${esc(item._origShopName||'')} — เช็คกับร้านนี้ว่าเอามาส่งหรือยัง</div>` : ''}
+              ${item.remain!=null&&item.remain!=='' ? `<div class="walk-item-note">📊 เหลือ ${esc(String(item.remain))} ${esc(item.unit||'')}${item.parUsed!=null?` · ควรมี ${esc(String(item.parUsed))}`:''}</div>` : ''}
               ${item.note ? `<div class="walk-item-note">${item.noteToShop?'📤':'💬'} ${esc(item.note)}</div>` : ''}
             </div>
             <div class="walk-item-qty">${item.qty} ${esc(item.unit||'')}</div>
@@ -3166,7 +4044,10 @@ function fmtQtyUnitForCopy(item){
   const qty = item.qty;
   const unit = item.unit || '';
   const qtyNum = typeof qty === 'number' ? qty : parseFloat(qty);
-  if(unit === 'กิโลกรัม' && !isNaN(qtyNum) && qtyNum === 0.5){
+  // [FIX #21] เดิมต้องสะกดว่า "กิโลกรัม" เป๊ะๆ เท่านั้น คนพิมพ์ "กก."/"โล"/"kg" จึงไม่เข้าเงื่อนไข
+  const uNorm=String(unit).trim().toLowerCase().replace(/[.\sๆ]/g,'');
+  const KILO_UNITS=['กิโลกรัม','กิโล','กก','โล','kg','kgs','kilo','kilos','kilogram','kilograms'];
+  if(KILO_UNITS.includes(uNorm) && !isNaN(qtyNum) && qtyNum === 0.5){
     return 'ครึ่งโล';
   }
   return `${qty}${unit ? ' '+unit : ''}`;
@@ -3485,7 +4366,7 @@ function saveWalkEdit(){
   const unit = document.getElementById('we-unit').value.trim();
   const note = document.getElementById('we-note').value.trim();
   const noteToShop = note ? document.getElementById('we-note-toshop').checked : false;
-  R.session(sid).child(`entries/${empId}/items/${pid}`).update({qty,unit,note,noteToShop,skipped:false})
+  R.session(sid).child(`entries/${empId}/items/${pid}`).update({qty,unit,note,noteToShop,skipped:false,editedByOwner:true})
     .then(()=>{
       // อัปเดต cache ในเครื่องทันที ไม่ต้องรอ Firebase สะท้อนกลับมา จะได้เห็นผลไวไม่กระตุก
       const sess = S.sessions[sid];
@@ -3684,6 +4565,19 @@ document.getElementById('edit-prod-modal').addEventListener('click',e=>{
 R.employees().on('value',snap=>{S.employees=snap.val()||{};renderEmployees();renderProducts();populateSelects();updateSetupCounts()});
 R.shops().on('value',snap=>{S.shops=snap.val()||{};renderShops();renderProducts();populateSelects();updateSetupCounts()});
 R.products().on('value',snap=>{S.products=snap.val()||{};renderProducts();updateSetupCounts()});
+R.settings().on('value',snap=>{
+  S.settings=snap.val()||{};
+  renderPinCard();
+  // ถ้าเจ้าของเพิ่งเปิดล็อคจากอีกเครื่อง แล้วเครื่องนี้ค้างอยู่หน้าที่ล็อก → พากลับหน้าจด
+  if(pinLocked()){
+    const cur=PIN_PAGES.find(n=>{ const el=document.getElementById('pg-'+n); return el&&el.classList.contains('on') });
+    if(cur){
+      const b=document.querySelectorAll('.tb-btn')[PIN_TAB_INDEX.jot];
+      if(b) goPage('jot',b);
+    }
+  }
+  pinCheckRescue();
+});
 R.sessions().on('value',snap=>{
   S.sessions=snap.val()||{};
   if(document.getElementById('pg-summary').classList.contains('on')) renderSummary();
@@ -3704,8 +4598,36 @@ R.sessions().on('value',snap=>{
       renderJotStart();
     }
   }
-  if(document.getElementById('pg-walk').classList.contains('on')) renderWalk();
+  // [FIX #23] ถ้ามีแถวที่ปัดเปิดปุ่มค้างอยู่ อย่า re-render ทับ ไม่งั้นแถวจะหุปกลับเองคากลางมือ
+  if(document.getElementById('pg-walk').classList.contains('on')){
+    if(typeof _swOpenRow==='undefined'||!_swOpenRow) renderWalk();
+  }
 });
+
+// [FIX #24] เดิม: เปิดแอปตอนไม่มีเน็ต หน้าจอว่างเฉยๆ ไม่บอกอะไรเลย คนใช้คิดว่าแอปค้าง
+// แก้แล้ว: มีแถบแจ้งด้านบน บอกชัดๆ ว่าไม่มีเน็ต/กำลังเชื่อมต่อ และหายเองเมื่อต่อเน็ตกลับได้
+(function initNetBanner(){
+  const OFFLINE_MSG='📴 ไม่มีอินเทอร์เน็ต — สิ่งที่กรอกไว้จะยังไม่ถูกบันทึกจนกว่าเน็ตกลับมา';
+  const WAIT_MSG='⏳ กำลังเชื่อมต่อฐานข้อมูล... ถ้าค้างนานให้ลองเช็คสัญญาณเน็ตอีกที';
+  const bar=document.createElement('div');
+  bar.id='net-bar';
+  bar.style.cssText='display:none;position:fixed;left:0;right:0;top:0;z-index:9999;background:var(--red);color:#fff;font-size:.8rem;font-weight:700;text-align:center;padding:8px 12px;line-height:1.35;box-shadow:0 2px 8px rgba(0,0,0,.18)';
+  document.body.appendChild(bar);
+  const show=t=>{bar.textContent=t;bar.style.display=''};
+  const hide=()=>{bar.style.display='none'};
+  window.addEventListener('offline',()=>show(OFFLINE_MSG));
+  window.addEventListener('online',()=>{show(WAIT_MSG)});
+  if(!navigator.onLine) show(OFFLINE_MSG);
+  try{
+    db.ref('.info/connected').on('value',snap=>{
+      if(snap.val()===true) hide();
+      else show(navigator.onLine?WAIT_MSG:OFFLINE_MSG);
+    });
+  }catch(e){}
+  setTimeout(()=>{
+    if(!navigator.onLine) show(OFFLINE_MSG);
+  },6000);
+})();
 
 // ── INIT ──
 document.getElementById('session-date').value=today();
