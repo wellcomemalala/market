@@ -948,6 +948,11 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
       <div class="card-body" id="pin-card"></div>
     </div>
 
+    <div class="sec">บีบอัดข้อมูลเก่า</div>
+    <div class="card">
+      <div class="card-body" id="compact-card"></div>
+    </div>
+
     <div class="sec">จัดการข้อมูล</div>
     <div class="card">
       <button class="setup-menu-row" onclick="openSetupSub('emp')">
@@ -1549,7 +1554,7 @@ function goPage(name,btn){
   if(name==='jot') renderJotStart();
   if(name==='walk') renderWalk();
   if(name==='report') renderReport();
-  if(name==='setup'){closeSetupSub();updateSetupCounts();syncFsBtns();renderPinCard();}
+  if(name==='setup'){closeSetupSub();updateSetupCounts();syncFsBtns();renderPinCard();renderCompactCard();}
 }
 
 // ══ SETUP SUB-PAGES ══
@@ -3407,6 +3412,85 @@ function buildSessionLog(sess){
     });
   });
   return {version:1,date,dow,closedAt:Date.now(),rowCount:rows.length,rows};
+}
+
+/* ═════ [COMPACT] บีบอัดรอบเก่าเกิน 90 วัน ═════
+   ลบเฉพาะ sessions/{sid}/entries (ข้อมูลดิบตอนจด) ของรอบที่ปิดแล้วและมีปูม (log) ครบแล้ว
+   ไม่ลบ session ทั้งก้อนเด็ดขาด — ปูมอยู่ข้างใน ลบไปคือประวัติหายจริง
+   getPurchaseRows() อ่านจาก log ก่อนเสมอ → รายงาน/กราฟ/ประวัติ ไม่กระทบเลย */
+const COMPACT_DAYS=90;
+function mkCutoffISO(){
+  const d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()-COMPACT_DAYS);
+  const p=n=>String(n).padStart(2,'0');
+  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());
+}
+function mkScanCompact(){
+  const cutoff=mkCutoffISO(); const list=[];
+  Object.entries(S.sessions||{}).forEach(([sid,sess])=>{
+    if(!sess) return;
+    if(!sess.shoppingDone) return;                 // รอบที่ยังไม่ปิด = ห้ามแตะ
+    if(sess.compactedAt) return;                   // บีบไปแล้ว
+    if(!sess.date || sess.date >= cutoff) return;  // ยังไม่เกิน 90 วัน
+    if(!sess.entries) return;                      // ไม่มีอะไรให้ลบ
+    const rows=(sess.log&&sess.log.rows)?Object.values(sess.log.rows).length:0;
+    list.push({sid,date:sess.date,hasLog:rows>0});
+  });
+  list.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  return {cutoff,list};
+}
+function mkFmtBytes(n){
+  if(n<1024) return n+' B';
+  if(n<1048576) return (n/1024).toFixed(1)+' KB';
+  return (n/1048576).toFixed(2)+' MB';
+}
+function renderCompactCard(){
+  const el=document.getElementById('compact-card'); if(!el) return;
+  const sc=mkScanCompact(); const cutoff=sc.cutoff, list=sc.list;
+  const all=Object.values(S.sessions||{}).filter(x=>x);
+  const closed=all.filter(x=>x.shoppingDone).length;
+  const done=all.filter(x=>x.compactedAt).length;
+  let save=0;
+  list.forEach(x=>{ try{ save+=JSON.stringify(S.sessions[x.sid].entries||{}).length }catch(e){} });
+  el.innerHTML=`<div style="font-weight:700;margin-bottom:4px">🗜️ บีบอัดรอบเก่า (เกิน ${COMPACT_DAYS} วัน)</div>
+    <div style="font-size:.82rem;color:var(--ink3);line-height:1.6;margin-bottom:10px">
+      ลบเฉพาะข้อมูลดิบตอนจดของรอบที่<b>ปิดแล้ว</b>และเก่ากว่า ${COMPACT_DAYS} วัน<br>
+      ประวัติ · รายงาน · กราฟ <b>ยังครบเหมือนเดิมทุกอย่าง</b> เพราะอ่านจากปูมที่แช่แข็งไว้<br>
+      รอบที่ยังไม่ปิดจะไม่ถูกแตะเด็ดขาด
+    </div>
+    <div style="font-size:.82rem;color:var(--ink3);line-height:1.7;margin-bottom:10px">
+      วันตัดรอบ: <b>${cutoff}</b><br>
+      รอบที่ปิดแล้วทั้งหมด <b>${closed}</b> · บีบอัดไปแล้ว <b>${done}</b><br>
+      บีบอัดได้ตอนนี้: <b style="color:${list.length?'var(--brand)':'var(--ink3)'}">${list.length}</b> รอบ${list.length?` · ประหยัด ~<b>${mkFmtBytes(save)}</b>`:''}
+    </div>
+    <button class="btn ${list.length?'btn-green':'btn-ghost'}" style="width:100%" ${list.length?'':'disabled'} onclick="runCompact()">🗜️ บีบอัด ${list.length} รอบ</button>`;
+}
+function runCompact(){
+  const sc=mkScanCompact(); const cutoff=sc.cutoff, list=sc.list;
+  if(!list.length){ toast('ไม่มีรอบที่ต้องบีบอัด'); return; }
+  const noLog=list.filter(x=>!x.hasLog).length;
+  const msg='จะบีบอัด '+list.length+' รอบ ที่เก่ากว่าวันที่ '+cutoff+'\n\n'
+    +(noLog?('มี '+noLog+' รอบที่ยังไม่มีปูม ระบบจะสร้างปูมให้ก่อนอัตโนมัติ\n\n'):'')
+    +'ประวัติและรายงานยังดูได้ครบเหมือนเดิม แต่จะแก้รายการย้อนหลังของรอบเหล่านี้ไม่ได้อีก';
+  showModal('บีบอัดข้อมูลเก่า?',msg,()=>{
+    const updates={}; const now=Date.now(); let built=0, n=0, skip=0;
+    list.forEach(x=>{
+      const sess=S.sessions[x.sid]; if(!sess) return;
+      if(!x.hasLog){
+        let lg=null;
+        try{ lg=buildSessionLog(sess); }catch(e){ console.error('buildSessionLog',x.sid,e); }
+        if(!lg||!lg.rows||!lg.rows.length){ skip++; return; }   // สร้างปูมไม่ได้ → ข้าม ไม่ลบทิ้ง
+        updates[`${ROOT}/sessions/${x.sid}/log`]=lg; built++;
+      }
+      updates[`${ROOT}/sessions/${x.sid}/entries`]=null;
+      updates[`${ROOT}/sessions/${x.sid}/compactedAt`]=now;
+      n++;
+    });
+    if(!n){ toast('ไม่มีรอบที่บีบอัดได้'); return; }
+    db.ref().update(updates).then(()=>{
+      toast('✅ บีบอัดแล้ว '+n+' รอบ'+(built?(' · สร้างปูมใหม่ '+built):'')+(skip?(' · ข้าม '+skip):''),3500);
+      renderCompactCard();
+    }).catch(fbErr);
+  },'บีบอัด','btn-green');
 }
 
 function markDone(){
