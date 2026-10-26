@@ -1072,7 +1072,7 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
             <input type="number" id="prod-min" class="inp" inputmode="decimal" min="0" step="any" placeholder="เช่น 3" />
           </div>
         </div>
-        <div style="font-size:.78rem;color:var(--ink3);margin:-4px 0 10px">🎯 ตั้งไว้ล่วงหน้าได้เลย ตอนนี้ระบบยังไม่คิดจำนวนให้อัตโนมัติ (จะเริ่มใช้ในเฟสถัดไป)</div>
+        <div style="font-size:.78rem;color:var(--ink3);margin:-4px 0 10px">🎯 หากตั้งค่า par ไว้ ช่องกรอกของพนักงานจะเปลี่ยนเป็นโหมด "จดของที่เหลือ" และระบบจะคำนวณจำนวนที่ต้องซื้อให้อัตโนมัติ</div>
         <button class="btn btn-green btn-full" onclick="addProduct()">+ เพิ่มสินค้า</button>
       </div>
     </div>
@@ -2391,7 +2391,7 @@ function renderEmpGrid(){
     const prods=prodsForEmp(id);
     const entry=entries[id];
     const complete=empUndecided(id,entry).length===0;
-    const itemCount=Object.values(entry?.items||{}).filter(it=>!it.skipped&&(parseFloat(it.qty)>0||(it.remain!=null&&it.remain!==''))).length;
+    const itemCount=Object.values(entry?.items||{}).filter(it=>!it.skipped&&parseFloat(it.qty)>0).length;
     return `<button class="emp-tile ${complete?'done':''}" onclick="openEmpInput('${id}')">
       <div class="emp-tile-name">${esc(e.name)}</div>
       <div class="emp-tile-sub">${complete?`✔ ${itemCount} รายการ`:`${prods.length} สินค้า`}</div>
@@ -2548,10 +2548,14 @@ function renderEmpProducts(savedItems){
     const qty=saved?.qty||'';
     const note=saved?.note||'';
     const isSkipped=!!(saved?.skipped);
-    const hasVal=hasPar?(remainStr!==''&&!isSkipped):(qty!==''&&!isSkipped);
+    const hasManualQty=hasPar&&remainStr===''&&parseFloat(qty)>0&&!isSkipped;
+    const hasVal=hasPar?((remainStr!==''||hasManualQty)&&!isSkipped):(qty!==''&&!isSkipped);
     const hasNote=!!note;
     const nameClass=isSkipped?'skipped':hasVal?'bought':'';
     const isFirst = idx === 0, isLast = idx === prods.length - 1;
+    const initSug=hasPar&&!isSkipped?(remainStr!==''?calcSuggested(p.par,p.min,parseFloat(remainStr)):(hasManualQty?parseFloat(qty):null)):null;
+    const initHintText=initSug!=null?suggestText(initSug,p.unit):'';
+    const initHintColor=(initSug!=null&&initSug>0)?'var(--red)':'var(--ink3)';
     return `<div class="prod-row" id="pr-${id}" style="flex-wrap:wrap"
         ondragover="prodDragOver(event,${idx})"
         ondragleave="prodDragLeave(event)"
@@ -2561,6 +2565,7 @@ function renderEmpProducts(savedItems){
       <div class="prod-row-info" style="min-width:0;flex:1">
         <div class="prod-row-name ${nameClass}" id="pn-${id}">${esc(p.name)}${hasPar?` <span style="font-size:.68rem;font-weight:700;color:var(--brand);background:var(--brand-light);padding:1px 6px;border-radius:6px;white-space:nowrap">จดของที่เหลือ</span>`:''}</div>
         <div class="prod-row-shop">${p.shopName?`🏪 ${esc(p.shopName)}`:''}</div>
+        ${hasPar?`<div id="parhint-${id}" style="font-size:.74rem;color:${initHintColor};margin-top:2px">${esc(initHintText)}</div>`:''}
         <div class="note-wrap ${hasNote?'open':''}" id="notewrap-${id}">
           <input type="text" class="note-inp" id="note-${id}"
             value="${esc(note)}" placeholder="หมายเหตุ..."
@@ -2762,6 +2767,15 @@ function collectItems(){
       items[id]={
         name:p.name,unit:p.unit||'',qty:_buy,remain:qty,suggestedQty:_buy,
         parUsed:parseOptNum(p.par),minUsed:parseOptNum(p.min),
+        shopId:p.shopId||'',shopName:p.shopName||'',
+        note:noteVal||oldItems[id]?.note||'',
+        noteToShop
+      };
+    } else if(inp.dataset.mode==='remain' && inp.value.trim()==='' && oldItems[id] && !oldItems[id].skipped && (oldItems[id].remain==null||oldItems[id].remain==='') && parseFloat(oldItems[id].qty)>0){
+      // รักษาจำนวนซื้อที่เพิ่ม/แก้ไขจาก Quick Add หรือหน้าเดินซื้อของ แม้ยังไม่ได้กรอกช่องของที่เหลือ
+      items[id]={
+        ...oldItems[id],
+        name:p.name,unit:p.unit||'',
         shopId:p.shopId||'',shopName:p.shopName||'',
         note:noteVal||oldItems[id]?.note||'',
         noteToShop
@@ -3524,8 +3538,11 @@ function renderHistList(){
   if(!done.length){el.innerHTML='<div class="empty"><div class="empty-icon">📅</div>ยังไม่มีประวัติ</div>';return}
   el.innerHTML=done.map(([id,sess])=>{
     // [FIX #7] เดิมนับทุกกุ๊ญแจใน items รวมของที่กดไม่ซื้อ/จำนวน 0 → ตัวเลขเกินจริง และไม่ตรงกับจำนวนที่เห็นข้างใน
-    const total=Object.values(sess.entries||{}).reduce((s,e)=>
-      s+Object.values(e.items||{}).filter(it=>!it.skipped&&parseFloat(it.qty)>0).length,0);
+    const hasEntries=sess.entries&&Object.keys(sess.entries).length>0;
+    const logRows=!hasEntries&&sess.log?.rows?Object.values(sess.log.rows):null;
+    const total=hasEntries
+      ? Object.values(sess.entries||{}).reduce((s,e)=>s+Object.values(e.items||{}).filter(it=>!it.skipped&&parseFloat(it.qty)>0).length,0)
+      : (logRows ? logRows.filter(r=>r&&!r.skipped&&parseFloat(r.qty)>0).length : 0);
     return `<div class="hist-row" onclick="openHistDetail('${id}')">
       <div style="flex:1">
         <div class="hist-date">${fmtDate(sess.date)}</div>
@@ -3868,9 +3885,35 @@ function exportReportCsv(){
   }catch(e){ console.error(e); toast('⚠️ ส่งออกไม่สำเร็จ'); }
 }
 
+function entriesFromLog(sess){
+  if(sess?.entries && Object.keys(sess.entries).length) return sess.entries;
+  const rows=sess?.log?.rows?Object.values(sess.log.rows):[];
+  const entries={};
+  rows.forEach((r,idx)=>{
+    if(!r) return;
+    const eid=r.employeeId||NONE_ID;
+    const pid=r.productId||('legacy_'+idx);
+    if(!entries[eid]) entries[eid]={items:{}};
+    const it={
+      name:r.name||'',unit:r.unit||'',qty:Number(r.qty)||0,
+      shopId:r.shopId||'',shopName:r.shopName||'',
+      note:r.note||'',noteToShop:!!r.noteToShop
+    };
+    if(r.remain!=null) it.remain=Number(r.remain);
+    if(r.suggestedQty!=null) it.suggestedQty=Number(r.suggestedQty);
+    if(r.parUsed!=null) it.parUsed=Number(r.parUsed);
+    if(r.minUsed!=null) it.minUsed=Number(r.minUsed);
+    if(r.skipped) it.skipped=true;
+    if(r.editedByOwner) it.editedByOwner=true;
+    entries[eid].items[pid]=it;
+  });
+  return entries;
+}
+
 function buildSummaryHTML(sess){
   const byShop={};
-  Object.values(sess?.entries||{}).forEach(entry=>{
+  const entriesObj=entriesFromLog(sess);
+  Object.values(entriesObj||{}).forEach(entry=>{
     Object.values(entry.items||{}).forEach(item=>{
       // [FIX #7] เดิม: หน้าประวัติเอาของที่กด "ไม่ซื้อ" และของที่ qty=0 มาแสดงด้วย (ต่างกับหน้าสรุป)
       // แก้แล้ว: กรองเหมือนหน้าสรุป — ประวัติคือสิ่งที่สั่งจริงเท่านั้น
@@ -3912,7 +3955,11 @@ function reopenSession(sid){
     return;
   }
   showModal('เปิดกลับมาแก้ไข',`ย้ายรายการวันที่ ${fmtDate(sess?.date)} กลับมาแก้ไขอีกครั้ง?`,()=>{
-    R.session(sid).update({shoppingDone:false,shoppingDoneAt:null}).then(()=>{
+    const patch={shoppingDone:false,shoppingDoneAt:null};
+    if((!sess?.entries||!Object.keys(sess.entries).length)&&sess?.log?.rows){
+      patch.entries=entriesFromLog(sess);
+    }
+    R.session(sid).update(patch).then(()=>{
       toast('🔓 เปิดกลับมาแล้ว — ดูที่หน้า "สรุป"');closeHistDetail();
     }).catch(fbErr);
   },'เปิดกลับมา','btn-orange');
@@ -3929,7 +3976,7 @@ function dupSession(sid){
     return;
   }
   showModal('ทำซ้ำเป็นรอบใหม่',`คัดลอกรายการวันที่ ${fmtDate(sess?.date)} มาเป็นรอบใหม่?`,()=>{
-    R.sessions().push({date:today(),dow:dowOf(today()),completed:false,cleared:false,shoppingDone:false,createdAt:Date.now(),entries:sess.entries||{}})
+    R.sessions().push({date:today(),dow:dowOf(today()),completed:false,cleared:false,shoppingDone:false,createdAt:Date.now(),entries:entriesFromLog(sess)})
       .then(ref=>{
         activeSessionId=ref.key;toast('📋 สร้างรอบใหม่แล้ว');closeHistDetail();
         document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
@@ -4573,7 +4620,7 @@ function openPickupOverrideModal(){
         <label class="lbl" style="font-size:.72rem">วันนี้ของร้านนี้ไปฝากที่ไหน?</label>
         <div class="srch-drop-wrap" id="pov-wrap-${o.id}">
           <input type="text" class="inp srch-drop-input" id="pov-search-${o.id}" autocomplete="off"
-            placeholder="🔍 พิมพ์ค้นหาร้านค้า..." value="${escJsAttr(curLabel)}"
+            placeholder="🔍 พิมพ์ค้นหาร้านค้า..." value="${esc(curLabel)}"
             oninput="povFilter('${o.id}')" onfocus="povOpen('${o.id}')" />
           <div class="srch-drop-list" id="pov-drop-${o.id}"></div>
         </div>
