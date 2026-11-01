@@ -371,6 +371,11 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
 }
 .filter-tab.on{background:var(--brand);color:#fff;border-color:var(--brand)}
 .filter-tab.on-red{background:var(--red);color:#fff;border-color:var(--red)}
+/* ─── ตัวกรองหน้า "เดิน": ทั้งหมด / ยังไม่ซื้อ ─── */
+.walk-filter{position:sticky;top:56px;z-index:50;background:var(--bg);padding:6px 0 10px;display:flex;gap:8px}
+.walk-filter .filter-tab{padding:10px 4px;font-size:.88rem}
+.walk-filter-empty{text-align:center;padding:40px 20px;color:var(--brand);font-weight:800;font-size:1.05rem;line-height:1.8}
+
 
 /* ─── SKIP / ไม่ซื้อ ─── */
 .skip-btn{
@@ -879,6 +884,10 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
       <button class="btn btn-green btn-full" style="margin-top:10px" onclick="markDone()">✅ ซื้อเสร็จแล้ว</button>
     </div>
   </div>
+  <div class="walk-filter" id="walk-filter">
+    <button class="filter-tab on" id="wf-all" onclick="setWalkFilter(false)">📋 ทั้งหมด</button>
+    <button class="filter-tab" id="wf-todo" onclick="setWalkFilter(true)">🛒 ยังไม่ซื้อ</button>
+  </div>
   <div id="walk-content">
     <div class="walk-empty"><div class="walk-empty-icon">🛒</div>ยังไม่มีรายการ<br>ไปจดของที่หน้า "จด" ก่อนนะ</div>
   </div>
@@ -1009,9 +1018,11 @@ label.lbl{display:block;font-size:.8rem;font-weight:600;color:var(--ink2);margin
     </div>
     <div class="card">
       <div class="card-body">
-        <div class="fg">
-          <input type="text" id="shop-input" class="inp" placeholder="เช่น ร้านผัก, ร้านหมู..." />
+        <div class="fg" style="display:flex;gap:8px;align-items:stretch">
+          <input type="text" id="shop-input" class="inp" style="flex:1;min-width:0" placeholder="เช่น ร้านผัก, ร้านหมู..." />
+          <input type="number" id="shop-pos-input" class="inp" style="width:110px;flex:none;text-align:center" min="1" step="1" inputmode="numeric" placeholder="ลำดับที่" title="ใส่เลขลำดับที่อยากให้ร้านนี้อยู่ (เว้นว่าง = ต่อท้ายสุด)" />
         </div>
+        <div class="text-sm" id="shop-pos-hint" style="color:var(--ink3);margin:-4px 0 10px;font-size:.78rem">เว้นช่อง "ลำดับที่" ว่างไว้ = เพิ่มต่อท้ายสุด</div>
         <button class="btn btn-green btn-full" onclick="addShop()">+ เพิ่มร้านค้า</button>
         <div class="text-sm" style="color:var(--ink3);margin-top:10px;line-height:1.5">
           💡 แตะป้าย <b>💬 สั่งทางไลน์ / 🚶 ต้องไปเอง</b> ที่ร้านค้าแต่ละร้านเพื่อสลับได้ — ร้านที่ตั้งเป็น "สั่งทางไลน์" จะมีปุ่มคัดลอกข้อความสั่งของโผล่ที่หน้า "เดิน" ให้ก๊อปไปวางแชทได้เลย
@@ -1679,10 +1690,29 @@ function delEmployee(id){
 // ══════════════════════════════════════════════
 function addShop(){
   const inp=document.getElementById('shop-input');
+  const posInp=document.getElementById('shop-pos-input');
   const name=inp.value.trim();
   if(!name){toast('กรุณากรอกชื่อร้านค้า');return}
-  const order=Object.keys(S.shops).length;
-  const doAddShop=()=>R.shops().push({name,order,lineOrder:false,createdAt:Date.now()}).then(()=>{inp.value='';toast('✅ เพิ่มร้านค้าแล้ว')}).catch(fbErr);
+  const all=sortedShops();
+  // ลำดับที่ผู้ใช้ระบุ (เริ่มที่ 1) — ว่าง = ต่อท้ายสุด, เกินจำนวนร้าน = ต่อท้ายสุด
+  const raw=(posInp.value||'').trim();
+  let pos=all.length; // index 0-based ที่จะแทรก
+  if(raw!==''){
+    const n=parseInt(raw,10);
+    if(isNaN(n)||n<1){toast('ลำดับที่ต้องเป็นเลขตั้งแต่ 1 ขึ้นไป');return}
+    pos=Math.min(n-1,all.length);
+  }
+  const doAddShop=()=>{
+    const newRef=R.shops().push();
+    const updates={};
+    // เรียงร้านเดิมใหม่ทั้งหมด โดยเว้นช่อง pos ไว้ให้ร้านใหม่ (เขียนทีเดียว สำเร็จทั้งหมดหรือไม่สำเร็จเลย)
+    all.forEach((s,i)=>{updates[`${ROOT}/shops/${s.id}/order`]=i<pos?i:i+1});
+    updates[`${ROOT}/shops/${newRef.key}`]={name,order:pos,lineOrder:false,createdAt:Date.now()};
+    return db.ref().update(updates).then(()=>{
+      inp.value='';posInp.value='';
+      toast(`✅ เพิ่มร้านค้าแล้ว (ลำดับที่ ${pos+1})`);
+    }).catch(fbErr);
+  };
   // [FIX #15] เตือนชื่อร้านซ้ำ กันสินค้ากระจายอยู่หลายร้านชื่อเดียวกัน
   const dupShop=Object.values(S.shops).find(sp=>normName(sp.name)===normName(name));
   if(dupShop){
@@ -1692,6 +1722,7 @@ function addShop(){
   doAddShop();
 }
 document.getElementById('shop-input').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addShop()}});
+document.getElementById('shop-pos-input').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();addShop()}});
 
 function renderShops(){
   const q=(document.getElementById('shop-search').value||'').toLowerCase();
@@ -4046,6 +4077,22 @@ function getWalkGroups(){
   return {sid, sess, byShop, shopOrder};
 }
 
+// ── ตัวกรอง "ยังไม่ซื้อ": ซ่อนของที่ติ๊กแล้ว และซ่อนร้านที่ซื้อครบแล้ว (จำค่าไว้ในเครื่อง)
+let walkOnlyTodo = false;
+try{ walkOnlyTodo = localStorage.getItem('walkOnlyTodo')==='1'; }catch(e){}
+function setWalkFilter(todo){
+  walkOnlyTodo = !!todo;
+  try{ localStorage.setItem('walkOnlyTodo', todo?'1':'0'); }catch(e){}
+  renderWalk();
+  window.scrollTo({top:0});
+}
+function updateWalkFilterBar(todoItems, todoShops){
+  const a=document.getElementById('wf-all'), b=document.getElementById('wf-todo');
+  if(!a||!b) return;
+  a.classList.toggle('on', !walkOnlyTodo);
+  b.classList.toggle('on', walkOnlyTodo);
+  b.textContent = todoItems>0 ? `🛒 ยังไม่ซื้อ (${todoShops} ร้าน · ${todoItems} ชิ้น)` : '🛒 ยังไม่ซื้อ';
+}
 function renderWalk(){
   const content = document.getElementById('walk-content');
   const banner = document.getElementById('walk-done-banner');
@@ -4054,6 +4101,7 @@ function renderWalk(){
   if(!g){
     content.innerHTML = `<div class="walk-empty"><div class="walk-empty-icon">🛒</div>ยังไม่มีรายการ<br>ไปจดของที่หน้า "จด" ก่อนนะ</div>`;
     banner.classList.add('hide');
+    updateWalkFilterBar(0,0);
     return;
   }
 
@@ -4077,17 +4125,21 @@ function renderWalk(){
 
   let html = '';
   let shopNum = 0;
+  let todoItems = 0, todoShops = 0;
 
   shopOrder.forEach(key => {
     const shopG = byShop[key];
     if(!shopG || !shopG.items.length) return;
-    shopNum++;
+    shopNum++; // เลขร้านคงเดิมแม้ในโหมดยังไม่ซื้อ จะได้ตรงกับโหมดทั้งหมด
     const blockId = `wb-${key}`;
-    const sorted = shopG.items.sort((a,b)=>(a.name||'').localeCompare(b.name||'','th'));
-    const total = sorted.length;
-    const doneCnt = sorted.filter(item => walkTicked[item._ikey]).length;
+    const sortedAll = shopG.items.sort((a,b)=>(a.name||'').localeCompare(b.name||'','th'));
+    const total = sortedAll.length;
+    const doneCnt = sortedAll.filter(item => walkTicked[item._ikey]).length;
     const progPct = total ? Math.round(doneCnt/total*100) : 0;
     const allDone = doneCnt === total && total > 0;
+    if(!allDone){ todoShops++; todoItems += (total-doneCnt); }
+    if(walkOnlyTodo && allDone) return; // โหมดยังไม่ซื้อ: ซ่อนร้านที่ครบแล้ว
+    const sorted = walkOnlyTodo ? sortedAll.filter(item => !walkTicked[item._ikey]) : sortedAll;
 
     const actionsHtml = [
       shopG.lineOrder?`<button class="walk-hdr-icon-btn" id="wcp-${key}" title="แตะสองครั้งเพื่อคัดลอกข้อความสั่งของ (คอมเมนต์จะไม่ติดไปด้วย)" data-last="0" onclick="walkHdrDblTap(this,()=>copyShopOrderText('${key}',this))">📋</button>`:'',
@@ -4129,9 +4181,16 @@ function renderWalk(){
     </div>`;
   });
 
+  updateWalkFilterBar(todoItems, todoShops);
+
   if(!html){
-    content.innerHTML = `<div class="walk-empty"><div class="walk-empty-icon">🛒</div>ยังไม่มีรายการ<br>ไปจดของที่หน้า "จด" ก่อนนะ</div>`;
-    banner.classList.add('hide');
+    if(walkOnlyTodo && shopNum>0){
+      content.innerHTML = `<div class="walk-filter-empty">🎉 ไม่มีของค้างแล้ว<br>ซื้อครบทุกรายการ</div>`;
+      banner.classList.remove('hide');
+    } else {
+      content.innerHTML = `<div class="walk-empty"><div class="walk-empty-icon">🛒</div>ยังไม่มีรายการ<br>ไปจดของที่หน้า "จด" ก่อนนะ</div>`;
+      banner.classList.add('hide');
+    }
     return;
   }
 
@@ -4318,6 +4377,13 @@ function walkDoToggle(el, sid, ikey, shopKey, blockId, total){
 
   el.classList.toggle('ticked', ticked);
   el.querySelector('.walk-check').textContent = ticked ? '✓' : '';
+
+  // โหมด "ยังไม่ซื้อ": โชว์เครื่องหมายติ๊กแป๊บหนึ่ง แล้ววาดใหม่ให้ของ/ร้านที่ครบหายไป (ตัวเลขในหน้าจอไม่ครบทุกชิ้น จึงไม่คำนวณจาก DOM)
+  if(walkOnlyTodo){
+    clearTimeout(window._walkTodoTimer);
+    window._walkTodoTimer = setTimeout(()=>{ const y=window.scrollY; renderWalk(); window.scrollTo({top:y}); }, 450);
+    return;
+  }
 
   // update progress — นับเฉพาะรายการที่แสดงอยู่ในกลุ่มร้านนี้จริง ๆ
   const block = document.getElementById(blockId);
@@ -4694,7 +4760,7 @@ document.getElementById('edit-prod-modal').addEventListener('click',e=>{
 
 // ══ FIREBASE REALTIME LISTENERS ══
 R.employees().on('value',snap=>{S.employees=snap.val()||{};renderEmployees();renderProducts();populateSelects();updateSetupCounts()});
-R.shops().on('value',snap=>{S.shops=snap.val()||{};renderShops();renderProducts();populateSelects();updateSetupCounts()});
+R.shops().on('value',snap=>{S.shops=snap.val()||{};{const h=document.getElementById('shop-pos-hint');if(h)h.textContent=`ตอนนี้มี ${Object.keys(S.shops).length} ร้าน — ใส่เลข 1–${Object.keys(S.shops).length+1} เพื่อแทรกตรงนั้น หรือเว้นว่าง = ต่อท้ายสุด`}renderShops();renderProducts();populateSelects();updateSetupCounts()});
 R.products().on('value',snap=>{S.products=snap.val()||{};renderProducts();updateSetupCounts()});
 R.settings().on('value',snap=>{
   S.settings=snap.val()||{};
